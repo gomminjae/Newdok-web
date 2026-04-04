@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"gh auth switch --user gomminje 2>&1\",\"description\":\"Switch to gomminje account\"}",
+  "error": "Exit code 1\nnot logged in to any hosts",
+  "timestamp": "2026-04-04T14:49:47.489Z",
+  "retry_count": 1
+}
