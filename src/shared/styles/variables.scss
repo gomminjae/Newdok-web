@@ -27,13 +27,25 @@ $spacing-xl: 32px;
 $spacing-2xl: 48px;
 
 // Breakpoints
-$breakpoint-mobile: 480px;
-$breakpoint-tablet: 768px;
-$breakpoint-desktop: 1024px;
-$breakpoint-wide: 1280px;
+// iPad 멀티태스킹 대응:
+//   Slide Over / 1/3 분할: ~320-375px (mobile로 처리)
+//   1/2 분할: ~507-683px (tablet-sm으로 처리)
+//   2/3 분할: ~694-1024px (tablet으로 처리)
+//   전체화면: 1024-1366px (desktop으로 처리)
+$breakpoint-sm: 480px;   // 모바일 큰 화면
+$breakpoint-md: 640px;   // iPad 1/2 분할, 작은 태블릿
+$breakpoint-lg: 768px;   // iPad 2/3 분할
+$breakpoint-xl: 1024px;  // iPad 전체화면, 데스크탑
+$breakpoint-2xl: 1280px; // 넓은 데스크탑
 
 // Border Radius
 $radius-sm: 4px;
 $radius-md: 8px;
 $radius-lg: 12px;
 $radius-full: 9999px;
+
+// Safe Area (iPad, 노치 iPhone 대응)
+$safe-area-top: env(safe-area-inset-top);
+$safe-area-bottom: env(safe-area-inset-bottom);
+$safe-area-left: env(safe-area-inset-left);
+$safe-area-right: env(safe-area-inset-right);
