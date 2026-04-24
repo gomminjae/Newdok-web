@@ -1,13 +1,6 @@
 // Design Tokens
-// iOS DesignSystem과 동기화 필요
-
-// Colors
-$color-primary: #4F46E5;
-$color-background: #FFFFFF;
-$color-surface: #F9FAFB;
-$color-text-primary: #111827;
-$color-text-secondary: #6B7280;
-$color-border: #E5E7EB;
+// 색상은 globals.css의 CSS 변수로 관리 (다크모드 대응)
+// 여기에는 CSS 변수로 처리하기 어려운 값만 정의 (mixin 계산, breakpoint 등)
 
 // Typography
 $font-family-base: 'Spoqa Han Sans Neo', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -26,17 +19,12 @@ $spacing-lg: 24px;
 $spacing-xl: 32px;
 $spacing-2xl: 48px;
 
-// Breakpoints
-// iPad 멀티태스킹 대응:
-//   Slide Over / 1/3 분할: ~320-375px (mobile로 처리)
-//   1/2 분할: ~507-683px (tablet-sm으로 처리)
-//   2/3 분할: ~694-1024px (tablet으로 처리)
-//   전체화면: 1024-1366px (desktop으로 처리)
-$breakpoint-sm: 480px;   // 모바일 큰 화면
-$breakpoint-md: 640px;   // iPad 1/2 분할, 작은 태블릿
-$breakpoint-lg: 768px;   // iPad 2/3 분할
-$breakpoint-xl: 1024px;  // iPad 전체화면, 데스크탑
-$breakpoint-2xl: 1280px; // 넓은 데스크탑
+// Breakpoints (Figma 기준 3단계)
+//   Mobile:  360 ~ 767px
+//   Tablet:  768 ~ 1279px
+//   Desktop: 1280px ~
+$breakpoint-tablet: 768px;
+$breakpoint-desktop: 1280px;
 
 // Border Radius
 $radius-sm: 4px;
