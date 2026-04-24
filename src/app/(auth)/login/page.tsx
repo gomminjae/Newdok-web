@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { LoginForm } from './LoginForm';
 
 export const metadata: Metadata = {
   title: '로그인 | Newdok',
@@ -6,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function LoginPage() {
-  return <div>로그인</div>;
+  return <LoginForm />;
 }

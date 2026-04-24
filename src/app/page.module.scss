@@ -1,0 +1,14 @@
+@use "@/shared/styles/mixins" as *;
+
+.layout {
+  min-height: 100vh;
+}
+
+.main {
+  padding-bottom: calc(60px + env(safe-area-inset-bottom));
+
+  @include screen-xl {
+    margin-left: 120px;
+    padding-bottom: 0;
+  }
+}

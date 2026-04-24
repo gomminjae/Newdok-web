@@ -1,15 +1,131 @@
+/* ── Font: Spoqa Han Sans Neo ── */
+@font-face {
+  font-family: 'Spoqa Han Sans Neo';
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+  src: url('/fonts/SpoqaHanSansNeo-Light.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Spoqa Han Sans Neo';
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  src: url('/fonts/SpoqaHanSansNeo-Regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Spoqa Han Sans Neo';
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  src: url('/fonts/SpoqaHanSansNeo-Medium.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Spoqa Han Sans Neo';
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  src: url('/fonts/SpoqaHanSansNeo-Bold.woff2') format('woff2');
+}
+
+/* ══════════════════════════════════════
+   Design Tokens (from Figma)
+   ══════════════════════════════════════ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light;
+
+  /* ── Palette: Neutral ── */
+  --neutral-0: #FFFFFF;
+  --neutral-50: #F7F7F7;
+  --neutral-100: #F5F5F7;
+  --neutral-150: #EBEBEB;
+  --neutral-200: #DADADA;
+  --neutral-300: #C6C6C6;
+  --neutral-350: #C0C0C0;
+  --neutral-400: #A6A6A6;
+  --neutral-500: #969696;
+  --neutral-600: #767676;
+  --neutral-700: #565656;
+  --neutral-750: #464646;
+  --neutral-800: #363636;
+  --neutral-900: #262626;
+  --neutral-950: #161616;
+  --neutral-1000: #000000;
+
+  /* ── Palette: Tint (Blue) ── */
+  --tint-900: #2866D3;
+  --tint-800: #3D75D7;
+  --tint-700: #5184DB;
+  --tint-600: #6893E0;
+  --tint-500: #7FA3E4;
+  --tint-400: #93B2E9;
+  --tint-300: #AAC1ED;
+  --tint-200: #BFD1F1;
+  --tint-100: #D4E0F6;
+  --tint-50: #E9EFFA;
+
+  /* ── Palette: Shades (Navy) ── */
+  --shade-100: #1D4793;
+  --shade-200: #193D7E;
+  --shade-300: #143369;
+  --shade-400: #102854;
+  --shade-500: #0B1E3F;
+  --shade-600: #08142A;
+  --shade-700: #040A15;
+
+  /* ── Semantic: Primary ── */
+  --color-primary: #2866D3;
+  --color-primary-strong: #245BBD;
+  --color-primary-heavy: #2051A8;
+  --color-primary-hover: #2866D31F;
+  --color-primary-press: #2866D30D;
+
+  /* ── Semantic: Background ── */
+  --color-bg: #FFFFFF;
+  --color-bg-system: #F5F5F7;
+  --color-bg-dimmed: #0000000F;
+
+  /* ── Semantic: Caption (Text) ── */
+  --color-caption-heavy: #161616;
+  --color-caption-strong: #363636;
+  --color-caption-neutral: #565656;
+  --color-caption-alternative: #767676;
+  --color-caption-assistive: #969696;
+  --color-caption-disabled: #C0C0C0;
+
+  /* ── Semantic: Line (Border) ── */
+  --color-line-neutral: #C6C6C6;
+  --color-line-alternative: #DADADA;
+  --color-line-disabled: #EBEBEB;
+
+  /* ── Compat aliases (기존 코드 호환) ── */
+  --color-text: var(--color-caption-heavy);
+  --color-text-secondary: var(--color-caption-alternative);
+  --color-text-tertiary: var(--color-caption-assistive);
+  --color-text-inverse: #FFFFFF;
+  --color-bg-secondary: var(--color-bg-system);
+  --color-bg-tertiary: var(--neutral-150);
+  --color-border: var(--color-line-disabled);
+  --color-border-strong: var(--color-line-neutral);
+  --color-primary-light: var(--tint-50);
+
+  /* ── Status ── */
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
+  --color-info: #3B82F6;
+
+  /* ── Shadow ── */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* ── Reset & Base ── */
 html {
   height: 100%;
 }
@@ -24,8 +140,8 @@ body {
   min-height: 100%;
   display: flex;
   flex-direction: column;
-  color: var(--foreground);
-  background: var(--background);
+  color: var(--color-text);
+  background: var(--color-bg);
   font-family: 'Spoqa Han Sans Neo', -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -41,10 +157,4 @@ body {
 a {
   color: inherit;
   text-decoration: none;
-}
-
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
 }

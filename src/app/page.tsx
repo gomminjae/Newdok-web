@@ -1,4 +1,16 @@
 import type { Metadata } from 'next';
+import { Sidebar } from '@/widgets/sidebar';
+import { Header } from '@/widgets/header';
+import {
+  HeroSection,
+  PopularNewsletters,
+  FeatureSections,
+  DiscoverSection,
+  TodayNewsletters,
+  BottomCta,
+  LandingFooter,
+} from '@/widgets/landing';
+import styles from './page.module.scss';
 
 export const metadata: Metadata = {
   title: 'Newdok - 뉴스레터 구독 플랫폼',
@@ -23,12 +35,22 @@ export const metadata: Metadata = {
 
 export default function LandingPage() {
   return (
-    <main>
-      {/* TODO: 히어로 섹션 */}
-      {/* TODO: 기능 소개 섹션 */}
-      {/* TODO: 뉴스레터 미리보기 섹션 */}
-      {/* TODO: CTA 섹션 */}
-      <div>랜딩 페이지</div>
-    </main>
+    <>
+      <Header />
+      <div className={styles.layout}>
+        <Sidebar />
+        <div className={styles.main}>
+          <main>
+            <HeroSection />
+            <PopularNewsletters />
+            <FeatureSections />
+            <DiscoverSection />
+            <TodayNewsletters />
+            <BottomCta />
+          </main>
+          <LandingFooter />
+        </div>
+      </div>
+    </>
   );
 }

@@ -1,0 +1,15 @@
+@use '@/shared/styles/mixins' as *;
+
+.wrapper {
+  min-height: 100vh;
+}
+
+.content {
+  padding: 16px;
+  padding-bottom: calc(72px + env(safe-area-inset-bottom)); // 모바일 탭바 공간
+
+  @include screen-xl {
+    margin-left: 120px; // 사이드바 너비만큼
+    padding-bottom: 16px;
+  }
+}
