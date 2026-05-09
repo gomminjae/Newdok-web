@@ -63,6 +63,10 @@ export async function apiClient<T>(
   if (!response.ok) {
     if (response.status === 401) {
       clearAccessToken();
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('user');
+        window.dispatchEvent(new Event('auth-change'));
+      }
     }
 
     let serverMessage: string | undefined;

@@ -5,23 +5,25 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { newsletterApi } from '@/shared/api/endpoints';
+import { useAuth } from '@/shared/hooks';
 import type { SubscribedNewsletter } from '@/shared/api/types';
 import styles from './subscribe.module.scss';
 
 export default function ExplorePage() {
+  const { isLoggedIn } = useAuth();
   const [selectedTab, setSelectedTab] = useState(0);
   const queryClient = useQueryClient();
 
   const { data: activeNewsletters = [], isLoading: isActiveLoading } = useQuery({
     queryKey: ['subscription', 'active'],
     queryFn: () => newsletterApi.fetchActiveNewsletters(),
-    enabled: selectedTab === 0,
+    enabled: isLoggedIn && selectedTab === 0,
   });
 
   const { data: pausedNewsletters = [], isLoading: isPausedLoading } = useQuery({
     queryKey: ['subscription', 'paused'],
     queryFn: () => newsletterApi.fetchPausedNewsletters(),
-    enabled: selectedTab === 1,
+    enabled: isLoggedIn && selectedTab === 1,
   });
 
   const currentList = selectedTab === 0 ? activeNewsletters : pausedNewsletters;
@@ -37,9 +39,30 @@ export default function ExplorePage() {
     queryClient.invalidateQueries({ queryKey: ['subscription'] });
   };
 
+  if (!isLoggedIn) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.segmentPicker}>
+          <div className={styles.segmentWrapper}>
+            <div className={`${styles.segmentSlider} ${styles.left}`} />
+            <button className={`${styles.segmentButton} ${styles.active}`} type="button">구독 중</button>
+            <button className={styles.segmentButton} type="button">구독 중지</button>
+          </div>
+        </div>
+        <div className={styles.emptyState}>
+          <div className={styles.emptyImage} />
+          <p className={styles.emptyTitle}>구독 중인 뉴스레터가 없어요.</p>
+          <p className={styles.emptyDescription}>
+            <Link href="/login" className={styles.guestLoginLink}>로그인</Link>
+            {' 후 뉴스레터를 구독해 보세요.'}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.container}>
-      {/* 세그먼트 피커 */}
       <div className={styles.segmentPicker}>
         <div className={styles.segmentWrapper}>
           <div className={`${styles.segmentSlider} ${selectedTab === 0 ? styles.left : styles.right}`} />

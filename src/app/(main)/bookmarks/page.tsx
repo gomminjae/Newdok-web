@@ -5,10 +5,12 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { articleApi } from '@/shared/api/endpoints';
+import { useAuth } from '@/shared/hooks';
 import type { Bookmark, BookmarkInterest } from '@/shared/api/types';
 import styles from './bookmarks.module.scss';
 
 export default function BookmarksPage() {
+  const { isLoggedIn } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState<string>('전체');
   const [selectedInterestId, setSelectedInterestId] = useState<number | undefined>();
   const [sortOrder, setSortOrder] = useState('추가순');
@@ -26,6 +28,7 @@ export default function BookmarksPage() {
       const res = await articleApi.fetchBookmarkedInterest();
       return res.data;
     },
+    enabled: isLoggedIn,
   });
 
   const { data: bookmarkData, isLoading } = useQuery({
@@ -34,6 +37,7 @@ export default function BookmarksPage() {
       const res = await articleApi.fetchBookmarkArticles(selectedInterestId, sortByMap[sortOrder]);
       return res.data;
     },
+    enabled: isLoggedIn,
   });
 
   const categories: { id: number | undefined; name: string }[] = [
@@ -46,9 +50,20 @@ export default function BookmarksPage() {
     setSelectedInterestId(id);
   };
 
+  if (!isLoggedIn) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.guestState}>
+          <p className={styles.guestTitle}>저장한 아티클이 없어요.</p>
+          <p className={styles.guestDescription}>로그인 후 다시 보고 싶은 아티클을 저장해보세요.</p>
+          <Link href="/login" className={styles.guestLoginLink}>로그인</Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.container}>
-      {/* 카테고리 필터 */}
       <div className={styles.categoryFilter}>
         {categories.map((cat) => (
           <button
@@ -62,7 +77,6 @@ export default function BookmarksPage() {
         ))}
       </div>
 
-      {/* 정렬 정보 */}
       <div className={styles.sortInfo}>
         <span className={styles.totalCount}>총 {bookmarkData?.totalAmount ?? 0}개</span>
         <button className={styles.sortButton} type="button">
@@ -71,7 +85,6 @@ export default function BookmarksPage() {
         </button>
       </div>
 
-      {/* 북마크 리스트 */}
       {isLoading ? (
         <div className={styles.emptyState}>로딩 중...</div>
       ) : !bookmarkData || bookmarkData.totalAmount === 0 ? (

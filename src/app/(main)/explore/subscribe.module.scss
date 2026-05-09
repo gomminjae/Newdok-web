@@ -208,3 +208,9 @@
   background: var(--color-bg-system);
   color: var(--color-primary);
 }
+
+.guestLoginLink {
+  color: var(--color-primary);
+  text-decoration: underline;
+  font-weight: 500;
+}

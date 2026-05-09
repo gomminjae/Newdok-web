@@ -6,6 +6,7 @@ import { useState, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { articleApi } from '@/shared/api/endpoints';
 import { CalendarPopup } from '@/widgets/calendar';
+import { useAuth } from '@/shared/hooks';
 import type { Article } from '@/shared/api/types';
 import styles from './home.module.scss';
 
@@ -19,6 +20,7 @@ function formatDate(date: Date): string {
 }
 
 export default function HomePage() {
+  const { isLoggedIn } = useAuth();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showCalendar, setShowCalendar] = useState(false);
   const queryClient = useQueryClient();
@@ -27,17 +29,17 @@ export default function HomePage() {
   const month = selectedDate.getMonth() + 1;
   const day = selectedDate.getDate();
 
-  // 오늘의 아티클
   const { data: articles = [], isLoading } = useQuery({
     queryKey: ['articles', 'day', year, month, day],
     queryFn: () => articleApi.fetchDayArticle(year, month, day),
+    enabled: isLoggedIn,
   });
 
-  // 캘린더 데이터 (해당 월에 아티클이 있는 날짜)
   const { data: monthlyData = [] } = useQuery({
     queryKey: ['articles', 'monthly', year, month],
     queryFn: () => articleApi.fetchArticles(year, month),
     select: (res) => res.data,
+    enabled: isLoggedIn,
   });
 
   const calendarDataDays = useMemo(() => {
@@ -55,6 +57,23 @@ export default function HomePage() {
   const handleDateSelected = (date: Date) => {
     setSelectedDate(date);
   };
+
+  if (!isLoggedIn) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.guestState}>
+          <p className={styles.guestTitle}>
+            {'회원이 되면 뉴스레터를\n간편하게 모아볼 수 있어요!'}
+          </p>
+          <Link href="/signup" className={styles.guestSignupButton}>회원가입</Link>
+          <p className={styles.guestLogin}>
+            이미 계정이 있나요?{' '}
+            <Link href="/login" className={styles.guestLoginLink}>로그인</Link>
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>
@@ -78,9 +97,9 @@ export default function HomePage() {
           <p className={styles.emptyDescription}>
             뉴스레터를 구독하면 아티클을 받아볼 수 있어요.
           </p>
-          <button className={styles.emptyButton} type="button">
+          <Link href="/search" className={styles.emptyButton}>
             뉴스레터 둘러보기
-          </button>
+          </Link>
         </div>
       ) : (
         <div className={styles.articlesSection}>
@@ -107,7 +126,6 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* 캘린더 팝업 */}
       {showCalendar && (
         <CalendarPopup
           selectedDate={selectedDate}

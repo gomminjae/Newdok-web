@@ -5,11 +5,13 @@ import Link from 'next/link';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { newsletterApi } from '@/shared/api/endpoints';
+import { useAuth } from '@/shared/hooks';
 import type { NewsletterDetail, NewsletterBrand } from '@/shared/api/types';
 import styles from './explore.module.scss';
 
 export default function SearchPage() {
-  const [selectedTab, setSelectedTab] = useState(0);
+  const { isLoggedIn } = useAuth();
+  const [selectedTab, setSelectedTab] = useState(isLoggedIn ? 0 : 1);
   const [orderOpt, setOrderOpt] = useState('인기순');
   const [industry, setIndustry] = useState<string | undefined>();
   const [day, setDay] = useState<string | undefined>();
@@ -18,19 +20,21 @@ export default function SearchPage() {
   const { data: myRecommendation = [] } = useQuery({
     queryKey: ['recommend', 'intersection'],
     queryFn: () => newsletterApi.fetchRecommendIntersection(),
-    enabled: selectedTab === 0,
+    enabled: isLoggedIn && selectedTab === 0,
   });
 
   const { data: unionRecommendation = [] } = useQuery({
     queryKey: ['recommend', 'union'],
     queryFn: () => newsletterApi.fetchRecommendUnion(),
-    enabled: selectedTab === 0,
+    enabled: isLoggedIn && selectedTab === 0,
   });
 
   const { data: allNewsletters = [], isLoading: isAllLoading } = useQuery({
     queryKey: ['newsletters', 'all', orderOpt, industry, day],
     queryFn: () =>
-      newsletterApi.fetchAllNewsletterBrands({ orderOpt, industry, day }),
+      isLoggedIn
+        ? newsletterApi.fetchAllNewsletterBrands({ orderOpt, industry, day })
+        : newsletterApi.fetchGuestAllNewsletterBrands({ orderOpt, industry, day }),
     enabled: selectedTab === 1,
   });
 
@@ -68,29 +72,40 @@ export default function SearchPage() {
       <div className={styles.divider} />
 
       {selectedTab === 0 ? (
-        <div className={styles.recommendSection}>
-          <p className={styles.recommendTitle}>
-            {'맞춤형 뉴스레터가\n도착했어요.'}
-          </p>
+        isLoggedIn ? (
+          <div className={styles.recommendSection}>
+            <p className={styles.recommendTitle}>
+              {'맞춤형 뉴스레터가\n도착했어요.'}
+            </p>
 
-          {myRecommendation.length > 0 && (
-            <InfiniteCarousel items={myRecommendation} />
-          )}
+            {myRecommendation.length > 0 && (
+              <InfiniteCarousel items={myRecommendation} />
+            )}
 
-          <div className={styles.suggestHeader}>
-            <span className={styles.suggestTitle}>이런 뉴스레터는 어때요?</span>
-            <button className={styles.suggestRefresh} type="button" onClick={handleRefreshRecommend}>
-              <Image src="/images/Line Reload.svg" alt="새로고침" width={20} height={20} />
-              새로고침
-            </button>
+            <div className={styles.suggestHeader}>
+              <span className={styles.suggestTitle}>이런 뉴스레터는 어때요?</span>
+              <button className={styles.suggestRefresh} type="button" onClick={handleRefreshRecommend}>
+                <Image src="/images/Line Reload.svg" alt="새로고침" width={20} height={20} />
+                새로고침
+              </button>
+            </div>
+
+            <div className={styles.newsletterList}>
+              {unionRecommendation.map((nl) => (
+                <NewsletterDetailRow key={nl.id} newsletter={nl} />
+              ))}
+            </div>
           </div>
-
-          <div className={styles.newsletterList}>
-            {unionRecommendation.map((nl) => (
-              <NewsletterDetailRow key={nl.id} newsletter={nl} />
-            ))}
+        ) : (
+          <div className={styles.guestSection}>
+            <p className={styles.guestTitle}>{'회원이 되면 뉴스레터를\n간편하게 모아볼 수 있어요!'}</p>
+            <Link href="/signup" className={styles.guestSignup}>회원가입</Link>
+            <p className={styles.guestLogin}>
+              이미 계정이 있나요?{' '}
+              <Link href="/login" className={styles.guestLoginLink}>로그인</Link>
+            </p>
           </div>
-        </div>
+        )
       ) : (
         <>
           <div className={styles.filterSection}>

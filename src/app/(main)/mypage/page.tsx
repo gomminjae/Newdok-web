@@ -1,17 +1,21 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { userApi } from '@/shared/api/endpoints';
+import { useAuth } from '@/shared/hooks';
 import styles from './mypage.module.scss';
 
 export default function MyPage() {
+  const { isLoggedIn, logout } = useAuth();
   const [showToast, setShowToast] = useState(false);
 
   const { data: profile } = useQuery({
     queryKey: ['user', 'profile'],
     queryFn: () => userApi.getProfile(),
+    enabled: isLoggedIn,
   });
 
   const nickname = profile?.nickname ?? '';
@@ -24,9 +28,23 @@ export default function MyPage() {
     setTimeout(() => setShowToast(false), 2100);
   }, [subscribeEmail]);
 
+  if (!isLoggedIn) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.guestState}>
+          <p className={styles.guestTitle}>{'회원이 되면 뉴스레터를\n간편하게 모아볼 수 있어요!'}</p>
+          <Link href="/signup" className={styles.guestSignupButton}>회원가입</Link>
+          <p className={styles.guestLogin}>
+            이미 계정이 있나요?{' '}
+            <Link href="/login" className={styles.guestLoginLink}>로그인</Link>
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.container}>
-      {/* 프로필 영역 */}
       <div className={styles.profileSection}>
         <p className={styles.nickname}>{nickname}</p>
 
@@ -49,7 +67,6 @@ export default function MyPage() {
         </button>
       </div>
 
-      {/* 서비스 섹션 */}
       <div className={styles.menuSection}>
         <p className={styles.sectionHeader}>서비스</p>
         <button className={styles.menuItem} type="button">
@@ -62,7 +79,6 @@ export default function MyPage() {
         </button>
       </div>
 
-      {/* 고객센터 섹션 */}
       <div className={styles.menuSection}>
         <p className={styles.sectionHeader}>고객센터</p>
         <button className={styles.menuItem} type="button">
@@ -82,6 +98,10 @@ export default function MyPage() {
           <span className={styles.versionValue}>1.0.0</span>
         </div>
       </div>
+
+      <button className={styles.logoutButton} type="button" onClick={logout}>
+        로그아웃
+      </button>
 
       {showToast && (
         <div className={styles.toast}>

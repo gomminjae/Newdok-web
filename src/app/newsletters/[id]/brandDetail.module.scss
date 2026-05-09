@@ -229,3 +229,58 @@
   flex-shrink: 0;
   opacity: 0.4;
 }
+
+// 비회원 구독 알림 팝업
+.alertOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+
+.alertBox {
+  background: #fff;
+  border-radius: 16px;
+  padding: 32px 24px 24px;
+  max-width: 320px;
+  width: 100%;
+  text-align: center;
+}
+
+.alertTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-caption-heavy);
+  margin-bottom: 8px;
+}
+
+.alertDescription {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-caption-neutral);
+  margin-bottom: 24px;
+}
+
+.alertButton {
+  display: block;
+  width: 100%;
+  height: 48px;
+  line-height: 48px;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+
+  &:hover {
+    background: var(--color-primary-strong);
+  }
+}

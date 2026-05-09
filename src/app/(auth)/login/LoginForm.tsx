@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { userApi } from '@/shared/api/endpoints';
 import { ApiError } from '@/shared/api/client';
+import { enterAsGuest } from '@/shared/hooks';
 import styles from '../auth.module.scss';
 
 export function LoginForm() {
@@ -140,6 +141,17 @@ export function LoginForm() {
             ID/PW 찾기
           </Link>
         </div>
+
+        <button
+          type="button"
+          className={styles.guestButton}
+          onClick={() => {
+            enterAsGuest();
+            router.push('/home');
+          }}
+        >
+          비회원으로 이용하기
+        </button>
       </form>
     </div>
   );
