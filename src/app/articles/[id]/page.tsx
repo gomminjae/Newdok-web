@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { articleApi } from '@/shared/api';
+import { ArticleDetailClient } from './ArticleDetailClient';
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -31,5 +32,5 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ArticleDetailPage({ params }: Props) {
   const { id } = await params;
 
-  return <div>아티클 상세 - {id}</div>;
+  return <ArticleDetailClient id={Number(id)} />;
 }

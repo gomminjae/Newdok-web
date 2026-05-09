@@ -7,9 +7,9 @@ import styles from './Sidebar.module.scss';
 
 const NAV_ITEMS = [
   { href: '/home', label: '홈', lineIcon: '/images/Line Home.svg', fillIcon: '/images/Fill Home.svg' },
-  { href: '/explore', label: '구독관리', lineIcon: '/images/Line Mailbox.svg', fillIcon: '/images/Fill Mailbox.svg' },
+  { href: '/explore', label: '내 구독', lineIcon: '/images/Line Mailbox.svg', fillIcon: '/images/Fill Mailbox.svg' },
   { href: '/bookmarks', label: '북마크함', lineIcon: '/images/Line Bookmark.svg', fillIcon: '/images/Fill Bookmark.svg' },
-  { href: '/search', label: '훑러보기', lineIcon: '/images/Line Newsletter.svg', fillIcon: '/images/Fill Newsletter.svg' },
+  { href: '/search', label: '둘러보기', lineIcon: '/images/Line Newsletter.svg', fillIcon: '/images/Fill Newsletter.svg' },
   { href: '/mypage', label: '마이페이지', lineIcon: '/images/Line User.svg', fillIcon: '/images/Fill User.svg' },
 ] as const;
 

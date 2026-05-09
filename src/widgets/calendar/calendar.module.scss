@@ -1,0 +1,176 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(37, 36, 44, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 24px;
+}
+
+.popup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.calendarCard {
+  width: 100%;
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+// 헤더
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  background: #fafafa;
+  position: relative;
+  border-radius: 16px 16px 0 0;
+}
+
+.navButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.monthTitle {
+  width: 120px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-caption-heavy);
+}
+
+.closeButton {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+}
+
+// 요일 헤더
+.weekdayHeader {
+  display: flex;
+  padding: 14px 8px;
+}
+
+.weekday {
+  flex: 1;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--color-caption-heavy);
+
+  &.sunday {
+    color: #e32727;
+  }
+
+  &.saturday {
+    color: #2866d3;
+  }
+}
+
+// 날짜 그리드
+.dateGrid {
+  padding: 0 8px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.weekRow {
+  display: flex;
+}
+
+.dayCell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+
+  &.blank {
+    opacity: 0.3;
+    cursor: default;
+  }
+
+  &.future {
+    .dayNumber {
+      color: var(--color-caption-disabled);
+    }
+  }
+}
+
+.dayNumber {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--color-caption-heavy);
+
+  .today & {
+    background: var(--color-primary);
+    color: #fff;
+  }
+
+  .selected & {
+    border: 1px solid #052b6c;
+  }
+}
+
+.dataDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  opacity: 0;
+
+  &.visible {
+    opacity: 1;
+  }
+}
+
+// 오늘 버튼
+.todayButton {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 20px;
+  background: #fff;
+  border: 1px solid var(--color-primary);
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-primary);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--tint-50);
+  }
+}

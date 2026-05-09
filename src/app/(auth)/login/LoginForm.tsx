@@ -3,24 +3,27 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { userApi } from '@/shared/api/endpoints';
+import { ApiError } from '@/shared/api/client';
 import styles from '../auth.module.scss';
 
 export function LoginForm() {
-  const [email, setEmail] = useState('');
+  const [loginId, setLoginId] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [errors, setErrors] = useState<{ loginId?: string; password?: string; general?: string }>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
 
-  const isFilled = email.length > 0 && password.length > 0;
+  const isFilled = loginId.length > 0 && password.length > 0;
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const newErrors: { email?: string; password?: string } = {};
+    const newErrors: typeof errors = {};
 
-    if (!email) {
-      newErrors.email = '메일주소를 입력해주세요.';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = '올바른 메일주소 형식이 아닙니다.';
+    if (!loginId) {
+      newErrors.loginId = '아이디를 입력해주세요.';
     }
 
     if (!password) {
@@ -30,9 +33,26 @@ export function LoginForm() {
     }
 
     setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) return;
 
-    if (Object.keys(newErrors).length === 0) {
-      // TODO: API 로그인 호출
+    setIsSubmitting(true);
+    try {
+      const res = await userApi.login({ loginId, password });
+      // 유저 정보 저장
+      localStorage.setItem('user', JSON.stringify(res.user));
+      router.push('/home');
+    } catch (err) {
+      if (err instanceof ApiError) {
+        if (err.isUnauthorized) {
+          setErrors({ general: '아이디 또는 비밀번호가 일치하지 않습니다.' });
+        } else {
+          setErrors({ general: err.serverMessage ?? '로그인에 실패했습니다.' });
+        }
+      } else {
+        setErrors({ general: '네트워크 오류가 발생했습니다.' });
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -54,15 +74,15 @@ export function LoginForm() {
               className={styles.inputIcon}
             />
             <input
-              type="email"
-              className={`${styles.input} ${styles.inputWithIcon} ${errors.email ? styles.inputError : ''}`}
+              type="text"
+              className={`${styles.input} ${styles.inputWithIcon} ${errors.loginId ? styles.inputError : ''}`}
               placeholder="아이디를 입력해주세요."
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="email"
+              value={loginId}
+              onChange={(e) => setLoginId(e.target.value)}
+              autoComplete="username"
             />
           </div>
-          {errors.email && <p className={styles.errorMessage}>{errors.email}</p>}
+          {errors.loginId && <p className={styles.errorMessage}>{errors.loginId}</p>}
         </div>
 
         <div>
@@ -101,11 +121,14 @@ export function LoginForm() {
           {errors.password && <p className={styles.errorMessage}>{errors.password}</p>}
         </div>
 
+        {errors.general && <p className={styles.errorMessage}>{errors.general}</p>}
+
         <button
           type="submit"
           className={`${styles.submitButton} ${isFilled ? styles.submitButtonActive : ''}`}
+          disabled={isSubmitting}
         >
-          로그인
+          {isSubmitting ? '로그인 중...' : '로그인'}
         </button>
 
         <div className={styles.links}>
