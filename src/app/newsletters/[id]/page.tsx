@@ -1,9 +1,26 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import { newsletterApi } from '@/shared/api';
+import { BrandDetailClient } from './BrandDetailClient';
 
 type Props = {
   params: Promise<{ id: string }>;
 };
+
+// ISR: 1시간마다 백그라운드 재검증
+export const revalidate = 3600;
+
+// 빌드 시 인기 브랜드를 미리 생성. 그 외 브랜드는 첫 요청 시 온디맨드 생성 후 캐시.
+export async function generateStaticParams() {
+  try {
+    const brands = await newsletterApi.fetchGuestAllNewsletterBrands({
+      orderOpt: 'popular',
+    });
+    return brands.slice(0, 50).map((b) => ({ id: String(b.brandId) }));
+  } catch {
+    return [];
+  }
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
@@ -35,5 +52,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function NewsletterDetailPage({ params }: Props) {
   const { id } = await params;
 
-  return <div>뉴스레터 상세 - {id}</div>;
+  const brand = await newsletterApi
+    .fetchGuestNewsletterBrand(Number(id))
+    .catch(() => null);
+
+  if (!brand) notFound();
+
+  return <BrandDetailClient id={Number(id)} />;
 }

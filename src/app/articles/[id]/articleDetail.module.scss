@@ -1,0 +1,166 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #fff;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  color: var(--color-primary);
+  font-size: 16px;
+}
+
+// 네비게이션 바
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  height: 56px;
+  padding: 0 8px;
+  background: #fff;
+  border-bottom: 1px solid var(--neutral-150);
+}
+
+.navButton {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.navBrand {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  min-width: 0;
+}
+
+.navBrandImage {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 1px solid var(--neutral-150);
+}
+
+.navBrandName {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-caption-heavy);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// 아티클 헤더
+.articleHeader {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--neutral-150);
+}
+
+.articleTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-caption-heavy);
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+.articleDate {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-caption-assistive);
+}
+
+// 아티클 콘텐츠
+.articleContent {
+  padding: 20px 24px 80px;
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--color-caption-strong);
+  word-break: break-word;
+  overflow-x: hidden;
+
+  img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+  }
+
+  a {
+    color: var(--color-primary);
+    text-decoration: underline;
+  }
+
+  table {
+    max-width: 100%;
+    overflow-x: auto;
+    display: block;
+  }
+
+  blockquote {
+    margin: 12px 0;
+    padding: 12px 16px;
+    border-left: 3px solid var(--color-primary);
+    background: var(--color-bg-system);
+    color: var(--color-caption-neutral);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--color-caption-heavy);
+    margin: 20px 0 8px;
+  }
+
+  p {
+    margin: 8px 0;
+  }
+
+  ul, ol {
+    padding-left: 24px;
+  }
+
+  pre {
+    background: var(--color-bg-system);
+    padding: 12px;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 14px;
+  }
+}
+
+// 스크롤 투 탑
+.scrollTopButton {
+  position: fixed;
+  bottom: 90px;
+  right: 20px;
+  width: 44px;
+  height: 44px;
+  background: #fff;
+  border: 1px solid var(--neutral-150);
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: opacity 0.2s;
+
+  &:hover {
+    background: var(--neutral-50);
+  }
+}

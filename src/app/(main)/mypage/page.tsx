@@ -1,10 +1,93 @@
-import type { Metadata } from 'next';
+'use client';
 
-export const metadata: Metadata = {
-  title: '마이페이지 | Newdok',
-  description: '프로필, 구독 관리, 관심 분야 설정을 할 수 있습니다.',
-};
+import Image from 'next/image';
+import { useState, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { userApi } from '@/shared/api/endpoints';
+import styles from './mypage.module.scss';
 
 export default function MyPage() {
-  return <div>마이페이지</div>;
+  const [showToast, setShowToast] = useState(false);
+
+  const { data: profile } = useQuery({
+    queryKey: ['user', 'profile'],
+    queryFn: () => userApi.getProfile(),
+  });
+
+  const nickname = profile?.nickname ?? '';
+  const subscribeEmail = profile?.subscribeEmail ?? '';
+
+  const handleCopyEmail = useCallback(() => {
+    if (!subscribeEmail) return;
+    navigator.clipboard.writeText(subscribeEmail);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 2100);
+  }, [subscribeEmail]);
+
+  return (
+    <div className={styles.container}>
+      {/* 프로필 영역 */}
+      <div className={styles.profileSection}>
+        <p className={styles.nickname}>{nickname}</p>
+
+        <div className={styles.emailLabel}>
+          <span className={styles.emailLabelText}>구독이메일</span>
+          <button className={styles.emailTooltip} type="button">
+            <Image src="/images/Line Question mark.svg" alt="도움말" width={16} height={16} />
+          </button>
+        </div>
+
+        <div className={styles.emailRow}>
+          <button className={styles.emailCopy} onClick={handleCopyEmail} type="button">
+            <Image src="/images/Line Copy.svg" alt="복사" width={24} height={24} />
+          </button>
+          <span className={styles.emailText}>{subscribeEmail}</span>
+        </div>
+
+        <button className={styles.editProfileButton} type="button">
+          프로필 편집
+        </button>
+      </div>
+
+      {/* 서비스 섹션 */}
+      <div className={styles.menuSection}>
+        <p className={styles.sectionHeader}>서비스</p>
+        <button className={styles.menuItem} type="button">
+          <span className={styles.menuLabel}>계정 관리</span>
+          <Image src="/images/Line right.svg" alt="" width={24} height={24} className={styles.menuArrow} />
+        </button>
+        <button className={styles.menuItem} type="button">
+          <span className={styles.menuLabel}>알림 설정</span>
+          <Image src="/images/Line right.svg" alt="" width={24} height={24} className={styles.menuArrow} />
+        </button>
+      </div>
+
+      {/* 고객센터 섹션 */}
+      <div className={styles.menuSection}>
+        <p className={styles.sectionHeader}>고객센터</p>
+        <button className={styles.menuItem} type="button">
+          <span className={styles.menuLabel}>FAQ</span>
+          <Image src="/images/Line right.svg" alt="" width={24} height={24} className={styles.menuArrow} />
+        </button>
+        <button className={styles.menuItem} type="button">
+          <span className={styles.menuLabel}>서비스 피드백</span>
+          <Image src="/images/Line right.svg" alt="" width={24} height={24} className={styles.menuArrow} />
+        </button>
+        <button className={styles.menuItem} type="button">
+          <span className={styles.menuLabel}>약관 및 정책</span>
+          <Image src="/images/Line right.svg" alt="" width={24} height={24} className={styles.menuArrow} />
+        </button>
+        <div className={styles.versionRow}>
+          <span className={styles.versionLabel}>버전</span>
+          <span className={styles.versionValue}>1.0.0</span>
+        </div>
+      </div>
+
+      {showToast && (
+        <div className={styles.toast}>
+          구독 이메일 주소가 복사되었습니다.
+        </div>
+      )}
+    </div>
+  );
 }

@@ -1,0 +1,172 @@
+@use '@/shared/styles/mixins' as *;
+
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 49px);
+  background: #fff;
+  padding-top: 20px;
+}
+
+// 프로필 영역
+.profileSection {
+  padding: 0 20px;
+}
+
+.nickname {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-caption-heavy);
+  padding-top: 32px;
+  margin-bottom: 16px;
+}
+
+.emailLabel {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.emailLabelText {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-caption-neutral);
+}
+
+.emailTooltip {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 2px;
+  color: var(--color-caption-neutral);
+}
+
+.emailRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 24px;
+}
+
+.emailCopy {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 2px;
+}
+
+.emailText {
+  font-size: 14px;
+  color: var(--color-caption-heavy);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.editProfileButton {
+  width: 100%;
+  height: 44px;
+  background: none;
+  border: 1px solid var(--neutral-150);
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-caption-neutral);
+  cursor: pointer;
+  margin-top: 12px;
+
+  &:hover {
+    background: var(--neutral-50);
+  }
+}
+
+// 섹션
+.menuSection {
+  padding: 0 20px;
+}
+
+.sectionHeader {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-caption-assistive);
+  padding-top: 24px;
+  padding-bottom: 8px;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 48px;
+  background: none;
+  border: none;
+  width: 100%;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+
+  &:hover {
+    background: var(--neutral-50);
+    margin: 0 -8px;
+    padding: 0 8px;
+    border-radius: 4px;
+  }
+}
+
+.menuLabel {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--color-caption-strong);
+}
+
+.menuArrow {
+  color: var(--color-caption-neutral);
+}
+
+// 버전
+.versionRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 48px;
+}
+
+.versionLabel {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--color-caption-strong);
+}
+
+.versionValue {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-caption-assistive);
+}
+
+// 토스트
+.toast {
+  position: fixed;
+  bottom: 106px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 1000;
+  animation: fadeInOut 2s ease-in-out;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  85% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+}
