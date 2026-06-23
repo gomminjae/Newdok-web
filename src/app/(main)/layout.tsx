@@ -1,9 +1,7 @@
 import type { Metadata } from 'next';
 import { Header } from '@/widgets/header';
 import { Sidebar } from '@/widgets/sidebar';
-import styles from './layout.module.scss';
 
-// 로그인 영역: 검색 엔진 색인 제외
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
@@ -16,9 +14,11 @@ export default function MainLayout({
   return (
     <>
       <Header />
-      <div className={styles.wrapper}>
+      <div className="min-h-screen">
         <Sidebar />
-        <main className={styles.content}>{children}</main>
+        <main className="p-4 pb-[calc(72px+env(safe-area-inset-bottom))] xl:ml-[120px] xl:pb-4">
+          {children}
+        </main>
       </div>
     </>
   );

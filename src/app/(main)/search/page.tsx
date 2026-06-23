@@ -4,14 +4,24 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { newsletterApi } from '@/shared/api/endpoints';
+import { clsx } from 'clsx';
+import {
+  newsletterApi,
+  type NewsletterDetail,
+  type NewsletterBrand,
+} from '@/entities/newsletter';
 import { useAuth } from '@/shared/hooks';
-import type { NewsletterDetail, NewsletterBrand } from '@/shared/api/types';
-import styles from './explore.module.scss';
+import { GuestNotice } from '@/shared/ui';
+
+const CARD_WIDTH = 320;
+const CARD_GAP = 12;
+const STEP = CARD_WIDTH + CARD_GAP;
+
+type Tab = 'recommend' | 'all';
 
 export default function SearchPage() {
   const { isLoggedIn } = useAuth();
-  const [selectedTab, setSelectedTab] = useState(isLoggedIn ? 0 : 1);
+  const [tab, setTab] = useState<Tab>(isLoggedIn ? 'recommend' : 'all');
   const [orderOpt, setOrderOpt] = useState('인기순');
   const [industry, setIndustry] = useState<string | undefined>();
   const [day, setDay] = useState<string | undefined>();
@@ -20,13 +30,13 @@ export default function SearchPage() {
   const { data: myRecommendation = [] } = useQuery({
     queryKey: ['recommend', 'intersection'],
     queryFn: () => newsletterApi.fetchRecommendIntersection(),
-    enabled: isLoggedIn && selectedTab === 0,
+    enabled: isLoggedIn && tab === 'recommend',
   });
 
   const { data: unionRecommendation = [] } = useQuery({
     queryKey: ['recommend', 'union'],
     queryFn: () => newsletterApi.fetchRecommendUnion(),
-    enabled: isLoggedIn && selectedTab === 0,
+    enabled: isLoggedIn && tab === 'recommend',
   });
 
   const { data: allNewsletters = [], isLoading: isAllLoading } = useQuery({
@@ -35,7 +45,7 @@ export default function SearchPage() {
       isLoggedIn
         ? newsletterApi.fetchAllNewsletterBrands({ orderOpt, industry, day })
         : newsletterApi.fetchGuestAllNewsletterBrands({ orderOpt, industry, day }),
-    enabled: selectedTab === 1,
+    enabled: tab === 'all',
   });
 
   const handleRefreshRecommend = () => {
@@ -49,32 +59,44 @@ export default function SearchPage() {
   };
 
   return (
-    <div className={styles.container}>
-      <div className={styles.tabSwitcher}>
-        <div className={styles.tabButtons}>
+    <div className="bg-bg min-h-[calc(100vh-49px)] flex flex-col">
+      {/* 탭 */}
+      <div className="pt-4 relative">
+        <div className="flex">
           <button
-            className={`${styles.tabButton} ${selectedTab === 0 ? styles.active : ''}`}
-            onClick={() => setSelectedTab(0)}
             type="button"
+            onClick={() => setTab('recommend')}
+            className={clsx(
+              'flex-1 py-3 bg-transparent text-sm font-bold text-center transition-colors',
+              tab === 'recommend' ? 'text-caption-strong' : 'text-caption-alternative',
+            )}
           >
             추천 뉴스레터
           </button>
           <button
-            className={`${styles.tabButton} ${selectedTab === 1 ? styles.active : ''}`}
-            onClick={() => setSelectedTab(1)}
             type="button"
+            onClick={() => setTab('all')}
+            className={clsx(
+              'flex-1 py-3 bg-transparent text-sm font-bold text-center transition-colors',
+              tab === 'all' ? 'text-caption-strong' : 'text-caption-alternative',
+            )}
           >
             모든 뉴스레터
           </button>
         </div>
-        <div className={`${styles.tabIndicator} ${selectedTab === 1 ? styles.right : ''}`} />
+        <div
+          className={clsx(
+            'h-0.5 bg-caption-strong w-1/2 transition-transform duration-300 ease-in-out',
+            tab === 'all' && 'translate-x-full',
+          )}
+        />
       </div>
-      <div className={styles.divider} />
+      <div className="h-px bg-neutral-150" />
 
-      {selectedTab === 0 ? (
+      {tab === 'recommend' ? (
         isLoggedIn ? (
-          <div className={styles.recommendSection}>
-            <p className={styles.recommendTitle}>
+          <div className="flex-1 overflow-y-auto bg-bg-system">
+            <p className="text-xl font-bold text-caption-heavy px-6 pt-5 whitespace-pre-line">
               {'맞춤형 뉴스레터가\n도착했어요.'}
             </p>
 
@@ -82,56 +104,81 @@ export default function SearchPage() {
               <InfiniteCarousel items={myRecommendation} />
             )}
 
-            <div className={styles.suggestHeader}>
-              <span className={styles.suggestTitle}>이런 뉴스레터는 어때요?</span>
-              <button className={styles.suggestRefresh} type="button" onClick={handleRefreshRecommend}>
+            <div className="flex items-center justify-between px-6 pt-5 pb-4">
+              <span className="text-base font-bold text-caption-strong">
+                이런 뉴스레터는 어때요?
+              </span>
+              <button
+                type="button"
+                onClick={handleRefreshRecommend}
+                className="flex items-center gap-1 bg-transparent text-sm font-medium text-primary"
+              >
                 <Image src="/images/Line Reload.svg" alt="새로고침" width={20} height={20} />
                 새로고침
               </button>
             </div>
 
-            <div className={styles.newsletterList}>
+            <div className="flex flex-col gap-3 px-5 pb-20">
               {unionRecommendation.map((nl) => (
                 <NewsletterDetailRow key={nl.id} newsletter={nl} />
               ))}
             </div>
           </div>
         ) : (
-          <div className={styles.guestSection}>
-            <p className={styles.guestTitle}>{'회원이 되면 뉴스레터를\n간편하게 모아볼 수 있어요!'}</p>
-            <Link href="/signup" className={styles.guestSignup}>회원가입</Link>
-            <p className={styles.guestLogin}>
-              이미 계정이 있나요?{' '}
-              <Link href="/login" className={styles.guestLoginLink}>로그인</Link>
-            </p>
-          </div>
+          <GuestNotice />
         )
       ) : (
         <>
-          <div className={styles.filterSection}>
-            <div className={styles.filterScroll}>
-              <button className={styles.filterChip} type="button">
+          <div className="bg-bg px-5 pt-5 pb-4 flex items-center gap-3">
+            <div className="flex-1 flex gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <button
+                type="button"
+                className="flex items-center gap-1 px-3 py-2 bg-bg border border-neutral-150 rounded-[20px] text-sm font-medium text-caption-strong whitespace-nowrap"
+              >
                 {orderOpt}
                 <Image src="/images/Line Down.svg" alt="" width={16} height={16} />
               </button>
-              <div className={styles.filterDivider} />
-              <button className={`${styles.filterChip} ${industry ? styles.active : ''}`} type="button">
+              <div className="w-px h-5 bg-neutral-150 flex-shrink-0" />
+              <button
+                type="button"
+                className={clsx(
+                  'flex items-center gap-1 px-3 py-2 bg-bg border rounded-[20px] text-sm font-medium whitespace-nowrap',
+                  industry
+                    ? 'border-primary text-primary'
+                    : 'border-neutral-150 text-caption-strong',
+                )}
+              >
                 {industry ?? '산업'}
                 <Image src="/images/Line Down.svg" alt="" width={20} height={20} />
               </button>
-              <button className={`${styles.filterChip} ${day ? styles.active : ''}`} type="button">
+              <button
+                type="button"
+                className={clsx(
+                  'flex items-center gap-1 px-3 py-2 bg-bg border rounded-[20px] text-sm font-medium whitespace-nowrap',
+                  day
+                    ? 'border-primary text-primary'
+                    : 'border-neutral-150 text-caption-strong',
+                )}
+              >
                 {day ?? '발행요일'}
                 <Image src="/images/Line Down.svg" alt="" width={20} height={20} />
               </button>
             </div>
-            <button className={styles.filterRefresh} type="button" onClick={handleResetFilters}>
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              className="flex-shrink-0 bg-transparent flex items-center"
+            >
               <Image src="/images/Line Reload.svg" alt="초기화" width={30} height={30} />
             </button>
           </div>
-          <div className={styles.allNewsletterList}>
-            <div className={styles.allNewsletterListInner}>
+
+          <div className="flex-1 overflow-y-auto bg-bg-system">
+            <div className="flex flex-col gap-3 px-5 pt-3 pb-20">
               {isAllLoading ? (
-                <div className={styles.guestSection}>로딩 중...</div>
+                <div className="flex items-center justify-center py-10 text-caption-neutral">
+                  로딩 중...
+                </div>
               ) : (
                 allNewsletters.map((nl) => (
                   <NewsletterBrandRow key={nl.brandId} brand={nl} />
@@ -144,10 +191,6 @@ export default function SearchPage() {
     </div>
   );
 }
-
-const CARD_WIDTH = 320;
-const CARD_GAP = 12;
-const STEP = CARD_WIDTH + CARD_GAP;
 
 function InfiniteCarousel({ items }: { items: NewsletterDetail[] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -165,7 +208,8 @@ function InfiniteCarousel({ items }: { items: NewsletterDetail[] }) {
     return -(idx * STEP) + 24 + dragOffset;
   };
 
-  const normalizeIndex = (idx: number) => ((idx % items.length) + items.length) % items.length;
+  const normalizeIndex = (idx: number) =>
+    ((idx % items.length) + items.length) % items.length;
 
   const goNext = useCallback(() => setCurrentIndex((prev) => prev + 1), []);
   const goPrev = useCallback(() => setCurrentIndex((prev) => prev - 1), []);
@@ -176,7 +220,9 @@ function InfiniteCarousel({ items }: { items: NewsletterDetail[] }) {
         const el = trackRef.current;
         if (el) el.style.transition = 'none';
         setCurrentIndex(normalizeIndex(currentIndex));
-        requestAnimationFrame(() => { if (el) el.style.transition = ''; });
+        requestAnimationFrame(() => {
+          if (el) el.style.transition = '';
+        });
       }, 350);
       return () => clearTimeout(timeout);
     }
@@ -209,7 +255,7 @@ function InfiniteCarousel({ items }: { items: NewsletterDetail[] }) {
   return (
     <>
       <div
-        className={styles.carouselWrapper}
+        className="overflow-hidden py-5 cursor-grab touch-pan-y select-none active:cursor-grabbing"
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
@@ -217,7 +263,7 @@ function InfiniteCarousel({ items }: { items: NewsletterDetail[] }) {
       >
         <div
           ref={trackRef}
-          className={styles.carouselTrack}
+          className="flex gap-3"
           style={{
             transform: `translateX(${getTranslateX()}px)`,
             transition: isDragging ? 'none' : 'transform 0.35s ease-out',
@@ -229,13 +275,18 @@ function InfiniteCarousel({ items }: { items: NewsletterDetail[] }) {
         </div>
       </div>
       {indicatorCount > 0 && (
-        <div className={styles.pageIndicator}>
+        <div className="flex justify-center gap-1.5 pb-5">
           {Array.from({ length: indicatorCount }, (_, i) => (
             <button
               key={i}
-              className={`${styles.dot} ${i === normalizeIndex(currentIndex) % indicatorCount ? styles.active : ''}`}
-              onClick={() => handleDotClick(i)}
               type="button"
+              onClick={() => handleDotClick(i)}
+              className={clsx(
+                'w-1.5 h-1.5 rounded-full p-0',
+                i === normalizeIndex(currentIndex) % indicatorCount
+                  ? 'bg-primary'
+                  : 'bg-tint-200',
+              )}
             />
           ))}
         </div>
@@ -246,18 +297,38 @@ function InfiniteCarousel({ items }: { items: NewsletterDetail[] }) {
 
 function RecommendedCard({ newsletter }: { newsletter: NewsletterDetail }) {
   return (
-    <Link href={`/newsletters/${newsletter.id}`} className={styles.carouselCard}>
+    <Link
+      href={`/newsletters/${newsletter.id}`}
+      className="flex-shrink-0 w-80 bg-bg rounded-xl border border-neutral-150 overflow-hidden transition-shadow hover:shadow-md"
+    >
       {newsletter.imageUrl ? (
-        <img src={newsletter.imageUrl} alt={newsletter.brandName} className={styles.carouselImage} />
+        <Image
+          src={newsletter.imageUrl}
+          alt={newsletter.brandName}
+          width={320}
+          height={210}
+          className="w-full h-[210px] object-cover"
+        />
       ) : (
-        <div className={styles.carouselImagePlaceholder}>{newsletter.brandName}</div>
+        <div className="w-full h-[210px] flex items-center justify-center text-2xl font-bold text-primary bg-gradient-to-br from-tint-50 to-tint-100">
+          {newsletter.brandName}
+        </div>
       )}
-      <div className={styles.carouselInfo}>
-        <p className={styles.carouselBrand}>{newsletter.brandName}</p>
-        <p className={styles.carouselDesc}>{newsletter.firstDescription}</p>
-        <div className={styles.carouselTags}>
+      <div className="p-4">
+        <p className="text-base font-bold text-caption-heavy mb-2">
+          {newsletter.brandName}
+        </p>
+        <p className="text-sm font-medium text-caption-neutral line-clamp-2 h-10 mb-3">
+          {newsletter.firstDescription}
+        </p>
+        <div className="flex gap-1.5 overflow-hidden">
           {newsletter.interests.slice(0, 3).map((interest) => (
-            <span key={interest.id} className={styles.tag}>{interest.name}</span>
+            <span
+              key={interest.id}
+              className="text-xs text-caption-strong px-2.5 py-1.5 bg-bg border border-neutral-150 rounded-2xl whitespace-nowrap"
+            >
+              {interest.name}
+            </span>
           ))}
         </div>
       </div>
@@ -267,22 +338,40 @@ function RecommendedCard({ newsletter }: { newsletter: NewsletterDetail }) {
 
 function NewsletterDetailRow({ newsletter }: { newsletter: NewsletterDetail }) {
   return (
-    <Link href={`/newsletters/${newsletter.id}`} className={styles.newsletterRow}>
-      <div className={styles.newsletterRowTop}>
+    <Link
+      href={`/newsletters/${newsletter.id}`}
+      className="block bg-bg rounded-lg border border-neutral-150 px-5 py-4 transition-colors hover:bg-neutral-50"
+    >
+      <div className="flex gap-2 pb-4">
         {newsletter.imageUrl ? (
-          <img src={newsletter.imageUrl} alt={newsletter.brandName} className={styles.newsletterImage} />
+          <Image
+            src={newsletter.imageUrl}
+            alt={newsletter.brandName}
+            width={56}
+            height={56}
+            className="w-14 h-14 rounded-[10px] object-cover border border-neutral-150 flex-shrink-0"
+          />
         ) : (
-          <div className={styles.newsletterImagePlaceholder} />
+          <div className="w-14 h-14 rounded-[10px] bg-neutral-200/40 flex-shrink-0" />
         )}
-        <div className={styles.newsletterInfo}>
-          <p className={styles.newsletterBrand}>{newsletter.brandName}</p>
-          <p className={styles.newsletterDesc}>{newsletter.firstDescription}</p>
+        <div className="flex-1 min-w-0">
+          <p className="text-base font-bold text-caption-heavy pt-0.5 mb-3">
+            {newsletter.brandName}
+          </p>
+          <p className="text-sm font-medium text-caption-neutral line-clamp-2">
+            {newsletter.firstDescription}
+          </p>
         </div>
       </div>
       {newsletter.interests.length > 0 && (
-        <div className={styles.newsletterTags}>
+        <div className="flex gap-2 pt-1">
           {newsletter.interests.slice(0, 3).map((interest) => (
-            <span key={interest.id} className={styles.tag}>{interest.name}</span>
+            <span
+              key={interest.id}
+              className="text-xs text-caption-strong px-2.5 py-1.5 bg-bg border border-neutral-150 rounded-2xl whitespace-nowrap"
+            >
+              {interest.name}
+            </span>
           ))}
         </div>
       )}
@@ -292,22 +381,40 @@ function NewsletterDetailRow({ newsletter }: { newsletter: NewsletterDetail }) {
 
 function NewsletterBrandRow({ brand }: { brand: NewsletterBrand }) {
   return (
-    <Link href={`/newsletters/${brand.brandId}`} className={styles.newsletterRow}>
-      <div className={styles.newsletterRowTop}>
+    <Link
+      href={`/newsletters/${brand.brandId}`}
+      className="block bg-bg rounded-lg border border-neutral-150 px-5 py-4 transition-colors hover:bg-neutral-50"
+    >
+      <div className="flex gap-2 pb-4">
         {brand.imageUrl ? (
-          <img src={brand.imageUrl} alt={brand.brandName} className={styles.newsletterImage} />
+          <Image
+            src={brand.imageUrl}
+            alt={brand.brandName}
+            width={56}
+            height={56}
+            className="w-14 h-14 rounded-[10px] object-cover border border-neutral-150 flex-shrink-0"
+          />
         ) : (
-          <div className={styles.newsletterImagePlaceholder} />
+          <div className="w-14 h-14 rounded-[10px] bg-neutral-200/40 flex-shrink-0" />
         )}
-        <div className={styles.newsletterInfo}>
-          <p className={styles.newsletterBrand}>{brand.brandName}</p>
-          <p className={styles.newsletterDesc}>{brand.shortDescription}</p>
+        <div className="flex-1 min-w-0">
+          <p className="text-base font-bold text-caption-heavy pt-0.5 mb-3">
+            {brand.brandName}
+          </p>
+          <p className="text-sm font-medium text-caption-neutral line-clamp-2">
+            {brand.shortDescription}
+          </p>
         </div>
       </div>
       {brand.interests.length > 0 && (
-        <div className={styles.newsletterTags}>
+        <div className="flex gap-2 pt-1">
           {brand.interests.slice(0, 3).map((interest) => (
-            <span key={interest.id} className={styles.tag}>{interest.name}</span>
+            <span
+              key={interest.id}
+              className="text-xs text-caption-strong px-2.5 py-1.5 bg-bg border border-neutral-150 rounded-2xl whitespace-nowrap"
+            >
+              {interest.name}
+            </span>
           ))}
         </div>
       )}

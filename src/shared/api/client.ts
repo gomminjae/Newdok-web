@@ -1,8 +1,11 @@
+import type { ZodType, z } from 'zod';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
 
 interface RequestOptions extends Omit<RequestInit, 'body'> {
   params?: Record<string, string | number | undefined>;
   body?: unknown;
+  schema?: ZodType;
 }
 
 export class ApiError extends Error {
@@ -32,11 +35,19 @@ export function clearAccessToken() {
   localStorage.removeItem('accessToken');
 }
 
-export async function apiClient<T>(
+export function apiClient<S extends ZodType>(
+  endpoint: string,
+  options: RequestOptions & { schema: S },
+): Promise<z.output<S>>;
+export function apiClient<T = unknown>(
+  endpoint: string,
+  options?: RequestOptions,
+): Promise<T>;
+export async function apiClient(
   endpoint: string,
   options: RequestOptions = {},
-): Promise<T> {
-  const { params, body, headers, ...fetchOptions } = options;
+): Promise<unknown> {
+  const { params, body, headers, schema, ...fetchOptions } = options;
 
   const url = new URL(`${API_BASE_URL}${endpoint}`);
   if (params) {
@@ -81,7 +92,8 @@ export async function apiClient<T>(
   }
 
   const text = await response.text();
-  if (!text) return undefined as T;
+  if (!text) return undefined;
 
-  return JSON.parse(text) as T;
+  const json = JSON.parse(text);
+  return schema ? schema.parse(json) : json;
 }

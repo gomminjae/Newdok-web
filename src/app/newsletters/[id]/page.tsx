@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { newsletterApi } from '@/shared/api';
+import { newsletterApi } from '@/entities/newsletter';
 import { BrandDetailClient } from './BrandDetailClient';
 
 type Props = {

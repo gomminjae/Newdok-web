@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { QueryProvider } from "@/shared/lib/query-provider";
+import { spoqa } from "@/shared/styles/fonts";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -20,7 +21,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko">
+    <html lang="ko" className={spoqa.variable}>
       <body>
         <QueryProvider>{children}</QueryProvider>
       </body>

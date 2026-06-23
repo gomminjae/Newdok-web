@@ -1,4 +1,4 @@
-import styles from './landing.module.scss';
+import { clsx } from 'clsx';
 
 const FEATURES = [
   {
@@ -18,7 +18,7 @@ const FEATURES = [
         뉴독이 대신 찾아드립니다.
       </>
     ),
-    bg: styles.featureBg1,
+    bg: 'bg-gradient-to-br from-violet-100 to-blue-100',
     emoji: '📋',
     alt: false,
     reverse: false,
@@ -38,7 +38,7 @@ const FEATURES = [
         이제 뉴스레터만 깔끔하게 모아볼 수 있어요.
       </>
     ),
-    bg: styles.featureBg2,
+    bg: 'bg-gradient-to-br from-blue-100 to-cyan-100',
     emoji: '📱',
     alt: false,
     reverse: true,
@@ -58,7 +58,7 @@ const FEATURES = [
         버튼 하나로 간편하게 관리하세요.
       </>
     ),
-    bg: styles.featureBg3,
+    bg: 'bg-gradient-to-br from-pink-100 to-violet-100',
     emoji: '⚡',
     alt: true,
     reverse: false,
@@ -71,17 +71,29 @@ export function FeatureSections() {
       {FEATURES.map((f, i) => (
         <section
           key={i}
-          className={`${styles.section} ${f.alt ? styles.sectionAlt : ''}`}
+          className={clsx('px-5 py-12 md:py-16', f.alt && 'bg-bg-system')}
         >
-          <div className={styles.inner}>
+          <div className="max-w-[960px] mx-auto">
             <div
-              className={`${styles.featureRow} ${f.reverse ? styles.featureRowReverse : ''}`}
+              className={clsx(
+                'flex flex-col items-center gap-6 md:gap-10',
+                f.reverse ? 'md:flex-row-reverse' : 'md:flex-row',
+              )}
             >
-              <div className={styles.featureText}>
-                <h2 className={styles.featureTitle}>{f.title}</h2>
-                <p className={styles.featureDesc}>{f.desc}</p>
+              <div className="flex-1">
+                <h2 className="text-[22px] md:text-[26px] font-bold leading-snug text-caption-heavy mb-3">
+                  {f.title}
+                </h2>
+                <p className="text-sm text-caption-alternative leading-relaxed">
+                  {f.desc}
+                </p>
               </div>
-              <div className={`${styles.featureImage} ${f.bg}`}>
+              <div
+                className={clsx(
+                  'flex-1 w-full max-w-[360px] aspect-[4/3] rounded-2xl flex items-center justify-center text-[56px]',
+                  f.bg,
+                )}
+              >
                 {f.emoji}
               </div>
             </div>

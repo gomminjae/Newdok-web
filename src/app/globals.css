@@ -1,81 +1,52 @@
-/* ── Font: Spoqa Han Sans Neo ── */
-@font-face {
-  font-family: 'Spoqa Han Sans Neo';
-  font-weight: 300;
-  font-style: normal;
-  font-display: swap;
-  src: url('/fonts/SpoqaHanSansNeo-Light.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Spoqa Han Sans Neo';
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-  src: url('/fonts/SpoqaHanSansNeo-Regular.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Spoqa Han Sans Neo';
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-  src: url('/fonts/SpoqaHanSansNeo-Medium.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Spoqa Han Sans Neo';
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-  src: url('/fonts/SpoqaHanSansNeo-Bold.woff2') format('woff2');
-}
+@import "tailwindcss";
 
 /* ══════════════════════════════════════
-   Design Tokens (from Figma)
+   Design Tokens (Figma) → Tailwind @theme
+   각 토큰이 자동으로 클래스로 노출됨
+   --color-*    → bg-*, text-*, border-*
+   --radius-*   → rounded-*
+   --breakpoint-* → md:, xl:
+   --font-*     → font-*
    ══════════════════════════════════════ */
-
-:root {
-  color-scheme: light;
-
+@theme {
   /* ── Palette: Neutral ── */
-  --neutral-0: #FFFFFF;
-  --neutral-50: #F7F7F7;
-  --neutral-100: #F5F5F7;
-  --neutral-150: #EBEBEB;
-  --neutral-200: #DADADA;
-  --neutral-300: #C6C6C6;
-  --neutral-350: #C0C0C0;
-  --neutral-400: #A6A6A6;
-  --neutral-500: #969696;
-  --neutral-600: #767676;
-  --neutral-700: #565656;
-  --neutral-750: #464646;
-  --neutral-800: #363636;
-  --neutral-900: #262626;
-  --neutral-950: #161616;
-  --neutral-1000: #000000;
+  --color-neutral-0: #FFFFFF;
+  --color-neutral-50: #F7F7F7;
+  --color-neutral-100: #F5F5F7;
+  --color-neutral-150: #EBEBEB;
+  --color-neutral-200: #DADADA;
+  --color-neutral-300: #C6C6C6;
+  --color-neutral-350: #C0C0C0;
+  --color-neutral-400: #A6A6A6;
+  --color-neutral-500: #969696;
+  --color-neutral-600: #767676;
+  --color-neutral-700: #565656;
+  --color-neutral-750: #464646;
+  --color-neutral-800: #363636;
+  --color-neutral-900: #262626;
+  --color-neutral-950: #161616;
+  --color-neutral-1000: #000000;
 
   /* ── Palette: Tint (Blue) ── */
-  --tint-900: #2866D3;
-  --tint-800: #3D75D7;
-  --tint-700: #5184DB;
-  --tint-600: #6893E0;
-  --tint-500: #7FA3E4;
-  --tint-400: #93B2E9;
-  --tint-300: #AAC1ED;
-  --tint-200: #BFD1F1;
-  --tint-100: #D4E0F6;
-  --tint-50: #E9EFFA;
+  --color-tint-900: #2866D3;
+  --color-tint-800: #3D75D7;
+  --color-tint-700: #5184DB;
+  --color-tint-600: #6893E0;
+  --color-tint-500: #7FA3E4;
+  --color-tint-400: #93B2E9;
+  --color-tint-300: #AAC1ED;
+  --color-tint-200: #BFD1F1;
+  --color-tint-100: #D4E0F6;
+  --color-tint-50: #E9EFFA;
 
   /* ── Palette: Shades (Navy) ── */
-  --shade-100: #1D4793;
-  --shade-200: #193D7E;
-  --shade-300: #143369;
-  --shade-400: #102854;
-  --shade-500: #0B1E3F;
-  --shade-600: #08142A;
-  --shade-700: #040A15;
+  --color-shade-100: #1D4793;
+  --color-shade-200: #193D7E;
+  --color-shade-300: #143369;
+  --color-shade-400: #102854;
+  --color-shade-500: #0B1E3F;
+  --color-shade-600: #08142A;
+  --color-shade-700: #040A15;
 
   /* ── Semantic: Primary ── */
   --color-primary: #2866D3;
@@ -102,22 +73,30 @@
   --color-line-alternative: #DADADA;
   --color-line-disabled: #EBEBEB;
 
-  /* ── Compat aliases (기존 코드 호환) ── */
-  --color-text: var(--color-caption-heavy);
-  --color-text-secondary: var(--color-caption-alternative);
-  --color-text-tertiary: var(--color-caption-assistive);
-  --color-text-inverse: #FFFFFF;
-  --color-bg-secondary: var(--color-bg-system);
-  --color-bg-tertiary: var(--neutral-150);
-  --color-border: var(--color-line-disabled);
-  --color-border-strong: var(--color-line-neutral);
-  --color-primary-light: var(--tint-50);
-
   /* ── Status ── */
   --color-success: #10B981;
   --color-warning: #F59E0B;
   --color-error: #EF4444;
   --color-info: #3B82F6;
+
+  /* ── Radius ── */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  /* ── Layout 매직 넘버 → 토큰화 ── */
+  --header-height: 49px;
+  --tabbar-height: 72px;
+  --sidebar-width: 120px;
+
+  /* ── Breakpoints (Figma 3단계) ── */
+  --breakpoint-md: 768px;
+  --breakpoint-xl: 1280px;
+
+  /* ── Font ── */
+  --font-sans: var(--font-spoqa), 'Spoqa Han Sans Neo', -apple-system, BlinkMacSystemFont, sans-serif;
 
   /* ── Shadow ── */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -140,21 +119,66 @@ body {
   min-height: 100%;
   display: flex;
   flex-direction: column;
-  color: var(--color-text);
+  color: var(--color-caption-heavy);
   background: var(--color-bg);
-  font-family: 'Spoqa Han Sans Neo', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-}
-
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
 }
 
 a {
   color: inherit;
   text-decoration: none;
 }
+
+/* ── Keyframes ── */
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  85% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+}
+
+/* ── Article HTML (dangerouslySetInnerHTML 자식 스타일링) ── */
+.article-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+.article-content a {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+.article-content table {
+  max-width: 100%;
+  overflow-x: auto;
+  display: block;
+}
+.article-content blockquote {
+  margin: 12px 0;
+  padding: 12px 16px;
+  border-left: 3px solid var(--color-primary);
+  background: var(--color-bg-system);
+  color: var(--color-caption-neutral);
+}
+.article-content h1,
+.article-content h2,
+.article-content h3,
+.article-content h4,
+.article-content h5,
+.article-content h6 {
+  color: var(--color-caption-heavy);
+  margin: 20px 0 8px;
+}
+.article-content p { margin: 8px 0; }
+.article-content ul,
+.article-content ol { padding-left: 24px; }
+.article-content pre {
+  background: var(--color-bg-system);
+  padding: 12px;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-size: 14px;
+}
+

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { articleApi } from '@/shared/api';
+import { articleApi } from '@/entities/article';
 import { ArticleDetailClient } from './ArticleDetailClient';
 
 type Props = {

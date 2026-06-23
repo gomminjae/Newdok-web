@@ -1,5 +1,3 @@
-import styles from './landing.module.scss';
-
 const POPULAR_NEWSLETTERS = [
   {
     name: '뉴스레터 브랜드명',
@@ -29,20 +27,34 @@ const POPULAR_NEWSLETTERS = [
 
 export function PopularNewsletters() {
   return (
-    <section className={styles.section}>
-      <div className={styles.inner}>
-        <h2 className={styles.sectionTitle}>지금 인기 있는 뉴스레터</h2>
-        <div className={styles.popularGrid}>
+    <section className="px-5 py-12 md:py-16">
+      <div className="max-w-[960px] mx-auto">
+        <h2 className="text-lg md:text-xl font-bold text-caption-heavy mb-5">
+          지금 인기 있는 뉴스레터
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
           {POPULAR_NEWSLETTERS.map((nl, i) => (
-            <div key={i} className={styles.newsletterCard}>
-              <div className={styles.cardHeader}>
-                <div className={styles.cardIcon}>{nl.icon}</div>
-                <span className={styles.cardBrandName}>{nl.name}</span>
+            <div
+              key={i}
+              className="flex flex-col gap-2 bg-bg border border-line-disabled rounded-xl p-4 transition-shadow hover:shadow-md"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-[10px] bg-neutral-150 flex items-center justify-center text-lg flex-shrink-0">
+                  {nl.icon}
+                </div>
+                <span className="text-sm font-semibold text-caption-heavy truncate">
+                  {nl.name}
+                </span>
               </div>
-              <p className={styles.cardDesc}>{nl.desc}</p>
-              <div className={styles.cardTags}>
+              <p className="text-xs text-caption-alternative leading-snug line-clamp-2">
+                {nl.desc}
+              </p>
+              <div className="flex flex-wrap gap-1 mt-auto">
                 {nl.tags.map((tag) => (
-                  <span key={tag} className={styles.tag}>
+                  <span
+                    key={tag}
+                    className="text-[11px] py-[3px] px-2 rounded-full bg-tint-50 text-primary whitespace-nowrap"
+                  >
                     {tag}
                   </span>
                 ))}

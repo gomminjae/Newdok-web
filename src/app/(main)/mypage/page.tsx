@@ -1,12 +1,11 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
 import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { userApi } from '@/shared/api/endpoints';
+import { userApi } from '@/entities/user';
 import { useAuth } from '@/shared/hooks';
-import styles from './mypage.module.scss';
+import { GuestNotice } from '@/shared/ui';
 
 export default function MyPage() {
   const { isLoggedIn, logout } = useAuth();
@@ -30,84 +29,101 @@ export default function MyPage() {
 
   if (!isLoggedIn) {
     return (
-      <div className={styles.container}>
-        <div className={styles.guestState}>
-          <p className={styles.guestTitle}>{'회원이 되면 뉴스레터를\n간편하게 모아볼 수 있어요!'}</p>
-          <Link href="/signup" className={styles.guestSignupButton}>회원가입</Link>
-          <p className={styles.guestLogin}>
-            이미 계정이 있나요?{' '}
-            <Link href="/login" className={styles.guestLoginLink}>로그인</Link>
-          </p>
-        </div>
+      <div className="bg-bg min-h-[calc(100vh-49px)] flex flex-col">
+        <GuestNotice />
       </div>
     );
   }
 
   return (
-    <div className={styles.container}>
-      <div className={styles.profileSection}>
-        <p className={styles.nickname}>{nickname}</p>
+    <div className="bg-bg min-h-[calc(100vh-49px)] flex flex-col pt-5">
+      {/* 프로필 영역 */}
+      <div className="px-5">
+        <p className="text-base font-bold text-caption-heavy pt-8 mb-4">{nickname}</p>
 
-        <div className={styles.emailLabel}>
-          <span className={styles.emailLabelText}>구독이메일</span>
-          <button className={styles.emailTooltip} type="button">
+        <div className="flex items-center gap-1 mb-2">
+          <span className="text-sm font-medium text-caption-neutral">구독이메일</span>
+          <button type="button" className="bg-transparent p-0.5 flex items-center text-caption-neutral">
             <Image src="/images/Line Question mark.svg" alt="도움말" width={16} height={16} />
           </button>
         </div>
 
-        <div className={styles.emailRow}>
-          <button className={styles.emailCopy} onClick={handleCopyEmail} type="button">
+        <div className="flex items-center gap-1.5 mb-6">
+          <button
+            type="button"
+            onClick={handleCopyEmail}
+            className="bg-transparent p-0.5 flex items-center"
+          >
             <Image src="/images/Line Copy.svg" alt="복사" width={24} height={24} />
           </button>
-          <span className={styles.emailText}>{subscribeEmail}</span>
+          <span className="text-sm text-caption-heavy truncate">{subscribeEmail}</span>
         </div>
 
-        <button className={styles.editProfileButton} type="button">
+        <button
+          type="button"
+          className="w-full h-11 bg-transparent border border-neutral-150 rounded text-sm font-bold text-caption-neutral mt-3 hover:bg-neutral-50 transition-colors"
+        >
           프로필 편집
         </button>
       </div>
 
-      <div className={styles.menuSection}>
-        <p className={styles.sectionHeader}>서비스</p>
-        <button className={styles.menuItem} type="button">
-          <span className={styles.menuLabel}>계정 관리</span>
-          <Image src="/images/Line right.svg" alt="" width={24} height={24} className={styles.menuArrow} />
-        </button>
-        <button className={styles.menuItem} type="button">
-          <span className={styles.menuLabel}>알림 설정</span>
-          <Image src="/images/Line right.svg" alt="" width={24} height={24} className={styles.menuArrow} />
-        </button>
-      </div>
+      {/* 서비스 메뉴 */}
+      <MenuSection
+        title="서비스"
+        items={['계정 관리', '알림 설정']}
+      />
 
-      <div className={styles.menuSection}>
-        <p className={styles.sectionHeader}>고객센터</p>
-        <button className={styles.menuItem} type="button">
-          <span className={styles.menuLabel}>FAQ</span>
-          <Image src="/images/Line right.svg" alt="" width={24} height={24} className={styles.menuArrow} />
-        </button>
-        <button className={styles.menuItem} type="button">
-          <span className={styles.menuLabel}>서비스 피드백</span>
-          <Image src="/images/Line right.svg" alt="" width={24} height={24} className={styles.menuArrow} />
-        </button>
-        <button className={styles.menuItem} type="button">
-          <span className={styles.menuLabel}>약관 및 정책</span>
-          <Image src="/images/Line right.svg" alt="" width={24} height={24} className={styles.menuArrow} />
-        </button>
-        <div className={styles.versionRow}>
-          <span className={styles.versionLabel}>버전</span>
-          <span className={styles.versionValue}>1.0.0</span>
+      {/* 고객센터 메뉴 */}
+      <div className="px-5">
+        <p className="text-xs text-caption-assistive pt-6 pb-2">고객센터</p>
+        <MenuItem label="FAQ" />
+        <MenuItem label="서비스 피드백" />
+        <MenuItem label="약관 및 정책" />
+        <div className="flex items-center justify-between h-12">
+          <span className="text-base font-medium text-caption-strong">버전</span>
+          <span className="text-sm font-medium text-caption-assistive">1.0.0</span>
         </div>
       </div>
 
-      <button className={styles.logoutButton} type="button" onClick={logout}>
+      <button
+        type="button"
+        onClick={logout}
+        className="mx-5 mt-3 mb-20 h-12 border border-neutral-150 rounded-lg bg-bg text-sm font-semibold text-caption-neutral hover:bg-neutral-50 transition-colors"
+      >
         로그아웃
       </button>
 
       {showToast && (
-        <div className={styles.toast}>
+        <div
+          className="fixed bottom-[106px] left-1/2 -translate-x-1/2 bg-black/75 text-white px-6 py-3 rounded-lg text-sm font-medium z-[1000]"
+          style={{ animation: 'fadeInOut 2s ease-in-out' }}
+        >
           구독 이메일 주소가 복사되었습니다.
         </div>
       )}
     </div>
+  );
+}
+
+function MenuSection({ title, items }: { title: string; items: string[] }) {
+  return (
+    <div className="px-5">
+      <p className="text-xs text-caption-assistive pt-6 pb-2">{title}</p>
+      {items.map((label) => (
+        <MenuItem key={label} label={label} />
+      ))}
+    </div>
+  );
+}
+
+function MenuItem({ label }: { label: string }) {
+  return (
+    <button
+      type="button"
+      className="flex items-center justify-between w-full h-12 bg-transparent text-left"
+    >
+      <span className="text-base font-medium text-caption-strong">{label}</span>
+      <Image src="/images/Line right.svg" alt="" width={24} height={24} />
+    </button>
   );
 }

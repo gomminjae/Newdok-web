@@ -1,14 +1,19 @@
 import Link from 'next/link';
-import styles from './Header.module.scss';
 
 export function Header() {
   return (
-    <header className={styles.header}>
-      <Link href="/" className={styles.logo}>
-        <span>N</span> newdok
+    <header className="sticky top-0 z-50 flex items-center justify-between px-5 xl:px-10 py-3 bg-bg border-b border-line-disabled">
+      <Link
+        href="/"
+        className="flex items-center gap-1.5 text-xl font-extrabold text-caption-heavy"
+      >
+        <span className="text-primary">N</span> newdok
       </Link>
-      <div className={styles.headerRight}>
-        <Link href="/login" className={styles.loginButton}>
+      <div className="flex items-center gap-3">
+        <Link
+          href="/login"
+          className="text-sm text-caption-alternative hover:text-caption-heavy transition-colors"
+        >
           로그인
         </Link>
       </div>

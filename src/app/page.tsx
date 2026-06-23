@@ -10,7 +10,6 @@ import {
   BottomCta,
   LandingFooter,
 } from '@/widgets/landing';
-import styles from './page.module.scss';
 
 export const metadata: Metadata = {
   title: 'Newdok - 뉴스레터 구독 플랫폼',
@@ -37,9 +36,9 @@ export default function LandingPage() {
   return (
     <>
       <Header />
-      <div className={styles.layout}>
+      <div className="min-h-screen">
         <Sidebar />
-        <div className={styles.main}>
+        <div className="pb-[calc(60px+env(safe-area-inset-bottom))] xl:ml-[120px] xl:pb-0">
           <main>
             <HeroSection />
             <PopularNewsletters />

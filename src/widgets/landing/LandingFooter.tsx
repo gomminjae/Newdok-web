@@ -1,23 +1,30 @@
 import Link from 'next/link';
-import styles from './landing.module.scss';
 
 export function LandingFooter() {
   return (
     <footer>
-      <div className={styles.footer}>
-        <div className={styles.footerLogo}>
-          <span>N</span> newdok
+      <div className="flex items-center justify-between max-w-[960px] mx-auto w-full px-5 pt-6 pb-8 border-t border-line-disabled">
+        <div className="text-lg font-extrabold text-caption-heavy">
+          <span className="text-primary">N</span> newdok
         </div>
-        <div className={styles.footerLinks}>
-          <Link href="#" className={styles.footerLink} aria-label="Profile">
+        <div className="flex items-center gap-4">
+          <Link
+            href="#"
+            className="text-sm text-caption-alternative hover:text-caption-heavy transition-colors"
+            aria-label="Profile"
+          >
             👤
           </Link>
-          <Link href="#" className={styles.footerLink} aria-label="Instagram">
+          <Link
+            href="#"
+            className="text-sm text-caption-alternative hover:text-caption-heavy transition-colors"
+            aria-label="Instagram"
+          >
             📷
           </Link>
         </div>
       </div>
-      <p className={styles.footerCopyright}>
+      <p className="text-[11px] text-caption-assistive text-center px-5 pb-6">
         Copyright Newdok. All rights reserved.
       </p>
     </footer>

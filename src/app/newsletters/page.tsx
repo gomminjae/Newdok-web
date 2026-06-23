@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { newsletterApi } from '@/shared/api';
+import { newsletterApi } from '@/entities/newsletter';
 
 // ISR: 10분마다 백그라운드 재검증
 export const revalidate = 600;

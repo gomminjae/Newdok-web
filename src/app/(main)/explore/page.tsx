@@ -4,30 +4,32 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { newsletterApi } from '@/shared/api/endpoints';
+import { clsx } from 'clsx';
+import { newsletterApi, type SubscribedNewsletter } from '@/entities/newsletter';
 import { useAuth } from '@/shared/hooks';
-import type { SubscribedNewsletter } from '@/shared/api/types';
-import styles from './subscribe.module.scss';
+import { EmptyState } from '@/shared/ui';
+
+type Tab = 'active' | 'paused';
 
 export default function ExplorePage() {
   const { isLoggedIn } = useAuth();
-  const [selectedTab, setSelectedTab] = useState(0);
+  const [tab, setTab] = useState<Tab>('active');
   const queryClient = useQueryClient();
 
   const { data: activeNewsletters = [], isLoading: isActiveLoading } = useQuery({
     queryKey: ['subscription', 'active'],
     queryFn: () => newsletterApi.fetchActiveNewsletters(),
-    enabled: isLoggedIn && selectedTab === 0,
+    enabled: isLoggedIn && tab === 'active',
   });
 
   const { data: pausedNewsletters = [], isLoading: isPausedLoading } = useQuery({
     queryKey: ['subscription', 'paused'],
     queryFn: () => newsletterApi.fetchPausedNewsletters(),
-    enabled: isLoggedIn && selectedTab === 1,
+    enabled: isLoggedIn && tab === 'paused',
   });
 
-  const currentList = selectedTab === 0 ? activeNewsletters : pausedNewsletters;
-  const isLoading = selectedTab === 0 ? isActiveLoading : isPausedLoading;
+  const currentList = tab === 'active' ? activeNewsletters : pausedNewsletters;
+  const isLoading = tab === 'active' ? isActiveLoading : isPausedLoading;
 
   const handlePause = async (id: number) => {
     await newsletterApi.pauseSubscription({ newsletterId: id });
@@ -39,86 +41,90 @@ export default function ExplorePage() {
     queryClient.invalidateQueries({ queryKey: ['subscription'] });
   };
 
-  if (!isLoggedIn) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.segmentPicker}>
-          <div className={styles.segmentWrapper}>
-            <div className={`${styles.segmentSlider} ${styles.left}`} />
-            <button className={`${styles.segmentButton} ${styles.active}`} type="button">구독 중</button>
-            <button className={styles.segmentButton} type="button">구독 중지</button>
-          </div>
-        </div>
-        <div className={styles.emptyState}>
-          <div className={styles.emptyImage} />
-          <p className={styles.emptyTitle}>구독 중인 뉴스레터가 없어요.</p>
-          <p className={styles.emptyDescription}>
-            <Link href="/login" className={styles.guestLoginLink}>로그인</Link>
-            {' 후 뉴스레터를 구독해 보세요.'}
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className={styles.container}>
-      <div className={styles.segmentPicker}>
-        <div className={styles.segmentWrapper}>
-          <div className={`${styles.segmentSlider} ${selectedTab === 0 ? styles.left : styles.right}`} />
+    <div className="bg-bg min-h-[calc(100vh-49px)] flex flex-col">
+      {/* 세그먼트 피커 */}
+      <div className="flex pt-2 px-5 pb-4">
+        <div className="relative flex w-full h-10 bg-bg-system rounded-md border border-neutral-150 p-0.5">
+          <div
+            className={clsx(
+              'absolute top-0.5 h-9 w-[calc(50%-2px)] bg-bg rounded-md shadow-sm transition-[left] duration-300 ease-in-out',
+              tab === 'active' ? 'left-0.5' : 'left-1/2',
+            )}
+          />
           <button
-            className={`${styles.segmentButton} ${selectedTab === 0 ? styles.active : ''}`}
-            onClick={() => setSelectedTab(0)}
             type="button"
+            onClick={() => setTab('active')}
+            className={clsx(
+              'flex-1 z-10 text-sm font-bold transition-colors',
+              tab === 'active' ? 'text-caption-heavy' : 'text-caption-assistive',
+            )}
           >
             구독 중
           </button>
           <button
-            className={`${styles.segmentButton} ${selectedTab === 1 ? styles.active : ''}`}
-            onClick={() => setSelectedTab(1)}
             type="button"
+            onClick={() => setTab('paused')}
+            className={clsx(
+              'flex-1 z-10 text-sm font-bold transition-colors',
+              tab === 'paused' ? 'text-caption-heavy' : 'text-caption-assistive',
+            )}
           >
             구독 중지
           </button>
         </div>
       </div>
 
-      {isLoading ? (
-        <div className={styles.loading}>로딩 중...</div>
-      ) : currentList.length === 0 ? (
-        <div className={styles.emptyState}>
-          <div className={styles.emptyImage} />
-          <p className={styles.emptyTitle}>
-            {selectedTab === 0 ? '구독 중인 뉴스레터가 없어요.' : '구독을 중지한 뉴스레터가 없어요.'}
-          </p>
-          <p className={styles.emptyDescription}>
-            {selectedTab === 0
-              ? '구독신청 후 첫 아티클을 수신받으면 내 구독에 추가돼요.'
-              : '구독 중지 후에도 언제든 아티클을 다시 받아볼 수 있어요.'}
-          </p>
+      {!isLoggedIn ? (
+        <EmptyState
+          title="구독 중인 뉴스레터가 없어요."
+          description=""
+          cta={
+            <Link href="/login" className="text-primary font-medium underline">
+              로그인 후 뉴스레터를 구독해 보세요.
+            </Link>
+          }
+        />
+      ) : isLoading ? (
+        <div className="flex items-center justify-center flex-1 bg-bg-system text-primary">
+          로딩 중...
         </div>
+      ) : currentList.length === 0 ? (
+        <EmptyState
+          title={
+            tab === 'active'
+              ? '구독 중인 뉴스레터가 없어요.'
+              : '구독을 중지한 뉴스레터가 없어요.'
+          }
+          description={
+            tab === 'active'
+              ? '구독신청 후 첫 아티클을 수신받으면 내 구독에 추가돼요.'
+              : '구독 중지 후에도 언제든 아티클을 다시 받아볼 수 있어요.'
+          }
+        />
       ) : (
         <>
-          <div className={styles.listHeader}>
-            <p className={styles.listTitle}>
-              {selectedTab === 0
+          <div className="px-5 pt-8 pb-5">
+            <p className="text-base font-bold text-caption-heavy mb-2">
+              {tab === 'active'
                 ? `총 ${currentList.length}개의 뉴스레터를 구독중이에요.`
                 : `${currentList.length}개의 뉴스레터를 구독 중지했어요.`}
             </p>
-            <p className={styles.listSubtitle}>
-              {selectedTab === 0
+            <p className="text-sm font-medium text-caption-neutral">
+              {tab === 'active'
                 ? '구독신청 후 첫 아티클을 수신받으면 내 구독에 추가돼요.'
                 : '구독을 재개하면 다시 아티클을 받아볼 수 있어요.'}
             </p>
           </div>
-          <div className={styles.subscriptionList}>
+          <div className="flex-1 bg-bg-system px-5 pb-7 flex flex-col gap-3">
             {currentList.map((nl) => (
               <SubscribeRow
                 key={nl.id}
                 newsletter={nl}
-                isSubscribed={selectedTab === 0}
+                isSubscribed={tab === 'active'}
                 onAction={() =>
-                  nl.id != null && (selectedTab === 0 ? handlePause(nl.id) : handleResume(nl.id))
+                  nl.id != null &&
+                  (tab === 'active' ? handlePause(nl.id) : handleResume(nl.id))
                 }
               />
             ))}
@@ -139,25 +145,41 @@ function SubscribeRow({
   onAction: () => void;
 }) {
   return (
-    <div className={styles.subscribeRow}>
-      <Link href={newsletter.id != null ? `/newsletters/${newsletter.id}` : '#'} className={styles.subscribeLeft}>
+    <div className="flex items-center gap-2 p-3 px-4 bg-bg rounded-xl border border-neutral-150 shadow-[0_1px_1px_rgba(0,0,0,0.02)]">
+      <Link
+        href={newsletter.id != null ? `/newsletters/${newsletter.id}` : '#'}
+        className="flex items-center gap-2 flex-1 min-w-0"
+      >
         {newsletter.imageUrl ? (
-          <img src={newsletter.imageUrl} alt={newsletter.brandName} className={styles.subscribeImage} />
+          <Image
+            src={newsletter.imageUrl}
+            alt={newsletter.brandName}
+            width={56}
+            height={56}
+            className="w-14 h-14 rounded-[10px] object-cover border border-neutral-150 flex-shrink-0"
+          />
         ) : (
-          <div className={styles.subscribeImagePlaceholder} />
+          <div className="w-14 h-14 rounded-[10px] bg-neutral-200/40 flex-shrink-0" />
         )}
-        <div className={styles.subscribeInfo}>
-          <span className={styles.subscribeBrand}>{newsletter.brandName}</span>
-          <span className={styles.subscribeCycle}>
+        <div className="flex flex-col gap-1 min-w-0">
+          <span className="text-sm font-bold text-caption-heavy truncate">
+            {newsletter.brandName}
+          </span>
+          <span className="flex items-center gap-1 text-xs font-medium text-caption-assistive">
             <Image src="/images/Line Clock.svg" alt="" width={20} height={20} />
             {newsletter.publicationCycle}
           </span>
         </div>
       </Link>
       <button
-        className={`${styles.actionButton} ${isSubscribed ? styles.pause : styles.resume}`}
-        onClick={onAction}
         type="button"
+        onClick={onAction}
+        className={clsx(
+          'flex-shrink-0 px-3 py-1.5 bg-bg rounded text-[13px] font-medium border',
+          isSubscribed
+            ? 'border-neutral-150 text-caption-neutral'
+            : 'border-primary text-primary',
+        )}
       >
         {isSubscribed ? '구독중지' : '구독재개'}
       </button>

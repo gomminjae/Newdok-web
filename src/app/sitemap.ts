@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next';
-import { newsletterApi } from '@/shared/api';
+import { newsletterApi } from '@/entities/newsletter';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://newdok.com';
 

@@ -5,9 +5,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useRef, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { articleApi } from '@/shared/api/endpoints';
+import { articleApi } from '@/entities/article';
 import { useAuth } from '@/shared/hooks';
-import styles from './articleDetail.module.scss';
 
 export function ArticleDetailClient({ id }: { id: number }) {
   const router = useRouter();
@@ -41,56 +40,91 @@ export function ArticleDetailClient({ id }: { id: number }) {
   };
 
   if (isLoading) {
-    return <div className={styles.loading}>로딩 중...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen text-primary text-base">
+        로딩 중...
+      </div>
+    );
   }
 
   if (!article) {
-    return <div className={styles.loading}>아티클을 찾을 수 없습니다.</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen text-caption-neutral text-base">
+        아티클을 찾을 수 없습니다.
+      </div>
+    );
   }
 
   return (
-    <div className={styles.container}>
-      <div className={styles.navbar}>
-        <button className={styles.navButton} type="button" onClick={() => router.back()}>
+    <div className="flex flex-col min-h-screen bg-bg">
+      <div className="sticky top-0 z-10 flex items-center h-14 px-2 bg-bg border-b border-neutral-150">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="w-10 h-10 flex items-center justify-center bg-transparent flex-shrink-0"
+        >
           <Image src="/images/Line left.svg" alt="뒤로" width={24} height={24} />
         </button>
-        <Link href={`/newsletters/${article.brandId}`} className={styles.navBrand}>
+        <Link
+          href={`/newsletters/${article.brandId}`}
+          className="flex-1 flex items-center justify-center gap-2 min-w-0"
+        >
           {article.brandImageUrl && (
-            <img src={article.brandImageUrl} alt="" className={styles.navBrandImage} />
+            <Image
+              src={article.brandImageUrl}
+              alt=""
+              width={24}
+              height={24}
+              className="w-6 h-6 rounded-md object-cover border border-neutral-150"
+            />
           )}
-          <span className={styles.navBrandName}>{article.brandName}</span>
+          <span className="text-base font-bold text-caption-heavy truncate">
+            {article.brandName}
+          </span>
         </Link>
         {isLoggedIn ? (
           <button
-            className={styles.navButton}
             type="button"
             onClick={handleBookmarkToggle}
+            className="w-10 h-10 flex items-center justify-center bg-transparent flex-shrink-0"
           >
             <Image
-              src={article.isBookmarked ? '/images/Fill Bookmark.svg' : '/images/Line Bookmark.svg'}
+              src={
+                article.isBookmarked
+                  ? '/images/Fill Bookmark.svg'
+                  : '/images/Line Bookmark.svg'
+              }
               alt="북마크"
               width={24}
               height={24}
             />
           </button>
         ) : (
-          <div className={styles.navButton} />
+          <div className="w-10 h-10 flex-shrink-0" />
         )}
       </div>
 
-      <div className={styles.articleHeader}>
-        <h1 className={styles.articleTitle}>{article.articleTitle}</h1>
-        <span className={styles.articleDate}>{article.date}</span>
+      <div className="px-6 pt-5 pb-4 border-b border-neutral-150">
+        <h1 className="text-xl font-bold text-caption-heavy leading-snug mb-2">
+          {article.articleTitle}
+        </h1>
+        <span className="text-[13px] font-medium text-caption-assistive">
+          {article.date}
+        </span>
       </div>
 
       <div
         ref={contentRef}
-        className={styles.articleContent}
+        className="article-content px-6 pt-5 pb-20 text-base leading-relaxed text-caption-strong break-words overflow-x-hidden"
         dangerouslySetInnerHTML={{ __html: article.articleHTML }}
       />
 
       {showScrollTop && (
-        <button className={styles.scrollTopButton} type="button" onClick={scrollToTop}>
+        <button
+          type="button"
+          onClick={scrollToTop}
+          className="fixed bottom-[90px] right-5 w-11 h-11 bg-bg border border-neutral-150 rounded-full shadow-md flex items-center justify-center z-10 hover:bg-neutral-50 transition-colors"
+        >
           <Image src="/images/Line Up.svg" alt="맨 위로" width={24} height={24} />
         </button>
       )}

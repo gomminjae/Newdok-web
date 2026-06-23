@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import styles from './Sidebar.module.scss';
+import { clsx } from 'clsx';
 
 const NAV_ITEMS = [
   { href: '/home', label: '홈', lineIcon: '/images/Line Home.svg', fillIcon: '/images/Fill Home.svg' },
@@ -19,24 +19,23 @@ export function Sidebar() {
   return (
     <>
       {/* 데스크탑: 사이드바 */}
-      <nav className={styles.sidebar}>
-        <ul className={styles.navList}>
+      <nav className="hidden xl:flex fixed left-0 top-[49px] w-[120px] h-[calc(100vh-49px)] bg-bg border-r border-line-disabled p-4 z-40 flex-col">
+        <ul className="flex flex-col gap-1">
           {NAV_ITEMS.map(({ href, label, lineIcon, fillIcon }) => {
             const isActive = pathname === href;
             return (
               <li key={href}>
                 <Link
                   href={href}
-                  className={`${styles.navItem} ${isActive ? styles.active : ''}`}
+                  className={clsx(
+                    'flex flex-col items-center gap-1 py-3 px-2 rounded-lg text-[11px] transition-colors',
+                    isActive
+                      ? 'bg-tint-50 text-primary font-semibold'
+                      : 'text-caption-alternative hover:bg-bg-system hover:text-caption-heavy',
+                  )}
                 >
-                  <Image
-                    src={isActive ? fillIcon : lineIcon}
-                    alt={label}
-                    width={28}
-                    height={28}
-                    className={styles.icon}
-                  />
-                  <span className={styles.label}>{label}</span>
+                  <Image src={isActive ? fillIcon : lineIcon} alt={label} width={28} height={28} />
+                  <span>{label}</span>
                 </Link>
               </li>
             );
@@ -45,23 +44,20 @@ export function Sidebar() {
       </nav>
 
       {/* 모바일: 하단 탭바 */}
-      <nav className={styles.tabbar}>
+      <nav className="xl:hidden fixed bottom-0 left-0 right-0 flex bg-bg border-t border-line-disabled py-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] z-40">
         {NAV_ITEMS.map(({ href, label, lineIcon, fillIcon }) => {
           const isActive = pathname === href;
           return (
             <Link
               key={href}
               href={href}
-              className={`${styles.tabItem} ${isActive ? styles.active : ''}`}
+              className={clsx(
+                'flex-1 flex flex-col items-center gap-0.5 py-1 transition-colors',
+                isActive ? 'text-primary' : 'text-caption-assistive',
+              )}
             >
-              <Image
-                src={isActive ? fillIcon : lineIcon}
-                alt={label}
-                width={20}
-                height={20}
-                className={styles.icon}
-              />
-              <span className={styles.label}>{label}</span>
+              <Image src={isActive ? fillIcon : lineIcon} alt={label} width={20} height={20} />
+              <span className="text-[11px]">{label}</span>
             </Link>
           );
         })}

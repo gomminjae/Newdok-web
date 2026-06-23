@@ -4,11 +4,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useState, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { articleApi } from '@/shared/api/endpoints';
+import { clsx } from 'clsx';
+import { articleApi, type Article } from '@/entities/article';
 import { CalendarPopup } from '@/widgets/calendar';
 import { useAuth } from '@/shared/hooks';
-import type { Article } from '@/shared/api/types';
-import styles from './home.module.scss';
+import { GuestNotice, EmptyState } from '@/shared/ui';
 
 function formatDate(date: Date): string {
   const year = date.getFullYear();
@@ -54,34 +54,23 @@ export default function HomePage() {
     queryClient.invalidateQueries({ queryKey: ['articles', 'day', year, month, day] });
   };
 
-  const handleDateSelected = (date: Date) => {
-    setSelectedDate(date);
-  };
-
   if (!isLoggedIn) {
     return (
-      <div className={styles.container}>
-        <div className={styles.guestState}>
-          <p className={styles.guestTitle}>
-            {'회원이 되면 뉴스레터를\n간편하게 모아볼 수 있어요!'}
-          </p>
-          <Link href="/signup" className={styles.guestSignupButton}>회원가입</Link>
-          <p className={styles.guestLogin}>
-            이미 계정이 있나요?{' '}
-            <Link href="/login" className={styles.guestLoginLink}>로그인</Link>
-          </p>
-        </div>
+      <div className="bg-bg-system min-h-[calc(100vh-49px)] flex flex-col">
+        <GuestNotice />
       </div>
     );
   }
 
   return (
-    <div className={styles.container}>
+    <div className="bg-bg-system min-h-[calc(100vh-49px)] flex flex-col">
       {/* 날짜 바 */}
-      <div className={styles.dateBar}>
-        <span className={styles.dateText}>{formatDate(selectedDate)}</span>
+      <div className="flex items-center justify-between h-[52px] bg-bg rounded-xl mx-2 mb-2 px-6">
+        <span className="text-base font-bold text-caption-strong">
+          {formatDate(selectedDate)}
+        </span>
         <button
-          className={styles.calendarButton}
+          className="bg-transparent p-1 flex items-center"
           type="button"
           onClick={() => setShowCalendar(true)}
         >
@@ -90,35 +79,36 @@ export default function HomePage() {
       </div>
 
       {isLoading ? (
-        <div className={styles.loading}>로딩 중...</div>
+        <div className="flex items-center justify-center flex-1 text-primary">로딩 중...</div>
       ) : articles.length === 0 ? (
-        <div className={styles.emptyState}>
-          <p className={styles.emptyTitle}>아직 도착한 아티클이 없어요.</p>
-          <p className={styles.emptyDescription}>
-            뉴스레터를 구독하면 아티클을 받아볼 수 있어요.
-          </p>
-          <Link href="/search" className={styles.emptyButton}>
-            뉴스레터 둘러보기
-          </Link>
-        </div>
+        <EmptyState
+          title="아직 도착한 아티클이 없어요."
+          description="뉴스레터를 구독하면 아티클을 받아볼 수 있어요."
+          cta={
+            <Link
+              href="/search"
+              className="inline-flex items-center justify-center w-full max-w-[320px] h-12 px-6 bg-primary text-white rounded font-bold hover:bg-primary-strong transition-colors"
+            >
+              뉴스레터 둘러보기
+            </Link>
+          }
+        />
       ) : (
-        <div className={styles.articlesSection}>
-          <div className={styles.articlesHeader}>
-            <span className={styles.articlesCount}>
+        <div className="bg-bg rounded-xl mx-2 mb-2 pb-4">
+          <div className="flex items-center justify-between pt-5 px-7">
+            <span className="text-lg font-bold text-caption-strong">
               {articles.length}개의 아티클이 도착했어요.
             </span>
-            <button className={styles.refreshButton} type="button" onClick={handleRefresh}>
-              <Image
-                src="/images/Line Reload.svg"
-                alt="새로고침"
-                width={20}
-                height={20}
-                className={styles.refreshIcon}
-              />
+            <button
+              className="flex items-center gap-1 bg-transparent text-sm font-medium text-primary"
+              type="button"
+              onClick={handleRefresh}
+            >
+              <Image src="/images/Line Reload.svg" alt="새로고침" width={20} height={20} />
               새로고침
             </button>
           </div>
-          <div className={styles.articlesList}>
+          <div className="flex flex-col gap-2 px-5 pt-5">
             {articles.map((article) => (
               <ArticleRow key={article.id} article={article} />
             ))}
@@ -130,7 +120,7 @@ export default function HomePage() {
         <CalendarPopup
           selectedDate={selectedDate}
           dataDays={calendarDataDays}
-          onDateSelected={handleDateSelected}
+          onDateSelected={setSelectedDate}
           onClose={() => setShowCalendar(false)}
         />
       )}
@@ -139,25 +129,43 @@ export default function HomePage() {
 }
 
 function ArticleRow({ article }: { article: Article }) {
+  const isRead = article.status === 'Read';
   return (
-    <Link href={`/articles/${article.id}`} className={`${styles.articleRow} ${article.status === 'Read' ? styles.read : ''}`}>
-      {article.imageUrl ? (
-        <img src={article.imageUrl} alt={article.brandName} className={styles.articleImage} />
-      ) : (
-        <div className={styles.articleImagePlaceholder} />
+    <Link
+      href={`/articles/${article.id}`}
+      className={clsx(
+        'flex items-center gap-3 p-4 rounded-xl border border-neutral-150 transition-colors',
+        isRead ? 'bg-neutral-150' : 'hover:bg-neutral-50',
       )}
-      <div className={styles.articleInfo}>
-        <div className={styles.articleMeta}>
-          <span className={styles.brandName}>{article.brandName}</span>
+    >
+      {article.imageUrl ? (
+        <Image
+          src={article.imageUrl}
+          alt={article.brandName}
+          width={56}
+          height={56}
+          className="w-14 h-14 rounded-xl object-cover border border-neutral-200/40 flex-shrink-0"
+        />
+      ) : (
+        <div className="w-14 h-14 rounded-xl bg-neutral-200/40 flex-shrink-0" />
+      )}
+      <div className="flex-1 min-w-0 flex flex-col gap-1.5">
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] font-medium text-caption-neutral">
+            {article.brandName}
+          </span>
           <span
-            className={`${styles.readStatus} ${
-              article.status === 'Read' ? styles.read : styles.unread
-            }`}
+            className={clsx(
+              'text-[11px] font-medium',
+              isRead ? 'text-caption-alternative' : 'text-primary',
+            )}
           >
-            {article.status === 'Read' ? '읽음' : '안읽음'}
+            {isRead ? '읽음' : '안읽음'}
           </span>
         </div>
-        <span className={styles.articleTitle}>{article.articleTitle}</span>
+        <span className="text-sm font-medium text-caption-strong truncate pr-5">
+          {article.articleTitle}
+        </span>
       </div>
     </Link>
   );
