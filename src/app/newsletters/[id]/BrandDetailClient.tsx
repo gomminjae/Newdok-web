@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { newsletterApi, type BrandArticle } from '@/entities/newsletter';
+import { newsletterQueries, type BrandArticle } from '@/entities/newsletter';
 import { useAuth } from '@/shared/hooks';
 
 export function BrandDetailClient({ id }: { id: number }) {
@@ -13,13 +13,9 @@ export function BrandDetailClient({ id }: { id: number }) {
   const { isLoggedIn } = useAuth();
   const [showGuestAlert, setShowGuestAlert] = useState(false);
 
-  const { data: brand, isLoading } = useQuery({
-    queryKey: ['newsletter', 'brand', id, isLoggedIn],
-    queryFn: () =>
-      isLoggedIn
-        ? newsletterApi.fetchNewsletterBrand(id)
-        : newsletterApi.fetchGuestNewsletterBrand(id),
-  });
+  const { data: brand, isLoading } = useQuery(
+    newsletterQueries.brand(id, isLoggedIn),
+  );
 
   if (isLoading) {
     return (

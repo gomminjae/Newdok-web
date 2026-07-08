@@ -1,6 +1,14 @@
 import type { ZodType, z } from 'zod';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+const BROWSER_API_PATH = '/api/backend';
+const SERVER_API_URL = process.env.API_INTERNAL_URL ?? 'http://3.38.79.19';
+
+function buildUrl(endpoint: string): URL {
+  if (typeof window === 'undefined') {
+    return new URL(`${SERVER_API_URL}${endpoint}`);
+  }
+  return new URL(`${BROWSER_API_PATH}${endpoint}`, window.location.origin);
+}
 
 interface RequestOptions extends Omit<RequestInit, 'body'> {
   params?: Record<string, string | number | undefined>;
@@ -49,7 +57,7 @@ export async function apiClient(
 ): Promise<unknown> {
   const { params, body, headers, schema, ...fetchOptions } = options;
 
-  const url = new URL(`${API_BASE_URL}${endpoint}`);
+  const url = buildUrl(endpoint);
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined) {

@@ -4,27 +4,22 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useRef, useEffect } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { articleApi } from '@/entities/article';
+import { useQuery } from '@tanstack/react-query';
+import { articleQueries, useToggleBookmark } from '@/entities/article';
 import { useAuth } from '@/shared/hooks';
 
 export function ArticleDetailClient({ id }: { id: number }) {
   const router = useRouter();
   const { isLoggedIn } = useAuth();
-  const queryClient = useQueryClient();
   const contentRef = useRef<HTMLDivElement>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
-  const { data: article, isLoading } = useQuery({
-    queryKey: ['article', 'detail', id],
-    queryFn: () => articleApi.fetchArticleDetail(id),
-  });
+  const { data: article, isLoading } = useQuery(articleQueries.detail(id));
+  const toggleBookmark = useToggleBookmark(id);
 
-  const handleBookmarkToggle = async () => {
+  const handleBookmarkToggle = () => {
     if (!article || !isLoggedIn) return;
-    await articleApi.changeBookmarkState({ articleId: id });
-    queryClient.invalidateQueries({ queryKey: ['article', 'detail', id] });
-    queryClient.invalidateQueries({ queryKey: ['bookmarks'] });
+    toggleBookmark.mutate();
   };
 
   useEffect(() => {

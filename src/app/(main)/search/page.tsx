@@ -6,7 +6,8 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { clsx } from 'clsx';
 import {
-  newsletterApi,
+  newsletterQueries,
+  newsletterKeys,
   type NewsletterDetail,
   type NewsletterBrand,
 } from '@/entities/newsletter';
@@ -28,28 +29,22 @@ export default function SearchPage() {
   const queryClient = useQueryClient();
 
   const { data: myRecommendation = [] } = useQuery({
-    queryKey: ['recommend', 'intersection'],
-    queryFn: () => newsletterApi.fetchRecommendIntersection(),
+    ...newsletterQueries.recommendIntersection(),
     enabled: isLoggedIn && tab === 'recommend',
   });
 
   const { data: unionRecommendation = [] } = useQuery({
-    queryKey: ['recommend', 'union'],
-    queryFn: () => newsletterApi.fetchRecommendUnion(),
+    ...newsletterQueries.recommendUnion(),
     enabled: isLoggedIn && tab === 'recommend',
   });
 
   const { data: allNewsletters = [], isLoading: isAllLoading } = useQuery({
-    queryKey: ['newsletters', 'all', orderOpt, industry, day],
-    queryFn: () =>
-      isLoggedIn
-        ? newsletterApi.fetchAllNewsletterBrands({ orderOpt, industry, day })
-        : newsletterApi.fetchGuestAllNewsletterBrands({ orderOpt, industry, day }),
+    ...newsletterQueries.list({ orderOpt, industry, day }, isLoggedIn),
     enabled: tab === 'all',
   });
 
   const handleRefreshRecommend = () => {
-    queryClient.invalidateQueries({ queryKey: ['recommend', 'union'] });
+    queryClient.invalidateQueries({ queryKey: newsletterKeys.recommend.union() });
   };
 
   const handleResetFilters = () => {

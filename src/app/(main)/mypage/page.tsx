@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { userApi } from '@/entities/user';
+import { userQueries } from '@/entities/user';
 import { useAuth } from '@/shared/hooks';
 import { GuestNotice } from '@/shared/ui';
 
@@ -12,8 +12,7 @@ export default function MyPage() {
   const [showToast, setShowToast] = useState(false);
 
   const { data: profile } = useQuery({
-    queryKey: ['user', 'profile'],
-    queryFn: () => userApi.getProfile(),
+    ...userQueries.profile(),
     enabled: isLoggedIn,
   });
 

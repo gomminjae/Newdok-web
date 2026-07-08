@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useState, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { clsx } from 'clsx';
-import { articleApi, type Article } from '@/entities/article';
+import { articleQueries, articleKeys, type Article } from '@/entities/article';
 import { CalendarPopup } from '@/widgets/calendar';
 import { useAuth } from '@/shared/hooks';
 import { GuestNotice, EmptyState } from '@/shared/ui';
@@ -30,15 +30,12 @@ export default function HomePage() {
   const day = selectedDate.getDate();
 
   const { data: articles = [], isLoading } = useQuery({
-    queryKey: ['articles', 'day', year, month, day],
-    queryFn: () => articleApi.fetchDayArticle(year, month, day),
+    ...articleQueries.day(year, month, day),
     enabled: isLoggedIn,
   });
 
   const { data: monthlyData = [] } = useQuery({
-    queryKey: ['articles', 'monthly', year, month],
-    queryFn: () => articleApi.fetchArticles(year, month),
-    select: (res) => res.data,
+    ...articleQueries.monthly(year, month),
     enabled: isLoggedIn,
   });
 
@@ -51,7 +48,7 @@ export default function HomePage() {
   }, [monthlyData]);
 
   const handleRefresh = () => {
-    queryClient.invalidateQueries({ queryKey: ['articles', 'day', year, month, day] });
+    queryClient.invalidateQueries({ queryKey: articleKeys.day(year, month, day) });
   };
 
   if (!isLoggedIn) {

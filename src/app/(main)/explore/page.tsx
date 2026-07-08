@@ -3,9 +3,14 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { clsx } from 'clsx';
-import { newsletterApi, type SubscribedNewsletter } from '@/entities/newsletter';
+import {
+  subscriptionQueries,
+  usePauseSubscription,
+  useResumeSubscription,
+  type SubscribedNewsletter,
+} from '@/entities/newsletter';
 import { useAuth } from '@/shared/hooks';
 import { EmptyState } from '@/shared/ui';
 
@@ -14,32 +19,24 @@ type Tab = 'active' | 'paused';
 export default function ExplorePage() {
   const { isLoggedIn } = useAuth();
   const [tab, setTab] = useState<Tab>('active');
-  const queryClient = useQueryClient();
+  const pauseMutation = usePauseSubscription();
+  const resumeMutation = useResumeSubscription();
 
   const { data: activeNewsletters = [], isLoading: isActiveLoading } = useQuery({
-    queryKey: ['subscription', 'active'],
-    queryFn: () => newsletterApi.fetchActiveNewsletters(),
+    ...subscriptionQueries.active(),
     enabled: isLoggedIn && tab === 'active',
   });
 
   const { data: pausedNewsletters = [], isLoading: isPausedLoading } = useQuery({
-    queryKey: ['subscription', 'paused'],
-    queryFn: () => newsletterApi.fetchPausedNewsletters(),
+    ...subscriptionQueries.paused(),
     enabled: isLoggedIn && tab === 'paused',
   });
 
   const currentList = tab === 'active' ? activeNewsletters : pausedNewsletters;
   const isLoading = tab === 'active' ? isActiveLoading : isPausedLoading;
 
-  const handlePause = async (id: number) => {
-    await newsletterApi.pauseSubscription({ newsletterId: id });
-    queryClient.invalidateQueries({ queryKey: ['subscription'] });
-  };
-
-  const handleResume = async (id: number) => {
-    await newsletterApi.resumeSubscription({ newsletterId: id });
-    queryClient.invalidateQueries({ queryKey: ['subscription'] });
-  };
+  const handlePause = (id: number) => pauseMutation.mutate(id);
+  const handleResume = (id: number) => resumeMutation.mutate(id);
 
   return (
     <div className="bg-bg min-h-[calc(100vh-49px)] flex flex-col">

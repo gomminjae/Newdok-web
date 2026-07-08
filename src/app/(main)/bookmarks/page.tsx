@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { clsx } from 'clsx';
-import { articleApi, type Bookmark } from '@/entities/article';
+import { bookmarkQueries, type Bookmark } from '@/entities/article';
 import { useAuth } from '@/shared/hooks';
 
 const SORT_BY_MAP: Record<string, string> = {
@@ -21,23 +21,12 @@ export default function BookmarksPage() {
   const [sortOrder] = useState('추가순');
 
   const { data: interests = [] } = useQuery({
-    queryKey: ['bookmark', 'interests'],
-    queryFn: async () => {
-      const res = await articleApi.fetchBookmarkedInterest();
-      return res.data;
-    },
+    ...bookmarkQueries.interests(),
     enabled: isLoggedIn,
   });
 
   const { data: bookmarkData, isLoading } = useQuery({
-    queryKey: ['bookmarks', selectedInterestId, sortOrder],
-    queryFn: async () => {
-      const res = await articleApi.fetchBookmarkArticles(
-        selectedInterestId,
-        SORT_BY_MAP[sortOrder],
-      );
-      return res.data;
-    },
+    ...bookmarkQueries.list(selectedInterestId, SORT_BY_MAP[sortOrder]),
     enabled: isLoggedIn,
   });
 
