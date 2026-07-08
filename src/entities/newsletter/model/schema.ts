@@ -11,9 +11,9 @@ export const NewsletterBrandSchema = z.object({
   brandName: z.string(),
   imageUrl: z.string().nullable(),
   interests: z.array(InterestSchema),
-  isSubscribed: z.string().nullable(),
+  isSubscribed: z.string().nullish(),
   shortDescription: z.string(),
-  subscriptionCount: z.number().nullable(),
+  subscriptionCount: z.number().nullish(),
 });
 export type NewsletterBrand = z.infer<typeof NewsletterBrandSchema>;
 
@@ -35,7 +35,7 @@ export const BrandDetailSchema = z.object({
   imageUrl: z.string().nullable(),
   interests: z.array(InterestSchema),
   brandArticleList: z.array(BrandArticleSchema),
-  isSubscribed: z.string().nullable(),
+  isSubscribed: z.string().nullish(),
   subscribeCheck: z.boolean(),
 });
 export type BrandDetail = z.infer<typeof BrandDetailSchema>;
