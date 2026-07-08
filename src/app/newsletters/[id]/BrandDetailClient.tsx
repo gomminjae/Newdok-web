@@ -1,6 +1,6 @@
 'use client';
 
-import Image from 'next/image';
+import { proxyImage } from '@/shared/lib';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -51,18 +51,16 @@ export function BrandDetailClient({ id }: { id: number }) {
           onClick={() => router.back()}
           className="w-10 h-10 flex items-center justify-center bg-white/80 backdrop-blur-md rounded-full"
         >
-          <Image src="/images/Line left.svg" alt="뒤로" width={24} height={24} />
+          <img src="/images/Line left.svg" alt="뒤로" width={24} height={24} />
         </button>
       </div>
 
       <div className="relative w-full h-[260px] overflow-hidden">
         {brand.imageUrl ? (
-          <Image
-            src={brand.imageUrl}
+          <img
+            src={proxyImage(brand.imageUrl)}
             alt={brand.brandName}
-            fill
-            sizes="100vw"
-            className="object-cover"
+            className="absolute inset-0 h-full w-full object-cover"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-tint-50 to-tint-200">
@@ -90,7 +88,7 @@ export function BrandDetailClient({ id }: { id: number }) {
       <div className="flex flex-col items-start gap-2 px-6 py-5 border-b border-neutral-150">
         <h1 className="text-[22px] font-bold text-caption-heavy">{brand.brandName}</h1>
         <div className="flex items-center gap-1 text-sm font-medium text-caption-assistive">
-          <Image src="/images/Line Clock.svg" alt="" width={16} height={16} />
+          <img src="/images/Line Clock.svg" alt="" width={16} height={16} />
           <span>{brand.publicationCycle}</span>
         </div>
         <button
@@ -170,7 +168,7 @@ function BrandArticleRow({ article }: { article: BrandArticle }) {
           {article.date}
         </span>
       </div>
-      <Image
+      <img
         src="/images/Line right.svg"
         alt=""
         width={20}

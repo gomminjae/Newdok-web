@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { userApi } from '@/entities/user';
@@ -79,7 +78,7 @@ export function LoginForm() {
           onChange={(e) => setLoginId(e.target.value)}
           autoComplete="username"
           error={errors.loginId}
-          leftIcon={<Image src="/images/Line User.svg" alt="" width={20} height={20} />}
+          leftIcon={<img src="/images/Line User.svg" alt="" width={20} height={20} />}
         />
 
         <Input
@@ -90,7 +89,7 @@ export function LoginForm() {
           onChange={(e) => setPassword(e.target.value)}
           autoComplete="current-password"
           error={errors.password}
-          leftIcon={<Image src="/images/Line Lock.svg" alt="" width={20} height={20} />}
+          leftIcon={<img src="/images/Line Lock.svg" alt="" width={20} height={20} />}
           rightSlot={
             <button
               type="button"
@@ -98,7 +97,7 @@ export function LoginForm() {
               aria-label={showPassword ? '비밀번호 숨기기' : '비밀번호 보기'}
               className="p-2"
             >
-              <Image
+              <img
                 src={showPassword ? '/images/Line Eye.svg' : '/images/_Line Close Eye.svg'}
                 alt=""
                 width={20}

@@ -1,12 +1,12 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { clsx } from 'clsx';
 import { bookmarkQueries, type Bookmark } from '@/entities/article';
 import { useAuth } from '@/shared/hooks';
+import { proxyImage } from '@/shared/lib';
 
 const SORT_BY_MAP: Record<string, string> = {
   추가순: 'bookmarkDate',
@@ -88,7 +88,7 @@ export default function BookmarksPage() {
           className="flex items-center bg-transparent text-[13px] font-medium text-caption-strong"
         >
           {sortOrder}
-          <Image src="/images/Line Down.svg" alt="" width={20} height={20} />
+          <img src="/images/Line Down.svg" alt="" width={20} height={20} />
         </button>
       </div>
 
@@ -138,8 +138,8 @@ function BookmarkCard({ article }: { article: Bookmark }) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1">
           {article.imageURL ? (
-            <Image
-              src={article.imageURL}
+            <img
+              src={proxyImage(article.imageURL)}
               alt={article.brandName}
               width={20}
               height={20}

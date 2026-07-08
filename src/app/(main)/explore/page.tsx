@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -12,6 +11,7 @@ import {
   type SubscribedNewsletter,
 } from '@/entities/newsletter';
 import { useAuth } from '@/shared/hooks';
+import { proxyImage } from '@/shared/lib';
 import { EmptyState } from '@/shared/ui';
 
 type Tab = 'active' | 'paused';
@@ -148,8 +148,8 @@ function SubscribeRow({
         className="flex items-center gap-2 flex-1 min-w-0"
       >
         {newsletter.imageUrl ? (
-          <Image
-            src={newsletter.imageUrl}
+          <img
+            src={proxyImage(newsletter.imageUrl)}
             alt={newsletter.brandName}
             width={56}
             height={56}
@@ -163,7 +163,7 @@ function SubscribeRow({
             {newsletter.brandName}
           </span>
           <span className="flex items-center gap-1 text-xs font-medium text-caption-assistive">
-            <Image src="/images/Line Clock.svg" alt="" width={20} height={20} />
+            <img src="/images/Line Clock.svg" alt="" width={20} height={20} />
             {newsletter.publicationCycle}
           </span>
         </div>

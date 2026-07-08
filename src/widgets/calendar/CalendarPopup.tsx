@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import { useState, useMemo, useCallback } from 'react';
 import { clsx } from 'clsx';
 
@@ -103,20 +102,20 @@ export function CalendarPopup({
           {/* 헤더 */}
           <div className="relative flex items-center justify-center h-11 bg-neutral-50 rounded-t-2xl">
             <button className="p-2.5 flex items-center" onClick={prevMonth} type="button">
-              <Image src="/images/Line left.svg" alt="이전" width={24} height={24} />
+              <img src="/images/Line left.svg" alt="이전" width={24} height={24} />
             </button>
             <span className="w-[120px] text-center text-sm font-medium text-caption-heavy">
               {yearMonthTitle}
             </span>
             <button className="p-2.5 flex items-center" onClick={nextMonth} type="button">
-              <Image src="/images/Line right.svg" alt="다음" width={24} height={24} />
+              <img src="/images/Line right.svg" alt="다음" width={24} height={24} />
             </button>
             <button
               className="absolute right-[18px] top-1/2 -translate-y-1/2 p-1 flex items-center"
               onClick={onClose}
               type="button"
             >
-              <Image src="/images/Line Close.svg" alt="닫기" width={24} height={24} />
+              <img src="/images/Line Close.svg" alt="닫기" width={24} height={24} />
             </button>
           </div>
 
@@ -194,7 +193,7 @@ export function CalendarPopup({
           onClick={selectToday}
           type="button"
         >
-          <Image src="/images/Line Reload.svg" alt="" width={16} height={16} />
+          <img src="/images/Line Reload.svg" alt="" width={16} height={16} />
           오늘
         </button>
       </div>

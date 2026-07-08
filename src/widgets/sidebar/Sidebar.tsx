@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { clsx } from 'clsx';
@@ -39,7 +38,7 @@ export function Sidebar() {
                       isActive ? 'h-6 opacity-100' : 'h-0 opacity-0',
                     )}
                   />
-                  <Image
+                  <img
                     src={isActive ? fillIcon : lineIcon}
                     alt={label}
                     width={28}
@@ -66,7 +65,7 @@ export function Sidebar() {
                 isActive ? 'text-primary' : 'text-caption-assistive',
               )}
             >
-              <Image
+              <img
                 src={isActive ? fillIcon : lineIcon}
                 alt={label}
                 width={20}

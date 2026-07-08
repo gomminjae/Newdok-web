@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { useState, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -8,6 +7,7 @@ import { clsx } from 'clsx';
 import { articleQueries, articleKeys, type Article } from '@/entities/article';
 import { CalendarPopup } from '@/widgets/calendar';
 import { useAuth } from '@/shared/hooks';
+import { proxyImage } from '@/shared/lib';
 import { GuestNotice, EmptyState } from '@/shared/ui';
 
 function formatDate(date: Date): string {
@@ -71,7 +71,7 @@ export default function HomePage() {
           type="button"
           onClick={() => setShowCalendar(true)}
         >
-          <Image src="/images/Line Calendar.svg" alt="달력" width={24} height={24} />
+          <img src="/images/Line Calendar.svg" alt="달력" width={24} height={24} />
         </button>
       </div>
 
@@ -101,7 +101,7 @@ export default function HomePage() {
               type="button"
               onClick={handleRefresh}
             >
-              <Image src="/images/Line Reload.svg" alt="새로고침" width={20} height={20} />
+              <img src="/images/Line Reload.svg" alt="새로고침" width={20} height={20} />
               새로고침
             </button>
           </div>
@@ -136,8 +136,8 @@ function ArticleRow({ article }: { article: Article }) {
       )}
     >
       {article.imageUrl ? (
-        <Image
-          src={article.imageUrl}
+        <img
+          src={proxyImage(article.imageUrl)}
           alt={article.brandName}
           width={56}
           height={56}

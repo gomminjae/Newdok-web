@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -12,6 +11,7 @@ import {
   type NewsletterBrand,
 } from '@/entities/newsletter';
 import { useAuth } from '@/shared/hooks';
+import { proxyImage } from '@/shared/lib';
 import { GuestNotice } from '@/shared/ui';
 
 const CARD_WIDTH = 320;
@@ -108,7 +108,7 @@ export default function SearchPage() {
                 onClick={handleRefreshRecommend}
                 className="flex items-center gap-1 bg-transparent text-sm font-medium text-primary"
               >
-                <Image src="/images/Line Reload.svg" alt="새로고침" width={20} height={20} />
+                <img src="/images/Line Reload.svg" alt="새로고침" width={20} height={20} />
                 새로고침
               </button>
             </div>
@@ -131,7 +131,7 @@ export default function SearchPage() {
                 className="flex items-center gap-1 px-3 py-2 bg-bg border border-neutral-150 rounded-[20px] text-sm font-medium text-caption-strong whitespace-nowrap"
               >
                 {orderOpt}
-                <Image src="/images/Line Down.svg" alt="" width={16} height={16} />
+                <img src="/images/Line Down.svg" alt="" width={16} height={16} />
               </button>
               <div className="w-px h-5 bg-neutral-150 flex-shrink-0" />
               <button
@@ -144,7 +144,7 @@ export default function SearchPage() {
                 )}
               >
                 {industry ?? '산업'}
-                <Image src="/images/Line Down.svg" alt="" width={20} height={20} />
+                <img src="/images/Line Down.svg" alt="" width={20} height={20} />
               </button>
               <button
                 type="button"
@@ -156,7 +156,7 @@ export default function SearchPage() {
                 )}
               >
                 {day ?? '발행요일'}
-                <Image src="/images/Line Down.svg" alt="" width={20} height={20} />
+                <img src="/images/Line Down.svg" alt="" width={20} height={20} />
               </button>
             </div>
             <button
@@ -164,7 +164,7 @@ export default function SearchPage() {
               onClick={handleResetFilters}
               className="flex-shrink-0 bg-transparent flex items-center"
             >
-              <Image src="/images/Line Reload.svg" alt="초기화" width={30} height={30} />
+              <img src="/images/Line Reload.svg" alt="초기화" width={30} height={30} />
             </button>
           </div>
 
@@ -297,8 +297,8 @@ function RecommendedCard({ newsletter }: { newsletter: NewsletterDetail }) {
       className="flex-shrink-0 w-80 bg-bg rounded-xl border border-neutral-150 overflow-hidden transition-shadow hover:shadow-md"
     >
       {newsletter.imageUrl ? (
-        <Image
-          src={newsletter.imageUrl}
+        <img
+          src={proxyImage(newsletter.imageUrl)}
           alt={newsletter.brandName}
           width={320}
           height={210}
@@ -339,8 +339,8 @@ function NewsletterDetailRow({ newsletter }: { newsletter: NewsletterDetail }) {
     >
       <div className="flex gap-2 pb-4">
         {newsletter.imageUrl ? (
-          <Image
-            src={newsletter.imageUrl}
+          <img
+            src={proxyImage(newsletter.imageUrl)}
             alt={newsletter.brandName}
             width={56}
             height={56}
@@ -382,8 +382,8 @@ function NewsletterBrandRow({ brand }: { brand: NewsletterBrand }) {
     >
       <div className="flex gap-2 pb-4">
         {brand.imageUrl ? (
-          <Image
-            src={brand.imageUrl}
+          <img
+            src={proxyImage(brand.imageUrl)}
             alt={brand.brandName}
             width={56}
             height={56}

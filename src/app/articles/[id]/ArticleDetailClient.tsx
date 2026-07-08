@@ -1,12 +1,12 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { articleQueries, useToggleBookmark } from '@/entities/article';
 import { useAuth } from '@/shared/hooks';
+import { proxyImage } from '@/shared/lib';
 
 export function ArticleDetailClient({ id }: { id: number }) {
   const router = useRouter();
@@ -58,15 +58,15 @@ export function ArticleDetailClient({ id }: { id: number }) {
           onClick={() => router.back()}
           className="w-10 h-10 flex items-center justify-center bg-transparent flex-shrink-0"
         >
-          <Image src="/images/Line left.svg" alt="뒤로" width={24} height={24} />
+          <img src="/images/Line left.svg" alt="뒤로" width={24} height={24} />
         </button>
         <Link
           href={`/newsletters/${article.brandId}`}
           className="flex-1 flex items-center justify-center gap-2 min-w-0"
         >
           {article.brandImageUrl && (
-            <Image
-              src={article.brandImageUrl}
+            <img
+              src={proxyImage(article.brandImageUrl)}
               alt=""
               width={24}
               height={24}
@@ -83,7 +83,7 @@ export function ArticleDetailClient({ id }: { id: number }) {
             onClick={handleBookmarkToggle}
             className="w-10 h-10 flex items-center justify-center bg-transparent flex-shrink-0"
           >
-            <Image
+            <img
               src={
                 article.isBookmarked
                   ? '/images/Fill Bookmark.svg'
@@ -120,7 +120,7 @@ export function ArticleDetailClient({ id }: { id: number }) {
           onClick={scrollToTop}
           className="fixed bottom-[90px] right-5 w-11 h-11 bg-bg border border-neutral-150 rounded-full shadow-md flex items-center justify-center z-10 hover:bg-neutral-50 transition-colors"
         >
-          <Image src="/images/Line Up.svg" alt="맨 위로" width={24} height={24} />
+          <img src="/images/Line Up.svg" alt="맨 위로" width={24} height={24} />
         </button>
       )}
     </div>

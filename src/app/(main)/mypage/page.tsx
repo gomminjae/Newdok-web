@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { userQueries } from '@/entities/user';
@@ -43,7 +42,7 @@ export default function MyPage() {
         <div className="flex items-center gap-1 mb-2">
           <span className="text-sm font-medium text-caption-neutral">구독이메일</span>
           <button type="button" className="bg-transparent p-0.5 flex items-center text-caption-neutral">
-            <Image src="/images/Line Question mark.svg" alt="도움말" width={16} height={16} />
+            <img src="/images/Line Question mark.svg" alt="도움말" width={16} height={16} />
           </button>
         </div>
 
@@ -53,7 +52,7 @@ export default function MyPage() {
             onClick={handleCopyEmail}
             className="bg-transparent p-0.5 flex items-center"
           >
-            <Image src="/images/Line Copy.svg" alt="복사" width={24} height={24} />
+            <img src="/images/Line Copy.svg" alt="복사" width={24} height={24} />
           </button>
           <span className="text-sm text-caption-heavy truncate">{subscribeEmail}</span>
         </div>
@@ -122,7 +121,7 @@ function MenuItem({ label }: { label: string }) {
       className="flex items-center justify-between w-full h-12 bg-transparent text-left"
     >
       <span className="text-base font-medium text-caption-strong">{label}</span>
-      <Image src="/images/Line right.svg" alt="" width={24} height={24} />
+      <img src="/images/Line right.svg" alt="" width={24} height={24} />
     </button>
   );
 }
