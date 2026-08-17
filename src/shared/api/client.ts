@@ -1,7 +1,8 @@
 import type { ZodType, z } from 'zod';
+import { TEST_API_BASE_URL } from '@/shared/config/api';
 
 const BROWSER_API_PATH = '/api/backend';
-const SERVER_API_URL = process.env.API_INTERNAL_URL ?? 'http://3.38.79.19';
+const SERVER_API_URL = process.env.API_INTERNAL_URL ?? TEST_API_BASE_URL;
 
 function buildUrl(endpoint: string): URL {
   if (typeof window === 'undefined') {

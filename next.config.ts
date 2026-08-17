@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
+import { TEST_API_BASE_URL } from "./src/shared/config/api";
 
-const BACKEND_URL = process.env.API_INTERNAL_URL ?? "http://3.38.79.19";
+const BACKEND_URL = process.env.API_INTERNAL_URL ?? TEST_API_BASE_URL;
 
 const nextConfig: NextConfig = {
   async rewrites() {
