@@ -1,21 +1,30 @@
+import Image from 'next/image';
 import Link from 'next/link';
 
 export function HeroSection() {
   return (
-    <section className="text-center px-5 py-12 md:py-16 bg-gradient-to-b from-bg to-bg-system">
-      <h1 className="text-2xl md:text-[32px] font-bold leading-snug text-caption-heavy mb-6">
+    <section aria-labelledby="landing-title" className="mx-auto w-full max-w-[648px]">
+      <h1 id="landing-title" className="sr-only">
         지금 내게 필요한 뉴스레터,
-        <br />
         가장 빠르게 찾는 방법
       </h1>
-      <Link
-        href="/home"
-        className="inline-block px-8 py-3.5 bg-primary text-white text-base font-semibold rounded-[28px] mb-8 hover:bg-primary-strong transition-colors"
-      >
-        뉴스레터 추천받기
-      </Link>
-      <div className="max-w-[320px] md:max-w-[400px] mx-auto aspect-[4/3] rounded-[20px] flex items-center justify-center text-[64px] bg-gradient-to-br from-blue-100 to-indigo-200">
-        📨
+      <div className="relative overflow-hidden bg-[#f7f7fa]">
+        <Image
+          src="/images/landing/hero.png"
+          alt=""
+          width={648}
+          height={338}
+          preload
+          sizes="(max-width: 768px) 100vw, 648px"
+          className="h-auto w-full"
+        />
+        <Link
+          href="/search"
+          aria-label="뉴스레터 추천받기"
+          className="absolute left-[37%] top-[51%] h-[15%] w-[26%] rounded-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+        >
+          <span className="sr-only">뉴스레터 추천받기</span>
+        </Link>
       </div>
     </section>
   );

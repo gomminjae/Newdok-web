@@ -1,7 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { newsletterApi } from '@/entities/newsletter';
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://newdok.com';
+import { SITE_URL } from '@/shared/config/site';
 
 // 사이트맵도 ISR로 1시간마다 재생성
 export const revalidate = 3600;

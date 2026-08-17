@@ -1,32 +1,41 @@
+import Image from 'next/image';
 import Link from 'next/link';
 
 export function LandingFooter() {
   return (
-    <footer>
-      <div className="flex items-center justify-between max-w-[960px] mx-auto w-full px-5 pt-6 pb-8 border-t border-line-disabled">
-        <div className="text-lg font-extrabold text-caption-heavy">
-          <span className="text-primary">N</span> newdok
-        </div>
-        <div className="flex items-center gap-4">
+    <footer className="mx-auto w-full max-w-[648px] bg-bg-system px-5 py-8 sm:px-8">
+      <div className="flex items-center justify-between">
+        <Image
+          src="/images/landing/newdok-logo.svg"
+          alt="Newdok"
+          width={90}
+          height={16}
+          className="h-4 w-auto"
+        />
+        <nav aria-label="Newdok 외부 채널" className="flex items-center gap-4">
           <Link
-            href="#"
-            className="text-sm text-caption-alternative hover:text-caption-heavy transition-colors"
-            aria-label="Profile"
+            href="/mypage"
+            className="text-xs text-caption-alternative transition-colors hover:text-caption-heavy"
           >
-            👤
+            마이페이지
           </Link>
           <Link
             href="#"
-            className="text-sm text-caption-alternative hover:text-caption-heavy transition-colors"
-            aria-label="Instagram"
+            className="text-xs text-caption-alternative transition-colors hover:text-caption-heavy"
+            aria-label="Newdok Instagram"
           >
-            📷
+            Instagram
           </Link>
-        </div>
+        </nav>
       </div>
-      <p className="text-[11px] text-caption-assistive text-center px-5 pb-6">
+      <p className="mt-5 text-[11px] text-caption-assistive">
         Copyright Newdok. All rights reserved.
       </p>
+      <nav aria-label="정책" className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-caption-assistive">
+        <Link href="#">이용약관</Link>
+        <Link href="#">개인정보처리방침</Link>
+        <Link href="#">고객센터</Link>
+      </nav>
     </footer>
   );
 }

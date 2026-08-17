@@ -134,6 +134,14 @@ a {
   text-decoration: none;
 }
 
+.landing-scrollbar-none {
+  scrollbar-width: none;
+}
+
+.landing-scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
 /* ── Keyframes ── */
 @keyframes fadeInOut {
   0% { opacity: 0; transform: translateX(-50%) translateY(10px); }

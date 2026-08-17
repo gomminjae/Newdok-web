@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
+import { SITE_URL } from '@/shared/config/site';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://newdok.com';
 const isProduction = process.env.NODE_ENV === 'production' && process.env.ALLOW_INDEXING === 'true';
 
 export default function robots(): MetadataRoute.Robots {

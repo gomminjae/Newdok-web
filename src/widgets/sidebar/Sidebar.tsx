@@ -20,7 +20,7 @@ export function Sidebar() {
       <nav className="hidden xl:flex fixed left-0 top-[var(--header-height)] w-[var(--sidebar-width)] h-[calc(100vh-var(--header-height))] bg-bg border-r border-line-disabled p-4 z-40 flex-col">
         <ul className="flex flex-col gap-1">
           {NAV_ITEMS.map(({ href, label, lineIcon, fillIcon }) => {
-            const isActive = pathname === href;
+            const isActive = pathname === href || (pathname === '/' && href === '/home');
             return (
               <li key={href}>
                 <Link
@@ -55,7 +55,7 @@ export function Sidebar() {
 
       <nav className="xl:hidden fixed bottom-0 left-0 right-0 flex bg-bg border-t border-line-disabled py-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] z-40">
         {NAV_ITEMS.map(({ href, label, lineIcon, fillIcon }) => {
-          const isActive = pathname === href;
+          const isActive = pathname === href || (pathname === '/' && href === '/home');
           return (
             <Link
               key={href}

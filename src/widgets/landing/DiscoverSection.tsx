@@ -1,13 +1,13 @@
 export function DiscoverSection() {
   return (
-    <section className="text-center px-5 py-16">
-      <div className="max-w-[960px] mx-auto">
-        <h2 className="text-2xl md:text-[28px] font-bold leading-tight text-primary mb-3">
+    <section className="px-5 py-14 text-center sm:py-16">
+      <div className="mx-auto max-w-[648px]">
+        <h2 className="mb-3 text-2xl font-bold leading-tight text-primary sm:text-[28px]">
           뉴독에서 다양한
           <br />
           뉴스레터를 만나보세요
         </h2>
-        <p className="text-sm text-caption-alternative leading-relaxed mb-12">
+        <p className="text-sm leading-relaxed text-caption-alternative">
           요즘 뜨는 트렌드부터 깊은 인사이트까지,
           <br />
           흥미로운 뉴스레터가 기다리고 있어요.

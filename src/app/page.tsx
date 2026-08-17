@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
+import { SITE_DESCRIPTION, SITE_URL } from '@/shared/config/site';
 import { Sidebar } from '@/widgets/sidebar';
-import { Header } from '@/widgets/header';
 import {
+  LandingHeader,
   HeroSection,
   PopularNewsletters,
   FeatureSections,
@@ -12,33 +13,58 @@ import {
 } from '@/widgets/landing';
 
 export const metadata: Metadata = {
-  title: 'Newdok - 뉴스레터 구독 플랫폼',
-  description:
-    '매일 받아보는 뉴스레터를 한 곳에서 관리하고, 새로운 뉴스레터를 발견하세요. 관심사에 맞는 뉴스레터를 추천받고 북마크하세요.',
-  keywords: ['뉴스레터', '구독', '뉴스레터 추천', '뉴스레터 구독', 'Newdok', '뉴독'],
+  title: 'Newdok - 지금 내게 필요한 뉴스레터를 찾는 방법',
+  description: SITE_DESCRIPTION,
+  alternates: {
+    canonical: '/',
+  },
   openGraph: {
-    title: 'Newdok - 뉴스레터 구독 플랫폼',
-    description:
-      '매일 받아보는 뉴스레터를 한 곳에서 관리하고, 새로운 뉴스레터를 발견하세요.',
+    title: 'Newdok - 지금 내게 필요한 뉴스레터를 찾는 방법',
+    description: SITE_DESCRIPTION,
+    url: '/',
     type: 'website',
     locale: 'ko_KR',
     siteName: 'Newdok',
+    images: [
+      {
+        url: '/og.png',
+        width: 1200,
+        height: 630,
+        alt: '지금 내게 필요한 뉴스레터, 가장 빠르게 찾는 방법 - Newdok',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Newdok - 뉴스레터 구독 플랫폼',
-    description:
-      '매일 받아보는 뉴스레터를 한 곳에서 관리하고, 새로운 뉴스레터를 발견하세요.',
+    title: 'Newdok - 지금 내게 필요한 뉴스레터를 찾는 방법',
+    description: SITE_DESCRIPTION,
+    images: ['/og.png'],
   },
+};
+
+const websiteJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'Newdok',
+  alternateName: '뉴독',
+  url: SITE_URL,
+  description: SITE_DESCRIPTION,
+  inLanguage: 'ko-KR',
 };
 
 export default function LandingPage() {
   return (
     <>
-      <Header />
-      <div className="min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(websiteJsonLd).replace(/</g, '\\u003c'),
+        }}
+      />
+      <LandingHeader />
+      <div className="min-h-dvh bg-bg">
         <Sidebar />
-        <div className="pb-[calc(60px+env(safe-area-inset-bottom))] xl:ml-[120px] xl:pb-0">
+        <div className="pb-[calc(var(--tabbar-height)+env(safe-area-inset-bottom))] xl:ml-[var(--sidebar-width)] xl:pb-0">
           <main>
             <HeroSection />
             <PopularNewsletters />
