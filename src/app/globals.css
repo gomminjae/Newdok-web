@@ -162,20 +162,44 @@ a {
   }
 }
 
-/* ── Article HTML (dangerouslySetInnerHTML 자식 스타일링) ── */
+/* ── Article HTML (외부 뉴스레터의 고정 폭 콘텐츠 반응형 처리) ── */
+.article-content {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.article-content :where(div, section, article, header, footer, main, figure) {
+  max-width: 100% !important;
+}
+.article-content [style*="min-width" i] {
+  min-width: 0 !important;
+}
+.article-content :where(img, video, canvas, svg) {
+  max-width: 100% !important;
+  height: auto !important;
+}
 .article-content img {
-  max-width: 100%;
-  height: auto;
   border-radius: 8px;
+}
+.article-content :where(iframe, embed, object) {
+  width: 100% !important;
+  max-width: 100% !important;
 }
 .article-content a {
   color: var(--color-primary);
   text-decoration: underline;
+  overflow-wrap: anywhere;
 }
 .article-content table {
-  max-width: 100%;
+  width: 100% !important;
+  max-width: 100% !important;
   overflow-x: auto;
   display: block;
+}
+.article-content :where(th, td) {
+  overflow-wrap: anywhere;
+}
+.article-content figure {
+  margin-inline: 0;
 }
 .article-content blockquote {
   margin: 12px 0;
@@ -203,4 +227,3 @@ a {
   overflow-x: auto;
   font-size: 14px;
 }
-
