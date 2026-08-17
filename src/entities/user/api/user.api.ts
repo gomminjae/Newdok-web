@@ -6,6 +6,8 @@ import {
   SMSResponseSchema,
   SimpleUserSchema,
   SimpleUserListSchema,
+  SocialLoginResponseSchema,
+  SocialSignupResponseSchema,
   UserProfileSchema,
   type IndustryRequest,
   type InterestRequest,
@@ -14,6 +16,8 @@ import {
   type PasswordRequest,
   type PhoneNumberRequest,
   type SignupRequest,
+  type SocialLoginRequest,
+  type SocialSignupRequest,
 } from '../model/schema';
 
 export const userApi = {
@@ -22,6 +26,29 @@ export const userApi = {
       method: 'POST',
       body: data,
       schema: AuthResponseSchema,
+    });
+    setAccessToken(res.accessToken);
+    return res;
+  },
+
+  socialLogin: async (data: SocialLoginRequest) => {
+    const res = await apiClient('/auth/social-login', {
+      method: 'POST',
+      body: data,
+      schema: SocialLoginResponseSchema,
+    });
+
+    if (res.isRegistered && res.accessToken) {
+      setAccessToken(res.accessToken);
+    }
+    return res;
+  },
+
+  socialSignup: async (data: SocialSignupRequest) => {
+    const res = await apiClient('/auth/social-login/signup', {
+      method: 'POST',
+      body: data,
+      schema: SocialSignupResponseSchema,
     });
     setAccessToken(res.accessToken);
     return res;

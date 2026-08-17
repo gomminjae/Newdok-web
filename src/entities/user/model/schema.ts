@@ -76,6 +76,78 @@ export const AuthResponseSchema = z.object({
 });
 export type AuthResponse = z.infer<typeof AuthResponseSchema>;
 
+export const SocialProviderSchema = z.enum(['KAKAO', 'APPLE']);
+export type SocialProvider = z.infer<typeof SocialProviderSchema>;
+
+export const SocialLoginRequestSchema = z.object({
+  provider: SocialProviderSchema,
+  platform: z.literal('WEB'),
+  idToken: z.string().min(1),
+  authorizationCode: z.string().min(1).optional(),
+});
+export type SocialLoginRequest = z.infer<typeof SocialLoginRequestSchema>;
+
+export const SocialProfileSchema = z.object({
+  provider: z.string().nullable().optional(),
+  providerUserId: z.string().nullable().optional(),
+  email: z.string().nullable().optional(),
+  nickname: z.string().nullable().optional(),
+});
+
+// 소셜 계정에는 기존 ID/PW 회원의 loginId, phoneNumber가 없을 수 있다.
+export const SocialAuthUserSchema = z.object({
+  id: z.number(),
+  loginId: z.string().optional(),
+  phoneNumber: z.string().optional(),
+  subscribeEmail: z.string().nullable(),
+  nickname: z.string(),
+  birthYear: z.string(),
+  gender: z.string(),
+  createdAt: z.string(),
+  industryId: z.number().nullable().optional(),
+  interests: z.array(LoginInterestSchema).nullable().optional(),
+});
+export type SocialAuthUser = z.infer<typeof SocialAuthUserSchema>;
+
+export const SocialLoginResponseSchema = z.object({
+  isRegistered: z.boolean(),
+  accessToken: z.string().nullable().optional(),
+  user: SocialAuthUserSchema.nullable().optional(),
+  signupToken: z.string().nullable().optional(),
+  profile: SocialProfileSchema.nullable().optional(),
+});
+export type SocialLoginResponse = z.infer<typeof SocialLoginResponseSchema>;
+
+export const SocialAgreementTypeSchema = z.enum([
+  'AGE_CONFIRMATION_OVER_14',
+  'TERMS_OF_SERVICE',
+  'PERSONAL_INFORMATION_COLLECTION_AND_USE',
+  'MARKETING_INFORMATION_RECEIPT',
+]);
+export type SocialAgreementType = z.infer<typeof SocialAgreementTypeSchema>;
+
+export const SocialSignupRequestSchema = z.object({
+  signupToken: z.string().min(1),
+  nickname: z
+    .string()
+    .min(1, '1자 이상 12자 이하로 입력해주세요.')
+    .max(12, '1자 이상 12자 이하로 입력해주세요.')
+    .regex(/^[a-zA-Z0-9가-힣]+$/, '특수문자와 공백은 사용할 수 없습니다.'),
+  birthYear: z.string().regex(/^\d{4}$/),
+  gender: z.enum(['남자', '여자', '그외']),
+  agreements: z.array(z.object({
+    type: SocialAgreementTypeSchema,
+    agreed: z.boolean(),
+  })),
+});
+export type SocialSignupRequest = z.infer<typeof SocialSignupRequestSchema>;
+
+export const SocialSignupResponseSchema = z.object({
+  user: SocialAuthUserSchema,
+  accessToken: z.string(),
+});
+export type SocialSignupResponse = z.infer<typeof SocialSignupResponseSchema>;
+
 export const SimpleUserSchema = z.object({
   id: z.number(),
   loginId: z.string(),
@@ -115,5 +187,5 @@ export const RecommendedBrandListResponseSchema = z.object({
 });
 export type RecommendedBrandListResponse = z.infer<typeof RecommendedBrandListResponseSchema>;
 
-export const UserProfileSchema = AuthUserSchema;
+export const UserProfileSchema = z.union([AuthUserSchema, SocialAuthUserSchema]);
 export type UserProfile = z.infer<typeof UserProfileSchema>;

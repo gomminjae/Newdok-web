@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { SignupForm } from './SignupForm';
 
 export const metadata: Metadata = {
   title: '회원가입 | Newdok',
@@ -6,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function SignupPage() {
-  return <div>회원가입</div>;
+  return <SignupForm />;
 }
