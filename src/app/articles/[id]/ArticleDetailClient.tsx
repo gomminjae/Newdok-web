@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { articleQueries, useToggleBookmark } from '@/entities/article';
@@ -9,7 +8,6 @@ import { useAuth } from '@/shared/hooks';
 import { proxyImage } from '@/shared/lib';
 
 export function ArticleDetailClient({ id }: { id: number }) {
-  const router = useRouter();
   const { isLoggedIn } = useAuth();
   const [showScrollTop, setShowScrollTop] = useState(false);
 
@@ -52,18 +50,10 @@ export function ArticleDetailClient({ id }: { id: number }) {
   return (
     <main className="min-h-dvh bg-bg">
       <header className="sticky top-0 z-10 border-b border-neutral-150 bg-bg">
-        <div className="mx-auto flex h-14 w-full max-w-3xl items-center px-2 sm:px-4">
-          <button
-            type="button"
-            onClick={() => router.back()}
-            aria-label="이전 페이지로 이동"
-            className="flex h-10 w-10 flex-shrink-0 items-center justify-center bg-transparent"
-          >
-            <img src="/images/Line left.svg" alt="" width={24} height={24} />
-          </button>
+        <div className="mx-auto flex h-14 w-full max-w-3xl items-center px-4 sm:px-6">
           <Link
             href={`/newsletters/${article.brandId}`}
-            className="flex min-w-0 flex-1 items-center justify-center gap-2"
+            className="flex min-w-0 flex-1 items-center gap-2"
           >
             {article.brandImageUrl && (
               <img
@@ -78,7 +68,7 @@ export function ArticleDetailClient({ id }: { id: number }) {
               {article.brandName}
             </span>
           </Link>
-          {isLoggedIn ? (
+          {isLoggedIn && (
             <button
               type="button"
               onClick={handleBookmarkToggle}
@@ -96,8 +86,6 @@ export function ArticleDetailClient({ id }: { id: number }) {
                 height={24}
               />
             </button>
-          ) : (
-            <div className="h-10 w-10 flex-shrink-0" aria-hidden="true" />
           )}
         </div>
       </header>
