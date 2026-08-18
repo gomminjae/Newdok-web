@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import Script from 'next/script';
 import { useRouter } from 'next/navigation';
 import { userApi, type SocialProvider } from '@/entities/user';
@@ -221,9 +222,14 @@ export function LoginForm() {
       />
 
       <div className="flex w-full max-w-sm flex-1 flex-col justify-center">
-        <div className="mb-24 text-center text-[32px] font-extrabold tracking-tight text-caption-heavy">
-          <span className="text-primary">N</span> newdok
-        </div>
+        <Image
+          src="/images/landing/newdok-logo.svg"
+          alt="Newdok"
+          width={180}
+          height={32}
+          priority
+          className="mx-auto mb-24 h-8 w-auto"
+        />
 
         <div className="flex flex-col gap-3">
           <div className="relative">
