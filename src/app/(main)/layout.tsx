@@ -14,10 +14,10 @@ export default function MainLayout({
   return (
     <>
       <Header />
-      <div className="min-h-screen">
+      <div className="min-h-[calc(100dvh-var(--header-height))]">
         <Sidebar />
-        <main className="p-4 pb-[calc(72px+env(safe-area-inset-bottom))] xl:ml-[120px] xl:pb-4">
-          {children}
+        <main id="main-content" className="min-w-0 px-4 pb-[calc(var(--tabbar-height)+env(safe-area-inset-bottom)+16px)] sm:px-6 xl:ml-[var(--sidebar-width)] xl:px-10 xl:pb-8">
+          <div className="mx-auto w-full max-w-6xl">{children}</div>
         </main>
       </div>
     </>

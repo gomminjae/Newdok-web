@@ -65,7 +65,7 @@ export default function LandingPage() {
       <div className="min-h-dvh bg-bg">
         <Sidebar />
         <div className="pb-[calc(var(--tabbar-height)+env(safe-area-inset-bottom))] xl:ml-[var(--sidebar-width)] xl:pb-0">
-          <main>
+          <main id="main-content">
             <HeroSection />
             <PopularNewsletters />
             <FeatureSections />

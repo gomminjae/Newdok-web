@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { newsletterApi } from '@/entities/newsletter';
+import { ApiError } from '@/shared/api/client';
 import { BrandDetailClient } from './BrandDetailClient';
 
 type Props = {
@@ -14,7 +15,7 @@ export const revalidate = 3600;
 export async function generateStaticParams() {
   try {
     const brands = await newsletterApi.fetchGuestAllNewsletterBrands({
-      orderOpt: 'popular',
+      orderOpt: '인기순',
     });
     return brands.slice(0, 50).map((b) => ({ id: String(b.brandId) }));
   } catch {
@@ -51,12 +52,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function NewsletterDetailPage({ params }: Props) {
   const { id } = await params;
+  if (!/^[1-9]\d*$/.test(id) || !Number.isSafeInteger(Number(id))) notFound();
 
   const brand = await newsletterApi
     .fetchGuestNewsletterBrand(Number(id))
-    .catch(() => null);
+    .catch((error: unknown) => {
+      if (error instanceof ApiError && error.status === 404) notFound();
+      return undefined;
+    });
 
-  if (!brand) notFound();
-
-  return <BrandDetailClient id={Number(id)} />;
+  return <BrandDetailClient id={Number(id)} initialBrand={brand} />;
 }

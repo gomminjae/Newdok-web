@@ -51,8 +51,8 @@ export const articleApi = {
       schema: ArticleListSchema,
     }),
 
-  fetchArticleDetail: (id: number) =>
-    apiClient(`/articles/${id}`, { schema: ArticleDetailSchema }),
+  fetchArticleDetail: (id: number, authenticated = true) =>
+    apiClient(`/articles/${id}`, { authenticated, schema: ArticleDetailSchema }),
 
   fetchReceivedArticleCount: () =>
     apiClient('/articles/received/count', { schema: ArticlesCountResponseSchema }),

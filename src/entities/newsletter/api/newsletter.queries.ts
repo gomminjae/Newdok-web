@@ -1,5 +1,6 @@
 import { queryOptions } from '@tanstack/react-query';
 import { newsletterApi } from './newsletter.api';
+import { getTomorrowPublicationDay } from '../model/publication';
 
 type BrandListParams = {
   orderOpt?: string;
@@ -11,8 +12,8 @@ export const newsletterKeys = {
   all: ['newsletter'] as const,
   brand: (id: number, isMember: boolean) =>
     [...newsletterKeys.all, 'brand', id, isMember] as const,
-  list: (params: BrandListParams) =>
-    [...newsletterKeys.all, 'list', params] as const,
+  list: (params: BrandListParams, isMember: boolean) =>
+    [...newsletterKeys.all, 'list', params, isMember] as const,
   recommend: {
     intersection: () =>
       [...newsletterKeys.all, 'recommend', 'intersection'] as const,
@@ -27,6 +28,32 @@ export const subscriptionKeys = {
 };
 
 export const newsletterQueries = {
+  landingPopular: () =>
+    queryOptions({
+      queryKey: [...newsletterKeys.all, 'landing', 'popular'],
+      queryFn: () => newsletterApi.fetchGuestAllNewsletterBrands({ orderOpt: '인기순' }),
+      select: (brands) => brands.slice(0, 6),
+    }),
+
+  landingNewest: () =>
+    queryOptions({
+      queryKey: [...newsletterKeys.all, 'landing', 'newest'],
+      queryFn: () => newsletterApi.fetchGuestAllNewsletterBrands({ orderOpt: '최신순' }),
+      select: (brands) => brands.slice(0, 4),
+    }),
+
+  landingTomorrow: () =>
+    queryOptions({
+      queryKey: [...newsletterKeys.all, 'landing', 'tomorrow'],
+      queryFn: () => newsletterApi.fetchGuestAllNewsletterBrands({
+        orderOpt: '인기순',
+        day: getTomorrowPublicationDay(),
+      }),
+      select: (brands) => brands.slice(0, 3),
+      // 자정을 넘겨 페이지를 열어 둔 경우에도 다음 발행일을 갱신한다.
+      refetchInterval: 60_000,
+    }),
+
   brand: (id: number, isMember: boolean) =>
     queryOptions({
       queryKey: newsletterKeys.brand(id, isMember),
@@ -38,7 +65,7 @@ export const newsletterQueries = {
 
   list: (params: BrandListParams, isMember: boolean) =>
     queryOptions({
-      queryKey: newsletterKeys.list(params),
+      queryKey: newsletterKeys.list(params, isMember),
       queryFn: () =>
         isMember
           ? newsletterApi.fetchAllNewsletterBrands(params)

@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 export function LandingFooter() {
   return (
-    <footer className="mx-auto w-full max-w-[648px] bg-bg-system px-5 py-8 sm:px-8">
+    <footer className="mx-auto w-full max-w-6xl bg-bg px-5 py-8 sm:px-8">
       <div className="flex items-center justify-between">
         <Image
           src="/images/landing/newdok-logo.svg"
@@ -14,17 +14,10 @@ export function LandingFooter() {
         />
         <nav aria-label="Newdok 외부 채널" className="flex items-center gap-4">
           <Link
-            href="/mypage"
+            href="/search"
             className="text-xs text-caption-alternative transition-colors hover:text-caption-heavy"
           >
-            마이페이지
-          </Link>
-          <Link
-            href="#"
-            className="text-xs text-caption-alternative transition-colors hover:text-caption-heavy"
-            aria-label="Newdok Instagram"
-          >
-            Instagram
+            뉴스레터 둘러보기
           </Link>
         </nav>
       </div>
@@ -32,9 +25,8 @@ export function LandingFooter() {
         Copyright Newdok. All rights reserved.
       </p>
       <nav aria-label="정책" className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-caption-assistive">
-        <Link href="#">이용약관</Link>
-        <Link href="#">개인정보처리방침</Link>
-        <Link href="#">고객센터</Link>
+        <a href="https://newdok.notion.site/18aacf9713bc427a850ae8da92b69087?pvs=4" target="_blank" rel="noopener noreferrer">이용약관 ↗</a>
+        <a href="https://newdok.notion.site/82ef5aea46d84623b7b19bb951b6043c?pvs=4" target="_blank" rel="noopener noreferrer">개인정보처리방침 ↗</a>
       </nav>
     </footer>
   );

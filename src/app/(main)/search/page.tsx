@@ -13,6 +13,7 @@ import {
 import { useAuth } from '@/shared/hooks';
 import { proxyImage } from '@/shared/lib';
 import { GuestNotice } from '@/shared/ui';
+import { NewsletterExplorer } from '@/widgets/newsletter-explorer/NewsletterExplorer';
 
 const CARD_WIDTH = 320;
 const CARD_GAP = 12;
@@ -21,6 +22,11 @@ const STEP = CARD_WIDTH + CARD_GAP;
 type Tab = 'recommend' | 'all';
 
 export default function SearchPage() {
+  const { isLoggedIn } = useAuth();
+  return isLoggedIn ? <MemberSearchPage /> : <NewsletterExplorer />;
+}
+
+function MemberSearchPage() {
   const { isLoggedIn } = useAuth();
   const [tab, setTab] = useState<Tab>(isLoggedIn ? 'recommend' : 'all');
   const [orderOpt, setOrderOpt] = useState('인기순');
@@ -203,8 +209,8 @@ function InfiniteCarousel({ items }: { items: NewsletterDetail[] }) {
     return -(idx * STEP) + 24 + dragOffset;
   };
 
-  const normalizeIndex = (idx: number) =>
-    ((idx % items.length) + items.length) % items.length;
+  const normalizeIndex = useCallback((idx: number) =>
+    ((idx % items.length) + items.length) % items.length, [items.length]);
 
   const goNext = useCallback(() => setCurrentIndex((prev) => prev + 1), []);
   const goPrev = useCallback(() => setCurrentIndex((prev) => prev - 1), []);
@@ -221,7 +227,7 @@ function InfiniteCarousel({ items }: { items: NewsletterDetail[] }) {
       }, 350);
       return () => clearTimeout(timeout);
     }
-  }, [currentIndex, items.length]);
+  }, [currentIndex, items.length, normalizeIndex]);
 
   const handlePointerDown = (e: React.PointerEvent) => {
     setIsDragging(true);

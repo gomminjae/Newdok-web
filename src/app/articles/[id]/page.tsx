@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { articleApi } from '@/entities/article';
 import { ArticleDetailClient } from './ArticleDetailClient';
+import { notFound } from 'next/navigation';
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -10,7 +11,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
 
   try {
-    const article = await articleApi.fetchArticleDetail(Number(id));
+    const article = await articleApi.fetchArticleDetail(Number(id), false);
 
     return {
       title: `${article.articleTitle} | ${article.brandName} - Newdok`,
@@ -31,6 +32,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ArticleDetailPage({ params }: Props) {
   const { id } = await params;
+  if (!/^[1-9]\d*$/.test(id) || !Number.isSafeInteger(Number(id))) notFound();
 
   return <ArticleDetailClient id={Number(id)} />;
 }

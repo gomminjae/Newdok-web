@@ -67,12 +67,16 @@ export const newsletterApi = {
     day?: string;
   }) =>
     apiClient('/newsletters/non-member', {
+      authenticated: false,
       params,
       schema: NewsletterBrandListSchema,
     }),
 
   fetchGuestNewsletterBrand: (id: number) =>
-    apiClient(`/newsletters/${id}/non-member`, { schema: BrandDetailSchema }),
+    apiClient(`/newsletters/${id}/non-member`, {
+      authenticated: false,
+      schema: BrandDetailSchema,
+    }),
 
   fetchSubscriptionCount: () =>
     apiClient('/newsletters/subscription/count', {
@@ -80,5 +84,5 @@ export const newsletterApi = {
     }),
 
   fetchOptionList: () =>
-    apiClient('/options', { schema: OptionListSchema }),
+    apiClient('/options', { authenticated: false, schema: OptionListSchema }),
 };

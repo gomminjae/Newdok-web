@@ -97,8 +97,8 @@ export const SocialProfileSchema = z.object({
 // 소셜 계정에는 기존 ID/PW 회원의 loginId, phoneNumber가 없을 수 있다.
 export const SocialAuthUserSchema = z.object({
   id: z.number(),
-  loginId: z.string().optional(),
-  phoneNumber: z.string().optional(),
+  loginId: z.string().nullish(),
+  phoneNumber: z.string().nullish(),
   subscribeEmail: z.string().nullable(),
   nickname: z.string(),
   birthYear: z.string(),
@@ -109,13 +109,18 @@ export const SocialAuthUserSchema = z.object({
 });
 export type SocialAuthUser = z.infer<typeof SocialAuthUserSchema>;
 
-export const SocialLoginResponseSchema = z.object({
-  isRegistered: z.boolean(),
-  accessToken: z.string().nullable().optional(),
-  user: SocialAuthUserSchema.nullable().optional(),
-  signupToken: z.string().nullable().optional(),
-  profile: SocialProfileSchema.nullable().optional(),
-});
+export const SocialLoginResponseSchema = z.discriminatedUnion('isRegistered', [
+  z.object({
+    isRegistered: z.literal(true),
+    accessToken: z.string().min(1),
+    user: SocialAuthUserSchema,
+  }),
+  z.object({
+    isRegistered: z.literal(false),
+    signupToken: z.string().min(1),
+    profile: SocialProfileSchema.nullish(),
+  }),
+]);
 export type SocialLoginResponse = z.infer<typeof SocialLoginResponseSchema>;
 
 export const SocialAgreementTypeSchema = z.enum([
@@ -144,7 +149,7 @@ export type SocialSignupRequest = z.infer<typeof SocialSignupRequestSchema>;
 
 export const SocialSignupResponseSchema = z.object({
   user: SocialAuthUserSchema,
-  accessToken: z.string(),
+  accessToken: z.string().min(1),
 });
 export type SocialSignupResponse = z.infer<typeof SocialSignupResponseSchema>;
 

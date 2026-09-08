@@ -80,10 +80,10 @@ export function FeatureSections() {
           key={i}
           className={clsx(f.muted ? 'bg-[#f7f7fa]' : 'bg-bg')}
         >
-          <div className="mx-auto w-full max-w-[648px] px-5 py-10 sm:px-8 md:py-12">
+          <div className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-8 md:py-16">
             <div
               className={clsx(
-                'grid items-center gap-5 sm:grid-cols-2 sm:gap-8',
+                'grid items-center gap-5 sm:grid-cols-2 sm:gap-8 lg:gap-20',
                 f.reverse && 'sm:[&>*:first-child]:order-2',
               )}
             >

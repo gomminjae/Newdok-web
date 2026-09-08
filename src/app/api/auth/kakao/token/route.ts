@@ -57,7 +57,12 @@ export async function POST(request: NextRequest) {
     return Response.json({ message: '잘못된 리다이렉트 주소입니다.' }, { status: 400 });
   }
 
-  if (parsedRedirectUri.origin !== request.nextUrl.origin) {
+  if (
+    parsedRedirectUri.origin !== request.nextUrl.origin ||
+    parsedRedirectUri.pathname !== '/login' ||
+    parsedRedirectUri.search || parsedRedirectUri.hash ||
+    parsedRedirectUri.username || parsedRedirectUri.password
+  ) {
     return Response.json({ message: '허용되지 않은 리다이렉트 주소입니다.' }, { status: 400 });
   }
 
@@ -72,17 +77,26 @@ export async function POST(request: NextRequest) {
     params.set('client_secret', process.env.KAKAO_CLIENT_SECRET);
   }
 
-  const tokenResponse = await fetch('https://kauth.kakao.com/oauth/token', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
-      Accept: 'application/json',
-    },
-    body: params,
-    cache: 'no-store',
-  });
-
-  const token = await tokenResponse.json() as KakaoTokenResponse;
+  let tokenResponse: Response;
+  let token: KakaoTokenResponse;
+  try {
+    tokenResponse = await fetch('https://kauth.kakao.com/oauth/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
+        Accept: 'application/json',
+      },
+      body: params,
+      cache: 'no-store',
+      signal: AbortSignal.timeout(15_000),
+    });
+    token = await tokenResponse.json() as KakaoTokenResponse;
+  } catch {
+    return Response.json(
+      { message: '카카오 인증 서버에 연결하지 못했습니다. 잠시 후 다시 시도해주세요.' },
+      { status: 502 },
+    );
+  }
   if (!tokenResponse.ok) {
     return Response.json(
       { message: token.error_description ?? '카카오 인증에 실패했습니다.' },

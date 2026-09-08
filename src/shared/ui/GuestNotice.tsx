@@ -21,7 +21,7 @@ export function GuestNotice({
         {title}
       </p>
       <Link
-        href="/signup"
+        href="/login"
         className="inline-flex items-center justify-center h-12 px-8 rounded-lg bg-primary text-white font-bold mb-3 hover:bg-primary-strong transition-colors"
       >
         회원가입
@@ -35,6 +35,7 @@ export function GuestNotice({
           로그인
         </Link>
       </p>
+      <Link href="/search" className="mt-6 inline-flex min-h-11 items-center px-4 text-sm font-bold text-primary">로그인 없이 뉴스레터 둘러보기 →</Link>
     </div>
   );
 }

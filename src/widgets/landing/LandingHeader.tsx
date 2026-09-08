@@ -1,7 +1,11 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
+import { useAuth } from '@/shared/hooks';
 
 export function LandingHeader() {
+  const { isLoggedIn } = useAuth();
   return (
     <header className="sticky top-0 z-50 flex h-[var(--header-height)] items-center justify-between border-b border-line-disabled bg-bg px-4 sm:px-6 xl:px-8">
       <Link href="/" aria-label="Newdok 홈">
@@ -15,10 +19,10 @@ export function LandingHeader() {
       </Link>
       <nav aria-label="랜딩 페이지 바로가기" className="flex items-center gap-3">
         <Link
-          href="/login"
+          href={isLoggedIn ? '/home' : '/login'}
           className="text-sm font-medium text-primary transition-colors hover:text-primary-strong"
         >
-          로그인
+          {isLoggedIn ? '내 뉴스레터' : '로그인'}
         </Link>
         <Link
           href="/search"

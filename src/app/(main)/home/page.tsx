@@ -8,7 +8,8 @@ import { articleQueries, articleKeys, type Article } from '@/entities/article';
 import { CalendarPopup } from '@/widgets/calendar';
 import { useAuth } from '@/shared/hooks';
 import { proxyImage } from '@/shared/lib';
-import { GuestNotice, EmptyState } from '@/shared/ui';
+import { EmptyState } from '@/shared/ui';
+import { NewsletterExplorer } from '@/widgets/newsletter-explorer/NewsletterExplorer';
 
 function formatDate(date: Date): string {
   const year = date.getFullYear();
@@ -52,11 +53,7 @@ export default function HomePage() {
   };
 
   if (!isLoggedIn) {
-    return (
-      <div className="bg-bg-system min-h-[calc(100vh-49px)] flex flex-col">
-        <GuestNotice />
-      </div>
-    );
+    return <NewsletterExplorer />;
   }
 
   return (

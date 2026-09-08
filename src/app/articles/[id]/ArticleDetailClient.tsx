@@ -6,12 +6,14 @@ import { useQuery } from '@tanstack/react-query';
 import { articleQueries, useToggleBookmark } from '@/entities/article';
 import { useAuth } from '@/shared/hooks';
 import { proxyImage } from '@/shared/lib';
+import { NewsletterContent } from '@/shared/ui/NewsletterContent';
+import { ApiError } from '@/shared/api/client';
 
 export function ArticleDetailClient({ id }: { id: number }) {
   const { isLoggedIn } = useAuth();
   const [showScrollTop, setShowScrollTop] = useState(false);
 
-  const { data: article, isLoading } = useQuery(articleQueries.detail(id));
+  const { data: article, isLoading, error, refetch } = useQuery(articleQueries.detail(id, isLoggedIn));
   const toggleBookmark = useToggleBookmark(id);
 
   const handleBookmarkToggle = () => {
@@ -41,8 +43,10 @@ export function ArticleDetailClient({ id }: { id: number }) {
 
   if (!article) {
     return (
-      <main className="flex min-h-dvh items-center justify-center text-base text-caption-neutral">
-        아티클을 찾을 수 없습니다.
+      <main className="flex min-h-dvh flex-col items-center justify-center px-5 text-center text-base text-caption-neutral">
+        <h1 className="font-bold text-caption-heavy">{error instanceof ApiError && error.status === 404 ? '아티클을 찾을 수 없어요.' : '아티클을 불러오지 못했어요.'}</h1>
+        <button type="button" onClick={() => void refetch()} className="mt-5 min-h-11 px-5 text-primary">다시 시도</button>
+        <Link href="/search" className="mt-3 text-sm underline">뉴스레터 둘러보기</Link>
       </main>
     );
   }
@@ -99,15 +103,16 @@ export function ArticleDetailClient({ id }: { id: number }) {
             dateTime={article.date}
             className="text-[13px] font-medium text-caption-assistive"
           >
-            {article.date}
+            {new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Seoul' }).format(new Date(article.date))}
           </time>
         </header>
 
-        <section
-          aria-label="아티클 본문"
-          className="article-content min-w-0 break-words px-4 pb-20 pt-5 text-base leading-relaxed text-caption-strong sm:px-6 sm:pt-7"
-          dangerouslySetInnerHTML={{ __html: article.articleHTML }}
-        />
+        <section aria-label="아티클 본문" className="min-w-0 px-4 pb-10 pt-5 sm:px-6 sm:pt-7">
+          <NewsletterContent html={article.articleHTML} title={article.articleTitle} />
+        </section>
+        <div className="border-t border-line-disabled px-5 py-8 text-center">
+          <Link href={`/newsletters/${article.brandId}`} className="inline-flex min-h-12 items-center rounded-xl bg-tint-50 px-6 text-sm font-bold text-primary">{article.brandName}의 다른 아티클 보기 →</Link>
+        </div>
       </article>
 
       {showScrollTop && (

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { clsx } from 'clsx';
+import { useAuth } from '@/shared/hooks';
 
 const NAV_ITEMS = [
   { href: '/home', label: '홈', lineIcon: '/images/Line Home.svg', fillIcon: '/images/Fill Home.svg' },
@@ -13,18 +14,28 @@ const NAV_ITEMS = [
 ] as const;
 
 export function Sidebar() {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? '/';
+  const { isLoggedIn } = useAuth();
+  const navItems = isLoggedIn ? NAV_ITEMS : [
+    { ...NAV_ITEMS[0], href: '/' },
+    NAV_ITEMS[3],
+    { ...NAV_ITEMS[4], href: '/login', label: '로그인' },
+  ];
+  const isItemActive = (href: string) => pathname === href ||
+    (href === '/' && pathname === '/home') ||
+    (href === '/search' && pathname.startsWith('/newsletters'));
 
   return (
     <>
-      <nav className="hidden xl:flex fixed left-0 top-[var(--header-height)] w-[var(--sidebar-width)] h-[calc(100vh-var(--header-height))] bg-bg border-r border-line-disabled p-4 z-40 flex-col">
+      <nav aria-label="주 메뉴" className="hidden xl:flex fixed left-0 top-[var(--header-height)] w-[var(--sidebar-width)] h-[calc(100dvh-var(--header-height))] bg-bg border-r border-line-disabled p-4 z-40 flex-col">
         <ul className="flex flex-col gap-1">
-          {NAV_ITEMS.map(({ href, label, lineIcon, fillIcon }) => {
-            const isActive = pathname === href || (pathname === '/' && href === '/home');
+          {navItems.map(({ href, label, lineIcon, fillIcon }) => {
+            const isActive = isItemActive(href);
             return (
               <li key={href}>
                 <Link
                   href={href}
+                  aria-current={isActive ? 'page' : undefined}
                   className={clsx(
                     'group relative flex flex-col items-center gap-1 py-3 px-2 rounded-lg text-[11px] transition-all duration-200 ease-out',
                     isActive
@@ -40,7 +51,7 @@ export function Sidebar() {
                   />
                   <img
                     src={isActive ? fillIcon : lineIcon}
-                    alt={label}
+                    alt=""
                     width={28}
                     height={28}
                     className="transition-transform duration-200 ease-out group-hover:scale-110 group-active:scale-95"
@@ -53,13 +64,14 @@ export function Sidebar() {
         </ul>
       </nav>
 
-      <nav className="xl:hidden fixed bottom-0 left-0 right-0 flex bg-bg border-t border-line-disabled py-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] z-40">
-        {NAV_ITEMS.map(({ href, label, lineIcon, fillIcon }) => {
-          const isActive = pathname === href || (pathname === '/' && href === '/home');
+      <nav aria-label="하단 메뉴" className="xl:hidden fixed bottom-0 left-0 right-0 flex bg-bg border-t border-line-disabled py-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] z-40">
+        {navItems.map(({ href, label, lineIcon, fillIcon }) => {
+          const isActive = isItemActive(href);
           return (
             <Link
               key={href}
               href={href}
+              aria-current={isActive ? 'page' : undefined}
               className={clsx(
                 'group flex-1 flex flex-col items-center gap-0.5 py-1 transition-colors duration-200',
                 isActive ? 'text-primary' : 'text-caption-assistive',
@@ -67,7 +79,7 @@ export function Sidebar() {
             >
               <img
                 src={isActive ? fillIcon : lineIcon}
-                alt={label}
+                alt=""
                 width={20}
                 height={20}
                 className={clsx(

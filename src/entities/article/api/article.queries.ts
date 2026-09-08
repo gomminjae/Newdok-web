@@ -31,10 +31,10 @@ export const articleQueries = {
       select: (res) => res.data,
     }),
 
-  detail: (id: number) =>
+  detail: (id: number, isMember = true) =>
     queryOptions({
-      queryKey: articleKeys.detail(id),
-      queryFn: () => articleApi.fetchArticleDetail(id),
+      queryKey: [...articleKeys.detail(id), isMember],
+      queryFn: () => articleApi.fetchArticleDetail(id, isMember),
     }),
 };
 

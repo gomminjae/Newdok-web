@@ -1,7 +1,7 @@
 'use client';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 
 export function QueryProvider({ children }: { children: ReactNode }) {
   const [queryClient] = useState(
@@ -15,6 +15,19 @@ export function QueryProvider({ children }: { children: ReactNode }) {
         },
       }),
   );
+
+  useEffect(() => {
+    const clearSessionQueries = () => queryClient.clear();
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === 'accessToken' || event.key === null) clearSessionQueries();
+    };
+    window.addEventListener('auth-change', clearSessionQueries);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      window.removeEventListener('auth-change', clearSessionQueries);
+      window.removeEventListener('storage', onStorage);
+    };
+  }, [queryClient]);
 
   return (
     <QueryClientProvider client={queryClient}>

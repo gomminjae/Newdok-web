@@ -34,6 +34,7 @@ export const userApi = {
   socialLogin: async (data: SocialLoginRequest) => {
     const res = await apiClient('/auth/social-login', {
       method: 'POST',
+      authenticated: false,
       body: data,
       schema: SocialLoginResponseSchema,
     });
@@ -47,6 +48,7 @@ export const userApi = {
   socialSignup: async (data: SocialSignupRequest) => {
     const res = await apiClient('/auth/social-login/signup', {
       method: 'POST',
+      authenticated: false,
       body: data,
       schema: SocialSignupResponseSchema,
     });

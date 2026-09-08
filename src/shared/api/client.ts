@@ -15,6 +15,7 @@ interface RequestOptions extends Omit<RequestInit, 'body'> {
   params?: Record<string, string | number | undefined>;
   body?: unknown;
   schema?: ZodType;
+  authenticated?: boolean;
 }
 
 export class ApiError extends Error {
@@ -41,6 +42,7 @@ export function setAccessToken(token: string) {
 }
 
 export function clearAccessToken() {
+  if (typeof window === 'undefined') return;
   localStorage.removeItem('accessToken');
 }
 
@@ -56,7 +58,7 @@ export async function apiClient(
   endpoint: string,
   options: RequestOptions = {},
 ): Promise<unknown> {
-  const { params, body, headers, schema, ...fetchOptions } = options;
+  const { params, body, headers, schema, authenticated = true, ...fetchOptions } = options;
 
   const url = buildUrl(endpoint);
   if (params) {
@@ -67,9 +69,10 @@ export async function apiClient(
     });
   }
 
-  const token = getAccessToken();
+  const token = authenticated ? getAccessToken() : null;
 
   const response = await fetch(url.toString(), {
+    signal: AbortSignal.timeout(15_000),
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',
@@ -81,7 +84,7 @@ export async function apiClient(
   });
 
   if (!response.ok) {
-    if (response.status === 401) {
+    if (response.status === 401 && token && token === getAccessToken()) {
       clearAccessToken();
       if (typeof window !== 'undefined') {
         localStorage.removeItem('user');
@@ -92,7 +95,10 @@ export async function apiClient(
     let serverMessage: string | undefined;
     try {
       const errorBody = await response.json();
-      serverMessage = errorBody.message ?? errorBody.error;
+      const message = errorBody.message ?? errorBody.error;
+      serverMessage = Array.isArray(message)
+        ? message.filter((item): item is string => typeof item === 'string').join('\n')
+        : typeof message === 'string' ? message : undefined;
     } catch {
       /* empty */
     }
