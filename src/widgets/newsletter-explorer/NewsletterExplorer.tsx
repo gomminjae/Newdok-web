@@ -12,11 +12,13 @@ import { NewsletterImage } from '@/widgets/landing/NewsletterImage';
 import { ExplorerDialog, NewsletterFilters } from './NewsletterFilters';
 import { NewsletterRecommendations } from './NewsletterRecommendations';
 
-export function NewsletterExplorer() {
-  return <Suspense fallback={<ExplorerLoading />}><ExplorerRoute /></Suspense>;
+export function NewsletterExplorer({ initialBrands }: { initialBrands?: NewsletterBrand[] }) {
+  return <Suspense fallback={initialBrands ? <div className="-mx-4 bg-bg-system px-5 py-5 sm:-mx-6 sm:px-6 xl:-mx-10">
+    <BrandList brands={initialBrands} isMember={false} />
+  </div> : <ExplorerLoading />}><ExplorerRoute initialBrands={initialBrands} /></Suspense>;
 }
 
-function ExplorerRoute() {
+function ExplorerRoute({ initialBrands }: { initialBrands?: NewsletterBrand[] }) {
   const params = useSearchParams();
   if (params?.get('search') === '1' || params?.get('q')) {
     const query = new URLSearchParams();
@@ -24,7 +26,7 @@ function ExplorerRoute() {
     if (keyword) query.set('q', keyword);
     redirect(`/search/newsletters${keyword ? `?${query}` : ''}`);
   }
-  return <ExplorerContent />;
+  return <ExplorerContent initialBrands={initialBrands} />;
 }
 
 function ExplorerLoading() {
@@ -35,7 +37,7 @@ function readIds(params: URLSearchParams, key: string) {
   return [...new Set(params.getAll(key).filter((id) => /^[1-9]\d*$/.test(id)))].sort((a, b) => Number(a) - Number(b));
 }
 
-function ExplorerContent() {
+function ExplorerContent({ initialBrands }: { initialBrands?: NewsletterBrand[] }) {
   const { isLoggedIn } = useAuth();
   const pathname = usePathname() ?? '/search';
   const searchParams = useSearchParams() ?? new URLSearchParams();
@@ -54,6 +56,7 @@ function ExplorerContent() {
   const brands = useQuery({
     ...newsletterQueries.list({ orderOpt, industry: industries, day: days }, isLoggedIn),
     enabled: tab === 'all',
+    initialData: !isLoggedIn && orderOpt === '인기순' && industries.length === 0 && days.length === 0 ? initialBrands : undefined,
   });
 
   function updateParams(values: Record<string, string | string[]>) {
@@ -172,7 +175,7 @@ const BrandList = memo(function BrandList({ brands, isMember }: { brands: Newsle
 
 const BrandCard = memo(function BrandCard({ brand, isMember }: { brand: NewsletterBrand; isMember: boolean }) {
   return <li>
-    <Link href={`/newsletters/${brand.brandId}`} className="grid grid-cols-[56px_minmax(0,1fr)_auto] items-start gap-x-2 gap-y-[18px] rounded-[8px] border border-line-neutral bg-bg px-5 pt-4 pb-5 transition-colors hover:border-primary min-[1024px]:grid-cols-[56px_minmax(0,1fr)_auto_auto] min-[1024px]:gap-y-0 min-[1024px]:py-3">
+    <Link href={`/newsletters/${brand.brandId}`} prefetch={false} className="grid grid-cols-[56px_minmax(0,1fr)_auto] items-start gap-x-2 gap-y-[18px] rounded-[8px] border border-line-neutral bg-bg px-5 pt-4 pb-5 transition-colors hover:border-primary min-[1024px]:grid-cols-[56px_minmax(0,1fr)_auto_auto] min-[1024px]:gap-y-0 min-[1024px]:py-3">
       <span>
         <NewsletterImage name={brand.brandName} imageUrl={brand.imageUrl} variant="thumbnail" />
       </span>

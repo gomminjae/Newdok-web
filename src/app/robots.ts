@@ -15,8 +15,11 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: '*',
-        allow: ['/', '/newsletters'],
+        allow: ['/', '/newsletters', '/api/backend/public/'],
         disallow: [
+          '/api/',
+          '/newsletters?*',
+          '/newsletters/*?*',
           '/home',
           '/mypage',
           '/bookmarks',

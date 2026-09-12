@@ -1,14 +1,9 @@
 import type { MetadataRoute } from 'next';
-import { newsletterApi } from '@/entities/newsletter';
+import { getPublicNewsletters } from '@/entities/newsletter/api/public-newsletter.server';
 import { SITE_URL } from '@/shared/config/site';
 
-// 사이트맵도 ISR로 1시간마다 재생성
-export const revalidate = 3600;
-
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const brands = await newsletterApi
-    .fetchGuestAllNewsletterBrands({})
-    .catch(() => []);
+  const brands = await getPublicNewsletters();
 
   const staticEntries: MetadataRoute.Sitemap = [
     {

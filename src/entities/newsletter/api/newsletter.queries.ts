@@ -2,6 +2,9 @@ import { queryOptions } from '@tanstack/react-query';
 import { newsletterApi } from './newsletter.api';
 import { getTomorrowPublicationDay } from '../model/publication';
 
+// staleTime은 공통 QueryProvider의 기본값을 사용한다.
+const publicQueryOptions = { refetchOnWindowFocus: false } as const;
+
 type BrandListParams = {
   orderOpt?: string;
   industry?: string | readonly string[];
@@ -43,6 +46,7 @@ export const newsletterQueries = {
 
   landingPopular: () =>
     queryOptions({
+      ...publicQueryOptions,
       queryKey: [...newsletterKeys.all, 'landing', 'popular'],
       queryFn: () => newsletterApi.fetchGuestAllNewsletterBrands({ orderOpt: '인기순' }),
       select: (brands) => brands.slice(0, 6),
@@ -50,25 +54,26 @@ export const newsletterQueries = {
 
   landingNewest: () =>
     queryOptions({
+      ...publicQueryOptions,
       queryKey: [...newsletterKeys.all, 'landing', 'newest'],
       queryFn: () => newsletterApi.fetchGuestAllNewsletterBrands({ orderOpt: '최신순' }),
       select: (brands) => brands.slice(0, 4),
     }),
 
-  landingTomorrow: () =>
+  landingTomorrow: (day = getTomorrowPublicationDay()) =>
     queryOptions({
-      queryKey: [...newsletterKeys.all, 'landing', 'tomorrow'],
+      ...publicQueryOptions,
+      queryKey: [...newsletterKeys.all, 'landing', 'tomorrow', day],
       queryFn: () => newsletterApi.fetchGuestAllNewsletterBrands({
         orderOpt: '인기순',
-        day: getTomorrowPublicationDay(),
+        day,
       }),
       select: (brands) => brands.slice(0, 3),
-      // 자정을 넘겨 페이지를 열어 둔 경우에도 다음 발행일을 갱신한다.
-      refetchInterval: 60_000,
     }),
 
   brand: (id: number, isMember: boolean) =>
     queryOptions({
+      ...(!isMember && publicQueryOptions),
       queryKey: newsletterKeys.brand(id, isMember),
       queryFn: () =>
         isMember
@@ -78,6 +83,7 @@ export const newsletterQueries = {
 
   list: (params: BrandListParams, isMember: boolean) =>
     queryOptions({
+      ...(!isMember && publicQueryOptions),
       queryKey: newsletterKeys.list(params, isMember),
       queryFn: () =>
         isMember

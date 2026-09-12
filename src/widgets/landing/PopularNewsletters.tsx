@@ -5,13 +5,15 @@ import { Chip } from '@/shared/ui';
 import Link from 'next/link';
 import { useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { newsletterQueries } from '@/entities/newsletter';
+import { newsletterQueries, type NewsletterBrand } from '@/entities/newsletter';
 import { NewsletterImage } from './NewsletterImage';
 import { NewsletterListState } from './NewsletterListState';
 
-export function PopularNewsletters() {
+export function PopularNewsletters({ initialNewsletters }: { initialNewsletters: NewsletterBrand[] }) {
   const listRef = useRef<HTMLUListElement>(null);
-  const { data: newsletters = [], isPending, isError, refetch } = useQuery(newsletterQueries.landingPopular());
+  const { data: newsletters = [], isPending, isError, refetch } = useQuery({
+    ...newsletterQueries.landingPopular(), initialData: initialNewsletters,
+  });
 
   const scrollCards = (direction: -1 | 1) => {
     listRef.current?.scrollBy({ left: direction * 300, behavior: 'smooth' });
@@ -37,6 +39,7 @@ export function PopularNewsletters() {
               >
                 <Link
                   href={`/newsletters/${newsletter.brandId}`}
+                  prefetch={false}
                   className="flex h-full min-h-28 gap-3 rounded-xl border border-line-neutral bg-bg p-3 transition-shadow hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 >
                   <NewsletterImage name={newsletter.brandName} imageUrl={newsletter.imageUrl} />

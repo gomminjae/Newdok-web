@@ -123,6 +123,7 @@ const RecommendedCard = memo(function RecommendedCard({ newsletter }: { newslett
   return (
     <Link
       href={`/newsletters/${newsletter.id}`}
+      prefetch={false}
       className="block h-[350px] overflow-hidden rounded-[12px] bg-bg ring-1 ring-inset ring-line-neutral transition-shadow hover:ring-primary"
     >
       <NewsletterImage name={newsletter.brandName} imageUrl={newsletter.imageUrl} variant="recommendation" />
@@ -147,6 +148,7 @@ const NewsletterDetailRow = memo(function NewsletterDetailRow({ newsletter }: { 
   return (
     <Link
       href={`/newsletters/${newsletter.id}`}
+      prefetch={false}
       className="block bg-bg rounded-[8px] border border-line-neutral px-5 pt-4 transition-colors hover:bg-neutral-50"
     >
       <div className="flex items-start gap-2 pb-[18px]">

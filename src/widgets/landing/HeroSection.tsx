@@ -15,7 +15,7 @@ export function HeroSection() {
             새로운 소식부터 깊이 있는 이야기까지.<br />
             나의 관심사에 맞는 뉴스레터를 한곳에서 만나보세요.
           </p>
-          <ButtonLink href="/search" className="mt-7 w-full sm:w-auto">
+          <ButtonLink href="/newsletters" className="mt-7 w-full sm:w-auto">
             뉴스레터 둘러보기 →
           </ButtonLink>
           <p className="mt-3 text-xs text-caption-alternative">회원가입 없이 바로 둘러볼 수 있어요.</p>

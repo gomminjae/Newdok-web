@@ -14,7 +14,7 @@ export function LandingFooter() {
         />
         <nav aria-label="Newdok 외부 채널" className="flex items-center gap-4">
           <Link
-            href="/search"
+            href="/newsletters"
             className="text-xs text-caption-alternative transition-colors hover:text-caption-heavy"
           >
             뉴스레터 둘러보기

@@ -85,7 +85,7 @@ function SearchResults({ keyword }: { keyword: string }) {
 const SearchResultList = memo(function SearchResultList({ results }: { results: NewsletterSearchResult[] }) {
   return <ul className="space-y-3">
     {results.map((result) => <li key={result.id}>
-      <Link href={`/newsletters/${result.id}`} className="flex items-center gap-3 rounded-[12px] bg-bg p-4 transition-colors hover:bg-neutral-50">
+      <Link href={`/newsletters/${result.id}`} prefetch={false} className="flex items-center gap-3 rounded-[12px] bg-bg p-4 transition-colors hover:bg-neutral-50">
         <NewsletterImage name={result.brandName} imageUrl={result.imageUrl ?? null} variant="thumbnail" />
         <div className="min-w-0">
           <h3 className="text-sm font-bold text-caption-title">{result.brandName}</h3>

@@ -22,7 +22,6 @@ export function BrandDetailClient({ id, initialBrand }: { id: number; initialBra
   const { data: brand, isPending, isError, refetch } = useQuery({
     ...newsletterQueries.brand(id, isLoggedIn),
     initialData: isLoggedIn ? undefined : initialBrand,
-    initialDataUpdatedAt: 0,
   });
 
   useEffect(() => {
@@ -77,7 +76,7 @@ export function BrandDetailClient({ id, initialBrand }: { id: number; initialBra
 
         <section aria-label="뉴스레터 구독" className="relative z-10 -mt-[52px] flex min-w-0 items-center justify-between gap-3 rounded-lg bg-bg/60 px-6 pt-5 pb-[21px] shadow-[0_4px_8px_#0000000a] backdrop-blur-xl min-[960px]:col-start-2 min-[960px]:mt-0 min-[960px]:bg-bg">
           <div className="min-w-0">
-            <h2 className="break-words text-base font-bold text-caption-heavy">{brand.brandName}</h2>
+            <h1 className="break-words text-base font-bold text-caption-heavy">{brand.brandName}</h1>
             <p className="mt-1 flex items-start gap-1 text-xs font-medium leading-5 text-caption-neutral">
               <svg aria-hidden="true" width="20" height="20" viewBox="0 0 20 20" fill="none" className="shrink-0"><circle cx="10" cy="10" r="7.5" stroke="currentColor" /><path d="M10 5v5l3.5 2.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" /></svg>
               {brand.publicationCycle || '발행 일정은 발행처에서 확인해주세요.'}
@@ -113,7 +112,7 @@ export function BrandDetailClient({ id, initialBrand }: { id: number; initialBra
             {brand.brandArticleList.slice(0, visibleCount).map((article) => {
               const published = formatPublicationDate(article.date);
               return <li key={article.id}>
-                <Link href={`/articles/${article.id}`} className="block min-w-0 rounded-lg border border-line-neutral bg-bg p-4 transition-colors hover:border-tint-200">
+                <Link href={`/articles/${article.id}`} prefetch={false} className="block min-w-0 rounded-lg border border-line-neutral bg-bg p-4 transition-colors hover:border-tint-200">
                   <h3 className="line-clamp-2 break-words text-sm font-bold leading-5 text-caption-strong">{article.title}</h3>
                   <time dateTime={article.date} className="mt-2 flex flex-wrap items-center gap-x-2 text-xs font-medium leading-4 text-caption-neutral">
                     <span>{published.date}</span>

@@ -3,3 +3,8 @@ export function getTomorrowPublicationDay(now = new Date()): string {
   const tomorrowInKorea = new Date(now.getTime() + (24 + 9) * 60 * 60 * 1000);
   return String(tomorrowInKorea.getUTCDay() || 7);
 }
+
+export function millisecondsUntilKoreanMidnight(now = new Date()): number {
+  const day = 24 * 60 * 60 * 1000;
+  return day - ((now.getTime() + 9 * 60 * 60 * 1000) % day) + 100;
+}

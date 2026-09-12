@@ -3,14 +3,35 @@
 import { Chip } from '@/shared/ui';
 
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { newsletterQueries } from '@/entities/newsletter';
+import { newsletterQueries, type NewsletterBrand } from '@/entities/newsletter';
+import { getTomorrowPublicationDay, millisecondsUntilKoreanMidnight } from '@/entities/newsletter/model/publication';
 import { NewsletterImage } from './NewsletterImage';
 import { NewsletterListState } from './NewsletterListState';
 
-export function TodayNewsletters() {
-  const tomorrow = useQuery(newsletterQueries.landingTomorrow());
-  const newest = useQuery(newsletterQueries.landingNewest());
+export function TodayNewsletters({ initialTomorrow, initialNewest, initialTomorrowDay }: {
+  initialTomorrow: NewsletterBrand[];
+  initialNewest: NewsletterBrand[];
+  initialTomorrowDay: string;
+}) {
+  const [tomorrowDay, setTomorrowDay] = useState(initialTomorrowDay);
+  useEffect(() => {
+    let timeout: ReturnType<typeof setTimeout>;
+    const updateDay = () => {
+      setTomorrowDay(getTomorrowPublicationDay());
+      clearTimeout(timeout);
+      timeout = setTimeout(updateDay, millisecondsUntilKoreanMidnight());
+    };
+    updateDay();
+    document.addEventListener('visibilitychange', updateDay);
+    return () => { clearTimeout(timeout); document.removeEventListener('visibilitychange', updateDay); };
+  }, []);
+  const tomorrow = useQuery({
+    ...newsletterQueries.landingTomorrow(tomorrowDay),
+    initialData: tomorrowDay === initialTomorrowDay ? initialTomorrow : undefined,
+  });
+  const newest = useQuery({ ...newsletterQueries.landingNewest(), initialData: initialNewest });
 
   return (
     <section className="px-5 pb-12 sm:px-8 sm:pb-14">
@@ -31,6 +52,7 @@ export function TodayNewsletters() {
               <li key={newsletter.brandId}>
                 <Link
                   href={`/newsletters/${newsletter.brandId}`}
+                  prefetch={false}
                   className="block h-full overflow-hidden rounded-xl border border-line-neutral bg-bg transition-shadow hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 >
                   <NewsletterImage name={newsletter.brandName} imageUrl={newsletter.imageUrl} cover />
@@ -64,6 +86,7 @@ export function TodayNewsletters() {
               <li key={newsletter.brandId}>
                 <Link
                   href={`/newsletters/${newsletter.brandId}`}
+                  prefetch={false}
                   className="flex items-center gap-3 rounded-xl border border-line-neutral bg-bg p-3 transition-shadow hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 >
                   <NewsletterImage name={newsletter.brandName} imageUrl={newsletter.imageUrl} />

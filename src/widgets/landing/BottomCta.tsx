@@ -9,7 +9,7 @@ export function BottomCta() {
         뉴독에서 더욱 편리하게
       </h2>
       <ButtonLink
-        href="/search"
+        href="/newsletters"
         className="focus-visible:outline-white"
       >
         뉴스레터 둘러보기

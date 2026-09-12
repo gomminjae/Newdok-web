@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import { SITE_DESCRIPTION, SITE_URL } from '@/shared/config/site';
+import { getPublicNewsletters } from '@/entities/newsletter/api/public-newsletter.server';
+import { getTomorrowPublicationDay } from '@/entities/newsletter/model/publication';
 import { Sidebar } from '@/widgets/sidebar';
 import {
   LandingHeader,
@@ -52,7 +54,14 @@ const websiteJsonLd = {
   inLanguage: 'ko-KR',
 };
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const tomorrowDay = getTomorrowPublicationDay();
+  const [popular, newest, tomorrow] = await Promise.all([
+    getPublicNewsletters(),
+    getPublicNewsletters('최신순'),
+    getPublicNewsletters('인기순', tomorrowDay),
+  ]);
+
   return (
     <>
       <script
@@ -67,10 +76,10 @@ export default function LandingPage() {
         <div className="pb-[calc(var(--tabbar-height)+env(safe-area-inset-bottom))] sm:ml-[var(--sidebar-width)] sm:pb-0">
           <main id="main-content">
             <HeroSection />
-            <PopularNewsletters />
+            <PopularNewsletters initialNewsletters={popular.slice(0, 6)} />
             <FeatureSections />
             <DiscoverSection />
-            <TodayNewsletters />
+            <TodayNewsletters initialNewest={newest.slice(0, 4)} initialTomorrow={tomorrow.slice(0, 3)} initialTomorrowDay={tomorrowDay} />
             <BottomCta />
           </main>
           <LandingFooter />

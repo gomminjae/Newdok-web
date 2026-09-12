@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
+import { cache } from 'react';
 import { notFound } from 'next/navigation';
-import { newsletterApi } from '@/entities/newsletter';
+import { getPublicNewsletters, getPublicNewsletterBrand } from '@/entities/newsletter/api/public-newsletter.server';
 import { ApiError } from '@/shared/api/client';
 import { BrandDetailClient } from './BrandDetailClient';
 
@@ -8,58 +9,45 @@ type Props = {
   params: Promise<{ id: string }>;
 };
 
-// ISR: 1시간마다 백그라운드 재검증
-export const revalidate = 3600;
-
-// 빌드 시 인기 브랜드를 미리 생성. 그 외 브랜드는 첫 요청 시 온디맨드 생성 후 캐시.
+// 빌드 시 요청을 제한하고, 나머지 유효한 브랜드는 첫 방문 때 생성해 캐시한다.
 export async function generateStaticParams() {
-  try {
-    const brands = await newsletterApi.fetchGuestAllNewsletterBrands({
-      orderOpt: '인기순',
-    });
-    return brands.slice(0, 50).map((b) => ({ id: String(b.brandId) }));
-  } catch {
-    return [];
-  }
+  const brands = await getPublicNewsletters();
+  return brands.slice(0, 12).map((brand) => ({ id: String(brand.brandId) }));
 }
+
+// 메타데이터와 본문이 같은 검증 결과와 조회 Promise를 공유한다.
+const getBrand = cache(async (id: string) => {
+  if (!/^[1-9]\d*$/.test(id) || !Number.isSafeInteger(Number(id))) notFound();
+  try {
+    return await getPublicNewsletterBrand(Number(id));
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) notFound();
+    throw error;
+  }
+});
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
+  const brand = await getBrand(id);
+  const title = `${brand.brandName} 뉴스레터`;
+  const description = brand.detailDescription?.trim() || `${brand.brandName} 뉴스레터 소개와 발행 일정, 지난 아티클을 확인하세요.`;
+  const images = [brand.imageUrl || '/og.png'];
 
-  try {
-    const brand = await newsletterApi.fetchGuestNewsletterBrand(Number(id));
-
-    return {
-      title: `${brand.brandName} | Newdok`,
-      description:
-        brand.detailDescription ??
-        `${brand.brandName} 뉴스레터 상세 정보와 아티클을 확인하세요.`,
-      openGraph: {
-        title: `${brand.brandName} | Newdok`,
-        description:
-          brand.detailDescription ??
-          `${brand.brandName} 뉴스레터 상세 정보`,
-        ...(brand.imageUrl ? { images: [brand.imageUrl] } : {}),
-      },
-    };
-  } catch {
-    return {
-      title: '뉴스레터 | Newdok',
-      description: '뉴스레터 상세 정보를 확인하세요.',
-    };
-  }
+  return {
+    title,
+    description,
+    alternates: { canonical: `/newsletters/${id}` },
+    openGraph: {
+      title: `${title} | Newdok`, description, images,
+      url: `/newsletters/${id}`, type: 'website', locale: 'ko_KR', siteName: 'Newdok',
+    },
+    twitter: { card: 'summary_large_image', title: `${title} | Newdok`, description, images },
+  };
 }
 
 export default async function NewsletterDetailPage({ params }: Props) {
   const { id } = await params;
-  if (!/^[1-9]\d*$/.test(id) || !Number.isSafeInteger(Number(id))) notFound();
-
-  const brand = await newsletterApi
-    .fetchGuestNewsletterBrand(Number(id))
-    .catch((error: unknown) => {
-      if (error instanceof ApiError && error.status === 404) notFound();
-      return undefined;
-    });
+  const brand = await getBrand(id);
 
   return <BrandDetailClient key={id} id={Number(id)} initialBrand={brand} />;
 }
