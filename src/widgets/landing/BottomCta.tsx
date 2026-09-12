@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { ButtonLink } from '@/shared/ui';
 
 export function BottomCta() {
   return (
@@ -8,12 +8,12 @@ export function BottomCta() {
         <br />
         뉴독에서 더욱 편리하게
       </h2>
-      <Link
+      <ButtonLink
         href="/search"
-        className="inline-flex min-h-12 items-center justify-center rounded-lg bg-primary px-8 text-base font-bold text-white transition-colors hover:bg-primary-strong focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+        className="focus-visible:outline-white"
       >
         뉴스레터 둘러보기
-      </Link>
+      </ButtonLink>
     </section>
   );
 }

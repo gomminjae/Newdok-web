@@ -4,8 +4,8 @@ import { getTomorrowPublicationDay } from '../model/publication';
 
 type BrandListParams = {
   orderOpt?: string;
-  industry?: string;
-  day?: string;
+  industry?: string | readonly string[];
+  day?: string | readonly string[];
 };
 
 export const newsletterKeys = {
@@ -28,6 +28,19 @@ export const subscriptionKeys = {
 };
 
 export const newsletterQueries = {
+  search: (keyword: string) => queryOptions({
+    queryKey: [...newsletterKeys.all, 'search', keyword],
+    queryFn: ({ signal }) => newsletterApi.search(keyword, signal),
+    enabled: !!keyword,
+    staleTime: 60_000,
+  }),
+
+  popularSearchKeywords: () => queryOptions({
+    queryKey: [...newsletterKeys.all, 'popular-search-keywords'],
+    queryFn: newsletterApi.fetchPopularSearchKeywords,
+    staleTime: 300_000,
+  }),
+
   landingPopular: () =>
     queryOptions({
       queryKey: [...newsletterKeys.all, 'landing', 'popular'],

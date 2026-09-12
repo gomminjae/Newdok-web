@@ -13,6 +13,7 @@ import {
 } from '@/features/auth/social';
 import { ApiError } from '@/shared/api/client';
 import { enterAsGuest } from '@/shared/hooks';
+import { Button } from '@/shared/ui';
 
 const KAKAO_STATE_KEY = 'newdok.kakaoOAuthState';
 const KAKAO_NONCE_KEY = 'newdok.kakaoOAuthNonce';
@@ -212,7 +213,7 @@ export function LoginForm() {
   const isLoading = loadingProvider !== null;
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center px-6 py-10">
+    <main className="mx-auto flex min-h-dvh w-full max-w-[432px] flex-col px-6 pb-14">
       <Script
         src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/ko_KR/appleid.auth.js"
         strategy="afterInteractive"
@@ -220,62 +221,70 @@ export function LoginForm() {
         onError={() => setErrorMessage('Apple 로그인 모듈을 불러오지 못했습니다.')}
       />
 
-      <div className="flex w-full max-w-sm flex-1 flex-col justify-center">
+      <div className="flex flex-1 flex-col items-center pb-14">
+        <div className="min-h-12 flex-1" />
         <Image
           src="/images/landing/newdok-logo.svg"
           alt="Newdok"
-          width={180}
-          height={32}
+          width={270}
+          height={48}
           priority
-          className="mx-auto mb-24 h-8 w-auto"
+          className="h-12 w-auto max-w-full"
         />
-
-        <div className="flex flex-col gap-3">
-          <div className="relative">
-            <div className="pointer-events-none absolute -top-9 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#FB4F4F] px-3 py-1.5 text-xs font-bold text-white after:absolute after:left-1/2 after:top-full after:-translate-x-1/2 after:border-x-[5px] after:border-t-[6px] after:border-x-transparent after:border-t-[#FB4F4F]">
-              3초만에 시작하기
-            </div>
-            <button
-              type="button"
-              onClick={() => void startKakaoLogin()}
-              disabled={isLoading}
-              className="relative flex h-14 w-full items-center justify-center rounded-xl bg-[#FEE500] text-base font-bold text-black/85 transition-opacity disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              <KakaoIcon />
-              {loadingProvider === 'kakao' ? '카카오 로그인 중...' : '카카오로 계속하기'}
-            </button>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => void startAppleLogin()}
-            disabled={isLoading}
-            className="relative flex h-14 w-full items-center justify-center rounded-xl bg-black text-base font-bold text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            <AppleIcon />
-            {loadingProvider === 'apple' ? 'Apple 로그인 중...' : 'Apple로 계속하기'}
-          </button>
-
-          {errorMessage && (
-            <p role="alert" className="pt-1 text-center text-sm text-error">
-              {errorMessage}
-            </p>
-          )}
-
-          <button
-            type="button"
-            onClick={() => {
-              enterAsGuest();
-              router.push('/');
-            }}
-            disabled={isLoading}
-            className="mt-2 text-sm font-medium text-caption-neutral underline-offset-2 hover:underline disabled:opacity-60"
-          >
-            비회원으로 이용하기
-          </button>
-        </div>
+        <div className="min-h-16 flex-[2]" />
       </div>
-    </div>
+
+      <div className="flex flex-col gap-3">
+        <div className="relative">
+          <div className="pointer-events-none absolute -top-[30px] left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#FB4F4F] px-3 py-1.5 text-xs font-bold text-white after:absolute after:left-1/2 after:top-full after:-translate-x-1/2 after:border-x-[5px] after:border-t-[6px] after:border-x-transparent after:border-t-[#FB4F4F]">
+            3초만에 시작하기
+          </div>
+          <Button
+            variant="kakao"
+            size="lg"
+            radius="xl"
+            fullWidth
+            onClick={() => void startKakaoLogin()}
+            disabled={isLoading}
+            className="relative"
+          >
+            <KakaoIcon />
+            {loadingProvider === 'kakao' ? '카카오 로그인 중...' : '카카오로 계속하기'}
+          </Button>
+        </div>
+
+        <Button
+          variant="apple"
+          size="lg"
+          radius="xl"
+          fullWidth
+          onClick={() => void startAppleLogin()}
+          disabled={isLoading}
+          className="relative"
+        >
+          <AppleIcon />
+          {loadingProvider === 'apple' ? 'Apple 로그인 중...' : 'Apple로 계속하기'}
+        </Button>
+
+        {errorMessage && (
+          <p role="alert" className="pt-1 text-center text-sm text-error">
+            {errorMessage}
+          </p>
+        )}
+
+        <button
+          type="button"
+          onClick={() => {
+            enterAsGuest();
+            router.push('/');
+          }}
+          disabled={isLoading}
+          className="mt-2 min-h-11 text-sm font-medium text-caption-neutral underline-offset-2 hover:underline disabled:opacity-60"
+        >
+          비회원으로 이용하기
+        </button>
+      </div>
+    </main>
   );
 }
 
@@ -284,7 +293,7 @@ function KakaoIcon() {
     <svg
       aria-hidden="true"
       viewBox="0 0 24 24"
-      className="absolute left-5 h-5 w-5 fill-current"
+      className="absolute left-5 h-4 w-4 fill-current"
     >
       <path d="M12 3C6.48 3 2 6.49 2 10.8c0 2.78 1.86 5.22 4.66 6.6l-1.19 4.37a.38.38 0 0 0 .58.41l5.22-3.48c.24.02.48.03.73.03 5.52 0 10-3.49 10-7.93S17.52 3 12 3Z" />
     </svg>

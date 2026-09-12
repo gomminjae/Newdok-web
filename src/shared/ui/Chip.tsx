@@ -1,22 +1,25 @@
 import { clsx } from 'clsx';
-import type { ButtonHTMLAttributes } from 'react';
+import type { ButtonHTMLAttributes, ReactNode } from 'react';
 
 type Props = {
+  children: ReactNode;
   active?: boolean;
-} & ButtonHTMLAttributes<HTMLButtonElement>;
+} & (
+  | { as?: 'span' }
+  | ({ as: 'button' } & Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'className' | 'style' | 'children' | 'aria-pressed'>)
+);
 
-export function Chip({ active, className, type = 'button', ...props }: Props) {
-  return (
-    <button
-      type={type}
-      className={clsx(
-        'inline-flex items-center gap-1 h-8 px-3 rounded-full text-sm transition-colors',
-        active
-          ? 'bg-primary text-white'
-          : 'bg-bg-system text-caption-strong hover:bg-neutral-150',
-        className,
-      )}
-      {...props}
-    />
+/** 카테고리 표시와 선택 필터가 공유하는 앱 기본 칩. 외형은 이곳에서만 변경한다. */
+export function Chip({ as = 'span', active = false, ...props }: Props) {
+  const className = clsx(
+    'inline-flex shrink-0 items-center justify-center gap-1 rounded-2xl border bg-bg px-2.5 py-1.5 text-xs font-normal leading-4 whitespace-nowrap',
+    active ? 'border-primary text-primary' : 'border-line-neutral text-caption-strong',
+    as === 'button' && 'transition-colors hover:bg-bg-system disabled:cursor-default disabled:opacity-50',
   );
+
+  if (as === 'button') {
+    return <button type="button" {...props} aria-pressed={active} className={className} />;
+  }
+
+  return <span className={className}>{props.children}</span>;
 }

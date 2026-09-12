@@ -1,5 +1,7 @@
 'use client';
 
+import { Chip } from '@/shared/ui';
+
 import Link from 'next/link';
 import { useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -35,7 +37,7 @@ export function PopularNewsletters() {
               >
                 <Link
                   href={`/newsletters/${newsletter.brandId}`}
-                  className="flex h-full min-h-28 gap-3 rounded-xl border border-line-disabled bg-bg p-3 transition-shadow hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  className="flex h-full min-h-28 gap-3 rounded-xl border border-line-neutral bg-bg p-3 transition-shadow hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 >
                   <NewsletterImage name={newsletter.brandName} imageUrl={newsletter.imageUrl} />
                   <span className="min-w-0 flex-1">
@@ -47,12 +49,7 @@ export function PopularNewsletters() {
                     </span>
                     <span className="mt-2 flex flex-wrap gap-1">
                       {newsletter.interests.slice(0, 3).map((tag) => (
-                        <span
-                          key={tag.id}
-                          className="rounded-full border border-primary px-2 py-0.5 text-[10px] text-primary"
-                        >
-                          #{tag.name}
-                        </span>
+                        <Chip key={tag.id}>{tag.name}</Chip>
                       ))}
                     </span>
                   </span>

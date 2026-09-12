@@ -1,7 +1,6 @@
 'use client';
 
-import { useMemo, useState, useSyncExternalStore } from 'react';
-import Link from 'next/link';
+import { useId, useMemo, useState, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   SocialSignupRequestSchema,
@@ -10,7 +9,7 @@ import {
 } from '@/entities/user';
 import { SOCIAL_SIGNUP_STORAGE_KEY } from '@/features/auth/social';
 import { ApiError } from '@/shared/api/client';
-import { Button, Input } from '@/shared/ui';
+import { Button, ButtonLink, Input } from '@/shared/ui';
 
 const TERMS_URL = 'https://newdok.notion.site/18aacf9713bc427a850ae8da92b69087?pvs=4';
 const PRIVACY_URL = 'https://newdok.notion.site/82ef5aea46d84623b7b19bb951b6043c?pvs=4';
@@ -39,18 +38,19 @@ export function SignupForm() {
 
   if (!signupSession) {
     return (
-      <main className="flex min-h-screen items-center justify-center px-6">
+      <main className="flex min-h-dvh items-center justify-center px-6">
         <div className="w-full max-w-sm text-center">
           <h1 className="text-xl font-bold text-caption-heavy">소셜 로그인이 필요합니다</h1>
           <p className="mt-3 text-sm leading-6 text-caption-neutral">
             카카오 또는 Apple 인증을 먼저 완료해주세요.
           </p>
-          <Link
+          <ButtonLink
             href="/login"
-            className="mt-8 inline-flex h-12 w-full items-center justify-center rounded-lg bg-primary font-bold text-white"
+            fullWidth
+            className="mt-8"
           >
             로그인으로 돌아가기
-          </Link>
+          </ButtonLink>
         </div>
       </main>
     );
@@ -128,9 +128,9 @@ function SocialSignupFlow({ signupSession }: { signupSession: SignupSession }) {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-lg flex-col bg-bg">
+    <main className="mx-auto flex min-h-dvh w-full max-w-lg flex-col bg-bg">
       <header className="sticky top-0 z-10 bg-bg">
-        <div className="relative flex h-12 items-center justify-center border-b border-line-disabled">
+        <div className="relative flex h-11 items-center justify-center">
           <button
             type="button"
             onClick={() => {
@@ -142,13 +142,15 @@ function SocialSignupFlow({ signupSession }: { signupSession: SignupSession }) {
               }
             }}
             aria-label="뒤로 가기"
-            className="absolute left-2 flex h-11 w-11 items-center justify-center text-2xl text-caption-strong"
+            className="absolute left-2 flex h-11 w-11 items-center justify-center text-caption-strong"
           >
-            ‹
+            <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="m15 5-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </button>
           <h1 className="text-base font-bold">회원가입</h1>
         </div>
-        <div className="h-1 bg-tint-50">
+        <div className="h-1 bg-primary-bg">
           <div
             className="h-full bg-primary transition-[width] duration-200"
             style={{ width: step === 'profile' ? '50%' : '90%' }}
@@ -162,10 +164,12 @@ function SocialSignupFlow({ signupSession }: { signupSession: SignupSession }) {
             프로필 설정을 위해<br />회원 정보를 입력해주세요.
           </h2>
 
-          <div className="mt-10 flex flex-col gap-7">
-            <div>
+          <div className="mt-[42px] flex flex-col gap-8">
+            <div className="group">
+              <label htmlFor="signup-nickname" className="mb-2 block pl-1 text-sm font-medium text-caption-neutral">닉네임</label>
               <Input
-                label="닉네임"
+                id="signup-nickname"
+                leftIcon={<ProfileIcon />}
                 placeholder="12자 이내, 특수문자 사용 불가"
                 value={nickname}
                 maxLength={12}
@@ -180,32 +184,38 @@ function SocialSignupFlow({ signupSession }: { signupSession: SignupSession }) {
               )}
             </div>
 
-            <label className="flex flex-col gap-2 text-sm font-medium text-caption-strong">
-              출생연도
-              <select
-                value={birthYear}
-                onChange={(event) => setBirthYear(event.target.value)}
-                className="h-12 rounded-lg border border-line-disabled bg-bg px-4 text-base outline-none focus:border-primary"
-              >
-                <option value="">선택</option>
-                {birthYears.map((year) => (
-                  <option key={year} value={year}>{year}</option>
-                ))}
-              </select>
-              <span className="text-xs font-normal text-caption-neutral">
+            <label className="flex flex-col gap-2 text-sm font-medium text-caption-neutral">
+              <span className="pl-1">출생연도</span>
+              <span className="relative">
+                <select
+                  value={birthYear}
+                  onChange={(event) => setBirthYear(event.target.value)}
+                  className="h-12 w-full appearance-none rounded-sm border border-line-alternative bg-bg px-4 pr-12 text-sm font-medium text-caption-strong outline-none transition-colors focus:border-primary"
+                >
+                  <option value="">선택</option>
+                  {birthYears.map((year) => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
+                <svg aria-hidden="true" className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-caption-alternative" width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="m5 8 5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </span>
+              <span className="text-xs font-medium text-caption-neutral">
                 출생연도는 뉴스레터 추천에 활용돼요.
               </span>
             </label>
 
             <fieldset>
-              <legend className="mb-2 text-sm font-medium text-caption-strong">성별</legend>
+              <legend className="mb-2 text-sm font-medium text-caption-neutral">성별</legend>
               <div className="grid grid-cols-3 gap-2">
                 {['남자', '여자', '그외'].map((option) => (
                   <button
                     key={option}
                     type="button"
+                    aria-pressed={gender === option}
                     onClick={() => setGender(option)}
-                    className={`h-12 rounded border text-base font-medium transition-colors ${
+                    className={`h-12 rounded-sm border bg-bg text-base font-medium transition-colors ${
                       gender === option
                         ? 'border-primary text-primary'
                         : 'border-line-alternative text-caption-assistive'
@@ -215,7 +225,7 @@ function SocialSignupFlow({ signupSession }: { signupSession: SignupSession }) {
                   </button>
                 ))}
               </div>
-              <p className="mt-2 text-xs text-caption-neutral">
+              <p className="mt-2 text-xs font-medium text-caption-neutral">
                 성별은 뉴스레터 추천에 활용돼요.
               </p>
             </fieldset>
@@ -225,6 +235,7 @@ function SocialSignupFlow({ signupSession }: { signupSession: SignupSession }) {
             <Button
               type="button"
               fullWidth
+              disabledTone="white"
               disabled={!profileIsValid}
               onClick={() => {
                 setStep('agreements');
@@ -241,7 +252,7 @@ function SocialSignupFlow({ signupSession }: { signupSession: SignupSession }) {
             마지막으로<br />이용 약관에 동의해주세요.
           </h2>
 
-          <div className="mt-8 flex flex-col">
+          <div className="mt-8 flex flex-col gap-4">
             <AgreementRow
               label="만 14세 이상 확인"
               required
@@ -268,7 +279,7 @@ function SocialSignupFlow({ signupSession }: { signupSession: SignupSession }) {
               onChange={(checked) => updateAgreement('MARKETING_INFORMATION_RECEIPT', checked)}
             />
 
-            <div className="my-4 border-t border-line-disabled" />
+            <div className="my-2 border-t border-caption-disabled" />
             <AgreementRow
               label="전체 약관 동의"
               emphasized
@@ -292,6 +303,7 @@ function SocialSignupFlow({ signupSession }: { signupSession: SignupSession }) {
             <Button
               type="button"
               fullWidth
+              disabledTone="white"
               disabled={!requiredAgreementsAreChecked || isSubmitting}
               onClick={() => void submitSignup()}
             >
@@ -350,30 +362,68 @@ function AgreementRow({
   emphasized?: boolean;
   onChange: (checked: boolean) => void;
 }) {
+  const checkboxId = useId();
+  const labelId = `${checkboxId}-label`;
+  const textClassName = emphasized
+    ? 'text-base font-medium text-caption-heavy'
+    : 'text-sm font-medium text-caption-strong';
+  const labelContent = (
+    <>
+      {label}
+      {!emphasized && (
+        <span className="text-caption-assistive"> {required ? '(필수)' : '(선택)'}</span>
+      )}
+    </>
+  );
+
   return (
-    <label className="flex min-h-12 cursor-pointer items-center justify-between gap-3">
-      <span className={emphasized ? 'font-bold text-caption-heavy' : 'text-sm font-medium text-caption-strong'}>
-        {href ? (
-          <a
-            href={href}
-            target="_blank"
-            rel="noreferrer"
-            onClick={(event) => event.stopPropagation()}
-            className="underline underline-offset-2"
-          >
-            {label}
+    <div className="flex min-h-11 items-center justify-between gap-3">
+      {href ? (
+        <span id={labelId} className={textClassName}>
+          <a href={href} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center underline underline-offset-2">
+            {label.replace(/ 동의$/, '')}
           </a>
-        ) : label}
-        {!emphasized && (
+          {' 동의'}
           <span className="text-caption-assistive"> {required ? '(필수)' : '(선택)'}</span>
-        )}
-      </span>
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(event) => onChange(event.target.checked)}
-        className="h-5 w-5 shrink-0 accent-primary"
-      />
-    </label>
+        </span>
+      ) : (
+        <label id={labelId} htmlFor={checkboxId} className={`flex min-h-11 cursor-pointer items-center ${textClassName}`}>
+          {labelContent}
+        </label>
+      )}
+      <label className="relative flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center">
+        <input
+          id={checkboxId}
+          aria-labelledby={labelId}
+          type="checkbox"
+          checked={checked}
+          onChange={(event) => onChange(event.target.checked)}
+          className="peer sr-only"
+        />
+        <span
+          aria-hidden="true"
+          className={`flex h-6 w-6 items-center justify-center rounded-sm border transition-colors peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary ${
+            checked
+              ? emphasized
+                ? 'border-primary bg-primary text-white'
+                : 'border-caption-strong bg-bg text-primary'
+              : 'border-line-alternative bg-bg text-transparent'
+          }`}
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="m6 12 4 4 8-8" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </span>
+      </label>
+    </div>
+  );
+}
+
+function ProfileIcon() {
+  return (
+    <svg aria-hidden="true" className="text-caption-assistive transition-colors group-focus-within:text-caption-strong" width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.25">
+      <circle cx="10" cy="6" r="3" />
+      <path d="M3.5 17v-1a6.5 6.5 0 0 1 13 0v1z" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }

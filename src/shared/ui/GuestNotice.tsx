@@ -1,5 +1,7 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { clsx } from 'clsx';
+import { ButtonLink } from './Button';
 
 type Props = {
   title?: string;
@@ -13,29 +15,30 @@ export function GuestNotice({
   return (
     <div
       className={clsx(
-        'flex flex-col items-center justify-center py-16 px-6 text-center',
+        'flex flex-col items-center bg-bg-system pt-5 pb-8 px-6 text-center',
         className,
       )}
     >
+      <Image src="/images/app/nologin.png" alt="" width={280} height={280} className="mb-6 h-[280px] w-[280px] max-w-full object-contain" />
       <p className="text-base font-bold text-caption-heavy whitespace-pre-line mb-6">
         {title}
       </p>
-      <Link
+      <ButtonLink
         href="/login"
-        className="inline-flex items-center justify-center h-12 px-8 rounded-lg bg-primary text-white font-bold mb-3 hover:bg-primary-strong transition-colors"
+        fullWidth
+        className="mb-3 max-w-[480px]"
       >
         회원가입
-      </Link>
-      <p className="text-sm text-caption-alternative">
+      </ButtonLink>
+      <p className="text-sm font-medium text-caption-body">
         이미 계정이 있나요?{' '}
         <Link
           href="/login"
-          className="text-primary font-medium underline-offset-2 hover:underline"
+          className="text-primary font-medium underline underline-offset-2"
         >
           로그인
         </Link>
       </p>
-      <Link href="/search" className="mt-6 inline-flex min-h-11 items-center px-4 text-sm font-bold text-primary">로그인 없이 뉴스레터 둘러보기 →</Link>
     </div>
   );
 }

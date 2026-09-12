@@ -1,5 +1,7 @@
 'use client';
 
+import { Chip } from '@/shared/ui';
+
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { newsletterQueries } from '@/entities/newsletter';
@@ -29,7 +31,7 @@ export function TodayNewsletters() {
               <li key={newsletter.brandId}>
                 <Link
                   href={`/newsletters/${newsletter.brandId}`}
-                  className="block h-full overflow-hidden rounded-xl border border-line-disabled bg-bg transition-shadow hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  className="block h-full overflow-hidden rounded-xl border border-line-neutral bg-bg transition-shadow hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 >
                   <NewsletterImage name={newsletter.brandName} imageUrl={newsletter.imageUrl} cover />
                   <span className="block p-3">
@@ -37,9 +39,7 @@ export function TodayNewsletters() {
                     <span className="mt-1.5 block text-xs leading-snug text-caption-alternative">{newsletter.shortDescription}</span>
                     <span className="mt-2 flex flex-wrap gap-1">
                       {newsletter.interests.slice(0, 2).map((interest) => (
-                        <span key={interest.id} className="rounded-full border border-primary px-2 py-0.5 text-[10px] text-primary">
-                          #{interest.name}
-                        </span>
+                        <Chip key={interest.id}>{interest.name}</Chip>
                       ))}
                     </span>
                   </span>
@@ -64,7 +64,7 @@ export function TodayNewsletters() {
               <li key={newsletter.brandId}>
                 <Link
                   href={`/newsletters/${newsletter.brandId}`}
-                  className="flex items-center gap-3 rounded-xl border border-line-disabled bg-bg p-3 transition-shadow hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  className="flex items-center gap-3 rounded-xl border border-line-neutral bg-bg p-3 transition-shadow hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 >
                   <NewsletterImage name={newsletter.brandName} imageUrl={newsletter.imageUrl} />
                   <span className="min-w-0 flex-1">

@@ -12,7 +12,7 @@ function buildUrl(endpoint: string): URL {
 }
 
 interface RequestOptions extends Omit<RequestInit, 'body'> {
-  params?: Record<string, string | number | undefined>;
+  params?: Record<string, string | number | readonly string[] | undefined>;
   body?: unknown;
   schema?: ZodType;
   authenticated?: boolean;
@@ -63,7 +63,9 @@ export async function apiClient(
   const url = buildUrl(endpoint);
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
-      if (value !== undefined) {
+      if (Array.isArray(value)) {
+        value.forEach((item) => url.searchParams.append(key, item));
+      } else if (value !== undefined) {
         url.searchParams.append(key, String(value));
       }
     });

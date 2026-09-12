@@ -17,21 +17,25 @@ export function SegmentPicker<T extends string>({
 }: Props<T>) {
   return (
     <div
+      role="group"
       className={clsx(
-        'inline-flex p-1 rounded-full bg-bg-system',
+        'relative inline-flex h-10 rounded-[6px] border border-line-neutral bg-bg-system',
         className,
       )}
     >
+      <span aria-hidden="true" className="pointer-events-none absolute top-px bottom-px left-0.5 rounded-[6px] bg-bg shadow-[0_1px_2px_#0000000f] transition-transform duration-250 ease-in-out"
+        style={{ width: `calc(${100 / options.length}% - 4px)`, transform: `translateX(calc(${Math.max(0, options.findIndex((option) => option.value === value)) * 100}% + ${Math.max(0, options.findIndex((option) => option.value === value)) * 4}px))` }} />
       {options.map((opt) => (
         <button
           key={opt.value}
           type="button"
+          aria-pressed={value === opt.value}
           onClick={() => onChange(opt.value)}
           className={clsx(
-            'h-9 px-6 text-sm font-bold rounded-full transition-colors',
+            'relative z-10 min-w-0 flex-1 px-2 text-sm font-bold rounded-[6px] transition-colors duration-250 whitespace-nowrap',
             value === opt.value
-              ? 'bg-bg text-caption-heavy shadow-sm'
-              : 'text-caption-alternative',
+              ? 'text-black'
+              : 'text-[#808080]',
           )}
         >
           {opt.label}

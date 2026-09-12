@@ -1,14 +1,19 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { userQueries } from '@/entities/user';
 import { useAuth } from '@/shared/hooks';
-import { GuestNotice } from '@/shared/ui';
+import { Button, GuestNotice, Toast } from '@/shared/ui';
 
 export default function MyPage() {
   const { isLoggedIn, logout } = useAuth();
   const [showToast, setShowToast] = useState(false);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => {
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+  }, []);
 
   const { data: profile } = useQuery({
     ...userQueries.profile(),
@@ -18,58 +23,64 @@ export default function MyPage() {
   const nickname = profile?.nickname ?? '';
   const subscribeEmail = profile?.subscribeEmail ?? '';
 
-  const handleCopyEmail = useCallback(() => {
+  const handleCopyEmail = useCallback(async () => {
     if (!subscribeEmail) return;
-    navigator.clipboard.writeText(subscribeEmail);
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 2100);
+    try {
+      await navigator.clipboard.writeText(subscribeEmail);
+      if (toastTimer.current) clearTimeout(toastTimer.current);
+      setShowToast(true);
+      toastTimer.current = setTimeout(() => setShowToast(false), 2100);
+    } catch {
+      setShowToast(false);
+    }
   }, [subscribeEmail]);
 
   if (!isLoggedIn) {
     return (
-      <div className="bg-bg min-h-[calc(100vh-49px)] flex flex-col">
+      <div className="-mx-4 flex min-h-[calc(100dvh-var(--header-height)-var(--tabbar-height))] flex-col bg-bg sm:-mx-6 sm:min-h-[calc(100dvh-var(--header-height))] xl:-mx-10">
         <GuestNotice />
       </div>
     );
   }
 
   return (
-    <div className="bg-bg min-h-[calc(100vh-49px)] flex flex-col pt-5">
+    <div className="-mx-4 flex min-h-[calc(100dvh-var(--header-height)-var(--tabbar-height))] flex-col bg-bg pt-5 sm:-mx-6 sm:min-h-[calc(100dvh-var(--header-height))] xl:-mx-10">
       {/* 프로필 영역 */}
-      <div className="px-5">
-        <p className="text-base font-bold text-caption-heavy pt-8 mb-4">{nickname}</p>
+      <div className="flex flex-col gap-4 px-5">
+        <p className="line-clamp-2 pt-8 text-base font-bold text-caption-heavy">{nickname}</p>
 
-        <div className="flex items-center gap-1 mb-2">
+        <div className="flex items-center gap-1">
           <span className="text-sm font-medium text-caption-neutral">구독이메일</span>
-          <button type="button" className="bg-transparent p-0.5 flex items-center text-caption-neutral">
-            <img src="/images/Line Question mark.svg" alt="도움말" width={16} height={16} />
+          <button type="button" aria-label="구독 이메일 도움말" className="flex h-6 w-6 items-center justify-center text-caption-neutral">
+            <img src="/images/Line Question mark.svg" alt="" width={20} height={20} />
           </button>
         </div>
 
-        <div className="flex items-center gap-1.5 mb-6">
+        <div className="flex items-center gap-1.5">
           <button
             type="button"
             onClick={handleCopyEmail}
-            className="bg-transparent p-0.5 flex items-center"
+            aria-label="구독 이메일 복사"
+            disabled={!subscribeEmail}
+            className="flex h-6 w-6 shrink-0 items-center justify-center text-primary disabled:opacity-50"
           >
-            <img src="/images/Line Copy.svg" alt="복사" width={24} height={24} />
+            <svg width="24" height="24" viewBox="0 0 28 28" fill="none" aria-hidden="true"><path d="M7.931 17.586A1.931 1.931 0 0 1 6 15.655V8.207A2.207 2.207 0 0 1 8.207 6h7.448a1.93 1.93 0 0 1 1.931 1.931M19.793 10.414h-7.172a2.207 2.207 0 0 0-2.207 2.207v7.172A2.207 2.207 0 0 0 12.621 22h7.172A2.207 2.207 0 0 0 22 19.793v-7.172a2.207 2.207 0 0 0-2.207-2.207Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
           </button>
           <span className="text-sm text-caption-heavy truncate">{subscribeEmail}</span>
         </div>
 
-        <button
-          type="button"
-          className="w-full h-11 bg-transparent border border-neutral-150 rounded text-sm font-bold text-caption-neutral mt-3 hover:bg-neutral-50 transition-colors"
-        >
+        <Button variant="neutral-outline" size="compact" fullWidth className="mt-3">
           프로필 편집
-        </button>
+        </Button>
       </div>
 
       {/* 서비스 메뉴 */}
       <MenuSection
         title="서비스"
-        items={['계정 관리', '알림 설정']}
+        items={['알림 설정']}
       />
+
+      <hr className="mt-6 border-line-neutral" />
 
       {/* 고객센터 메뉴 */}
       <div className="px-5">
@@ -83,22 +94,12 @@ export default function MyPage() {
         </div>
       </div>
 
-      <button
-        type="button"
-        onClick={logout}
-        className="mx-5 mt-3 mb-20 h-12 border border-neutral-150 rounded-lg bg-bg text-sm font-semibold text-caption-neutral hover:bg-neutral-50 transition-colors"
-      >
-        로그아웃
-      </button>
+      <div className="mt-auto border-t border-line-neutral px-5 pb-4">
+        <p className="pb-2 pt-6 text-xs text-caption-assistive">기타</p>
+        <MenuItem label="로그아웃" onClick={logout} />
+      </div>
 
-      {showToast && (
-        <div
-          className="fixed bottom-[106px] left-1/2 -translate-x-1/2 bg-black/75 text-white px-6 py-3 rounded-lg text-sm font-medium z-[1000]"
-          style={{ animation: 'fadeInOut 2s ease-in-out' }}
-        >
-          구독 이메일 주소가 복사되었습니다.
-        </div>
-      )}
+      {showToast && <Toast message="구독 이메일 주소가 복사되었습니다." />}
     </div>
   );
 }
@@ -114,11 +115,12 @@ function MenuSection({ title, items }: { title: string; items: string[] }) {
   );
 }
 
-function MenuItem({ label }: { label: string }) {
+function MenuItem({ label, onClick }: { label: string; onClick?: () => void }) {
   return (
     <button
       type="button"
-      className="flex items-center justify-between w-full h-12 bg-transparent text-left"
+      onClick={onClick}
+      className="flex h-12 w-full items-center justify-between bg-bg text-left transition-colors hover:bg-bg-system"
     >
       <span className="text-base font-medium text-caption-strong">{label}</span>
       <img src="/images/Line right.svg" alt="" width={24} height={24} />

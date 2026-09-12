@@ -1,11 +1,15 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useEffect, useRef } from 'react';
 import { clsx } from 'clsx';
+import { Button, Icon } from '@/shared/ui';
 
 interface CalendarPopupProps {
   selectedDate: Date;
+  displayedMonth: Date;
+  onMonthChanged: (date: Date) => void;
   dataDays: Set<number>;
+  isLoading?: boolean;
   onDateSelected: (date: Date) => void;
   onClose: () => void;
 }
@@ -58,12 +62,26 @@ function generateDays(displayedMonth: Date): CalendarDay[] {
 
 export function CalendarPopup({
   selectedDate,
+  displayedMonth,
+  onMonthChanged,
   dataDays,
+  isLoading = false,
   onDateSelected,
   onClose,
 }: CalendarPopupProps) {
-  const [displayedMonth, setDisplayedMonth] = useState(new Date(selectedDate));
+  const dialogRef = useRef<HTMLDialogElement>(null);
   const today = startOfDay(new Date());
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    const previousOverflow = document.body.style.overflow;
+    dialog?.showModal();
+    document.body.style.overflow = 'hidden';
+    return () => {
+      dialog?.close();
+      document.body.style.overflow = previousOverflow;
+    };
+  }, []);
 
   const days = useMemo(() => generateDays(displayedMonth), [displayedMonth]);
   const weeks = useMemo(() => {
@@ -77,12 +95,12 @@ export function CalendarPopup({
   const yearMonthTitle = `${displayedMonth.getFullYear()}년 ${displayedMonth.getMonth() + 1}월`;
 
   const prevMonth = useCallback(() => {
-    setDisplayedMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
-  }, []);
+    onMonthChanged(new Date(displayedMonth.getFullYear(), displayedMonth.getMonth() - 1, 1));
+  }, [displayedMonth, onMonthChanged]);
 
   const nextMonth = useCallback(() => {
-    setDisplayedMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
-  }, []);
+    onMonthChanged(new Date(displayedMonth.getFullYear(), displayedMonth.getMonth() + 1, 1));
+  }, [displayedMonth, onMonthChanged]);
 
   const selectToday = useCallback(() => {
     onDateSelected(today);
@@ -90,30 +108,37 @@ export function CalendarPopup({
   }, [today, onDateSelected, onClose]);
 
   return (
-    <div
-      className="fixed inset-0 bg-[rgba(37,36,44,0.6)] flex items-center justify-center z-[1000] p-6"
-      onClick={onClose}
+    <dialog
+      ref={dialogRef}
+      aria-label="아티클 날짜 선택"
+      className="fixed inset-0 m-auto max-h-[calc(100dvh-48px)] w-[calc(100%-48px)] max-w-[400px] overflow-y-auto bg-transparent p-0 backdrop:bg-[rgba(37,36,44,0.6)]"
+      onCancel={onClose}
+      onClick={(event) => {
+        if (event.target !== event.currentTarget) return;
+        const bounds = event.currentTarget.getBoundingClientRect();
+        if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) onClose();
+      }}
     >
       <div
-        className="flex flex-col items-center gap-5 w-full max-w-[400px]"
-        onClick={(e) => e.stopPropagation()}
+        className="flex w-full flex-col items-center gap-7"
       >
-        <div className="w-full bg-white rounded-2xl overflow-hidden">
+        <div className="w-full bg-white rounded-xl overflow-hidden">
           {/* 헤더 */}
-          <div className="relative flex items-center justify-center h-11 bg-neutral-50 rounded-t-2xl">
-            <button className="p-2.5 flex items-center" onClick={prevMonth} type="button">
+          <div className="relative flex h-11 items-center justify-center rounded-t-xl bg-bg-elevated">
+            <button className="flex h-11 w-11 items-center justify-center" onClick={prevMonth} type="button" aria-label="이전 달">
               <img src="/images/Line left.svg" alt="이전" width={24} height={24} />
             </button>
-            <span className="w-[120px] text-center text-sm font-medium text-caption-heavy">
+            <span className="w-[120px] text-center text-sm font-medium text-[#1E1E1E]" aria-live="polite">
               {yearMonthTitle}
             </span>
-            <button className="p-2.5 flex items-center" onClick={nextMonth} type="button">
+            <button className="flex h-11 w-11 items-center justify-center" onClick={nextMonth} type="button" aria-label="다음 달">
               <img src="/images/Line right.svg" alt="다음" width={24} height={24} />
             </button>
             <button
-              className="absolute right-[18px] top-1/2 -translate-y-1/2 p-1 flex items-center"
+              className="absolute right-2 top-0 flex h-11 w-11 items-center justify-center"
               onClick={onClose}
               type="button"
+              aria-label="닫기"
             >
               <img src="/images/Line Close.svg" alt="닫기" width={24} height={24} />
             </button>
@@ -126,9 +151,9 @@ export function CalendarPopup({
                 key={day}
                 className={clsx(
                   'flex-1 text-center text-base font-normal',
-                  i === 0 && 'text-red-600',
-                  i === 6 && 'text-primary',
-                  i !== 0 && i !== 6 && 'text-caption-heavy',
+                  i === 0 && 'text-[#FF3B30]',
+                  i === 6 && 'text-[#007AFF]',
+                  i !== 0 && i !== 6 && 'text-black',
                 )}
               >
                 {day}
@@ -137,7 +162,7 @@ export function CalendarPopup({
           </div>
 
           {/* 날짜 그리드 */}
-          <div className="px-2 pb-5 flex flex-col gap-2.5">
+          <div aria-busy={isLoading} className="flex flex-col gap-2.5 px-2 py-5">
             {weeks.map((week, wi) => (
               <div key={wi} className="flex">
                 {week.map((day, di) => {
@@ -161,21 +186,22 @@ export function CalendarPopup({
                       }}
                       disabled={isBlank}
                       type="button"
+                      aria-label={isBlank ? undefined : `${day.dayInt}일${isToday ? ', 오늘' : ''}${hasData ? ', 아티클 있음' : ''}`}
+                      aria-pressed={isBlank ? undefined : isSelected}
                     >
                       <span
                         className={clsx(
-                          'w-10 h-10 flex items-center justify-center rounded-xl text-base font-normal',
-                          isToday && 'bg-primary text-white',
-                          isSelected && !isToday && 'border border-shade-400 text-caption-heavy',
-                          isFuture && !isToday && 'text-caption-disabled',
-                          !isToday && !isSelected && !isFuture && 'text-caption-heavy',
+                          'flex h-10 w-10 max-w-full items-center justify-center rounded-lg text-base font-normal',
+                          isSelected && 'bg-caption-heavy',
+                          isToday && !isSelected && 'border border-caption-heavy',
+                          isFuture ? 'text-caption-disabled' : isSelected ? 'text-white' : 'text-[#171414]',
                         )}
                       >
                         {day.dayString}
                       </span>
                       <span
                         className={clsx(
-                          'w-1.5 h-1.5 rounded-full bg-primary transition-opacity',
+                          'h-1.5 w-1.5 rounded-full bg-caption-strong transition-opacity',
                           hasData ? 'opacity-100' : 'opacity-0',
                         )}
                       />
@@ -188,15 +214,16 @@ export function CalendarPopup({
         </div>
 
         {/* 오늘 버튼 */}
-        <button
-          className="flex items-center gap-1 px-5 py-2 bg-white border border-primary rounded text-sm font-medium text-primary hover:bg-tint-50"
+        <Button
+          variant="outline"
+          size="utility"
           onClick={selectToday}
-          type="button"
+          aria-label="오늘 날짜로 이동"
         >
-          <img src="/images/Line Reload.svg" alt="" width={16} height={16} />
+          <Icon src="/images/Line Reload.svg" size={16} />
           오늘
-        </button>
+        </Button>
       </div>
-    </div>
+    </dialog>
   );
 }

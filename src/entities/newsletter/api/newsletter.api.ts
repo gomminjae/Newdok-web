@@ -6,6 +6,8 @@ import {
   OptionListSchema,
   SubscribedNewsletterListSchema,
   SubscriptionCountResponseSchema,
+  NewsletterSearchResultsSchema,
+  PopularSearchKeywordsSchema,
   type SubscriptionRequest,
 } from '../model/schema';
 
@@ -30,16 +32,21 @@ export const newsletterApi = {
       schema: NewsletterDetailListSchema,
     }),
 
-  search: (brandName: string) =>
-    apiClient('/newsletters/search', {
+  search: (brandName: string, signal?: AbortSignal) =>
+    apiClient('/search/newsletter', {
       params: { brandName },
-      schema: NewsletterBrandListSchema,
+      authenticated: false,
+      schema: NewsletterSearchResultsSchema,
+      ...(signal && { signal: AbortSignal.any([signal, AbortSignal.timeout(15_000)]) }),
     }),
+
+  fetchPopularSearchKeywords: () =>
+    apiClient('/search/popular', { authenticated: false, schema: PopularSearchKeywordsSchema }),
 
   fetchAllNewsletterBrands: (params: {
     orderOpt?: string;
-    industry?: string;
-    day?: string;
+    industry?: string | readonly string[];
+    day?: string | readonly string[];
   }) =>
     apiClient('/newsletters', {
       params,
@@ -63,8 +70,8 @@ export const newsletterApi = {
 
   fetchGuestAllNewsletterBrands: (params: {
     orderOpt?: string;
-    industry?: string;
-    day?: string;
+    industry?: string | readonly string[];
+    day?: string | readonly string[];
   }) =>
     apiClient('/newsletters/non-member', {
       authenticated: false,

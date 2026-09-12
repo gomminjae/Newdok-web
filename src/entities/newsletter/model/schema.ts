@@ -19,6 +19,20 @@ export type NewsletterBrand = z.infer<typeof NewsletterBrandSchema>;
 
 export const NewsletterBrandListSchema = z.array(NewsletterBrandSchema);
 
+export const NewsletterSearchResultSchema = z.object({
+  id: z.number(),
+  brandName: z.string(),
+  firstDescription: z.string(),
+  imageUrl: z.string().nullish(),
+});
+export type NewsletterSearchResult = z.infer<typeof NewsletterSearchResultSchema>;
+export const NewsletterSearchResultsSchema = z.array(NewsletterSearchResultSchema);
+
+export const PopularSearchKeywordsSchema = z.object({
+  updatedDate: z.string(),
+  keywords: z.array(z.object({ rank: z.number(), keyword: z.string() })),
+});
+
 export const BrandArticleSchema = z.object({
   id: z.number(),
   title: z.string(),

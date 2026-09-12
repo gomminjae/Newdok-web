@@ -61,5 +61,5 @@ export default async function NewsletterDetailPage({ params }: Props) {
       return undefined;
     });
 
-  return <BrandDetailClient id={Number(id)} initialBrand={brand} />;
+  return <BrandDetailClient key={id} id={Number(id)} initialBrand={brand} />;
 }
