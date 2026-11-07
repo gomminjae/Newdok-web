@@ -79,12 +79,21 @@ export type AuthResponse = z.infer<typeof AuthResponseSchema>;
 export const SocialProviderSchema = z.enum(['KAKAO', 'APPLE']);
 export type SocialProvider = z.infer<typeof SocialProviderSchema>;
 
-export const SocialLoginRequestSchema = z.object({
-  provider: SocialProviderSchema,
-  platform: z.literal('WEB'),
-  idToken: z.string().min(1),
-  authorizationCode: z.string().min(1).optional(),
-});
+export const SocialLoginRequestSchema = z.discriminatedUnion('provider', [
+  z.object({
+    provider: z.literal('KAKAO'),
+    platform: z.literal('WEB'),
+    authorizationCode: z.string().min(1),
+    redirectUri: z.url(),
+  }),
+  z.object({
+    provider: z.literal('APPLE'),
+    platform: z.literal('WEB'),
+    idToken: z.string().min(1),
+    authorizationCode: z.string().min(1).optional(),
+    redirectUri: z.url(),
+  }),
+]);
 export type SocialLoginRequest = z.infer<typeof SocialLoginRequestSchema>;
 
 export const SocialProfileSchema = z.object({

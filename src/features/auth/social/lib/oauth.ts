@@ -3,14 +3,6 @@ export function createRandomUrlSafeString(byteLength = 32) {
   return toBase64Url(bytes);
 }
 
-export async function createCodeChallenge(codeVerifier: string) {
-  const digest = await crypto.subtle.digest(
-    'SHA-256',
-    new TextEncoder().encode(codeVerifier),
-  );
-  return toBase64Url(new Uint8Array(digest));
-}
-
 export function readJwtPayload(token: string): Record<string, unknown> | null {
   try {
     const encodedPayload = token.split('.')[1];

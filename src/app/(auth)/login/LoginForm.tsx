@@ -4,9 +4,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Script from 'next/script';
 import { useRouter } from 'next/navigation';
-import { userApi, type SocialProvider } from '@/entities/user';
+import { userApi, type SocialLoginRequest } from '@/entities/user';
 import {
-  createCodeChallenge,
   createRandomUrlSafeString,
   readJwtPayload,
   SOCIAL_SIGNUP_STORAGE_KEY,
@@ -16,16 +15,8 @@ import { enterAsGuest } from '@/shared/hooks';
 import { Button } from '@/shared/ui';
 
 const KAKAO_STATE_KEY = 'newdok.kakaoOAuthState';
-const KAKAO_NONCE_KEY = 'newdok.kakaoOAuthNonce';
-const KAKAO_CODE_VERIFIER_KEY = 'newdok.kakaoCodeVerifier';
 
 type LoginProvider = 'kakao' | 'apple';
-
-type SocialCredential = {
-  provider: SocialProvider;
-  idToken: string;
-  authorizationCode?: string;
-};
 
 export function LoginForm() {
   const router = useRouter();
@@ -34,11 +25,8 @@ export function LoginForm() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isAppleScriptReady, setIsAppleScriptReady] = useState(false);
 
-  const authenticate = useCallback(async (credential: SocialCredential) => {
-    const response = await userApi.socialLogin({
-      ...credential,
-      platform: 'WEB',
-    });
+  const authenticate = useCallback(async (credential: SocialLoginRequest) => {
+    const response = await userApi.socialLogin(credential);
 
     if (response.isRegistered) {
       localStorage.setItem('user', JSON.stringify(response.user));
@@ -80,36 +68,24 @@ export function LoginForm() {
       const code = query.get('code');
       const returnedState = query.get('state');
       const expectedState = sessionStorage.getItem(KAKAO_STATE_KEY);
-      const nonce = sessionStorage.getItem(KAKAO_NONCE_KEY);
-      const codeVerifier = sessionStorage.getItem(KAKAO_CODE_VERIFIER_KEY);
       const redirectUri = `${window.location.origin}/login`;
 
       window.history.replaceState(null, '', '/login');
       clearKakaoSession();
 
-      if (!code || !returnedState || returnedState !== expectedState || !nonce || !codeVerifier) {
+      if (!code || !returnedState || returnedState !== expectedState) {
         setErrorMessage('카카오 로그인 요청을 확인할 수 없습니다. 다시 시도해주세요.');
         setLoadingProvider(null);
         return;
       }
 
       try {
-        const tokenResponse = await fetch('/api/auth/kakao/token', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code, redirectUri, nonce, codeVerifier }),
-          signal: AbortSignal.timeout(20_000),
+        await authenticate({
+          provider: 'KAKAO',
+          platform: 'WEB',
+          authorizationCode: code,
+          redirectUri,
         });
-        const tokenBody = await tokenResponse.json() as {
-          idToken?: string;
-          message?: string;
-        };
-
-        if (!tokenResponse.ok || !tokenBody.idToken) {
-          throw new Error(tokenBody.message ?? '카카오 인증에 실패했습니다.');
-        }
-
-        await authenticate({ provider: 'KAKAO', idToken: tokenBody.idToken });
       } catch (loginError) {
         setErrorMessage(getLoginErrorMessage(loginError));
         setLoadingProvider(null);
@@ -132,14 +108,9 @@ export function LoginForm() {
 
     try {
       const state = createRandomUrlSafeString();
-      const nonce = createRandomUrlSafeString();
-      const codeVerifier = createRandomUrlSafeString(64);
-      const codeChallenge = await createCodeChallenge(codeVerifier);
       const redirectUri = `${window.location.origin}/login`;
 
       sessionStorage.setItem(KAKAO_STATE_KEY, state);
-      sessionStorage.setItem(KAKAO_NONCE_KEY, nonce);
-      sessionStorage.setItem(KAKAO_CODE_VERIFIER_KEY, codeVerifier);
 
       const authorizationUrl = new URL('https://kauth.kakao.com/oauth/authorize');
       authorizationUrl.search = new URLSearchParams({
@@ -148,9 +119,6 @@ export function LoginForm() {
         redirect_uri: redirectUri,
         scope: 'openid',
         state,
-        nonce,
-        code_challenge: codeChallenge,
-        code_challenge_method: 'S256',
       }).toString();
 
       window.location.assign(authorizationUrl);
@@ -199,8 +167,10 @@ export function LoginForm() {
 
       await authenticate({
         provider: 'APPLE',
+        platform: 'WEB',
         idToken: authorization.id_token,
         authorizationCode: authorization.code,
+        redirectUri,
       });
     } catch (loginError) {
       if (!isAppleCancellation(loginError)) {
@@ -320,8 +290,6 @@ function isAppleCancellation(error: unknown) {
 
 function clearKakaoSession() {
   sessionStorage.removeItem(KAKAO_STATE_KEY);
-  sessionStorage.removeItem(KAKAO_NONCE_KEY);
-  sessionStorage.removeItem(KAKAO_CODE_VERIFIER_KEY);
 }
 
 function getLoginErrorMessage(error: unknown) {
