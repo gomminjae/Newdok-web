@@ -1,5 +1,6 @@
 import { queryOptions } from '@tanstack/react-query';
 import { articleApi } from './article.api';
+import type { BookmarkSort } from '../model/schema';
 
 export const articleKeys = {
   all: ['article'] as const,
@@ -13,7 +14,7 @@ export const articleKeys = {
 export const bookmarkKeys = {
   all: ['bookmark'] as const,
   interests: () => [...bookmarkKeys.all, 'interests'] as const,
-  list: (interestId: number | undefined, sortBy: string) =>
+  list: (interestId: number | undefined, sortBy: BookmarkSort) =>
     [...bookmarkKeys.all, 'list', interestId ?? null, sortBy] as const,
 };
 
@@ -45,7 +46,7 @@ export const bookmarkQueries = {
       queryFn: async () => (await articleApi.fetchBookmarkedInterest()).data,
     }),
 
-  list: (interestId: number | undefined, sortBy: string) =>
+  list: (interestId: number | undefined, sortBy: BookmarkSort) =>
     queryOptions({
       queryKey: bookmarkKeys.list(interestId, sortBy),
       queryFn: async () =>

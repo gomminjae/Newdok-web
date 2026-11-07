@@ -32,6 +32,10 @@ export class ApiError extends Error {
   }
 }
 
+export function getErrorMessage(error: unknown, fallback = '요청을 완료하지 못했어요. 다시 시도해주세요.') {
+  return error instanceof ApiError && error.serverMessage ? error.serverMessage : fallback;
+}
+
 function getAccessToken(): string | null {
   if (typeof window === 'undefined') return null;
   return localStorage.getItem('accessToken');

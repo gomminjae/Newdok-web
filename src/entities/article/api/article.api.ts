@@ -7,6 +7,7 @@ import {
   BookmarkInterestListResponseSchema,
   MonthlyArticlesResponseSchema,
   type BookmarkRequest,
+  type BookmarkSort,
 } from '../model/schema';
 
 export const articleApi = {
@@ -25,7 +26,7 @@ export const articleApi = {
       schema: ArticleListSchema,
     }),
 
-  fetchBookmarkArticles: (interestId?: number, sortBy?: string) =>
+  fetchBookmarkArticles: (interestId?: number, sortBy?: BookmarkSort) =>
     apiClient('/articles/bookmark', {
       params: {
         ...(interestId !== undefined ? { interestId } : {}),

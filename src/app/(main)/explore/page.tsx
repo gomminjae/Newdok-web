@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { memo, useState, useCallback } from 'react';
+import { memo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   subscriptionQueries,
@@ -9,8 +9,9 @@ import {
   useResumeSubscription,
   type SubscribedNewsletter,
 } from '@/entities/newsletter';
-import { useAuth } from '@/shared/hooks';
-import { Button, Icon, SegmentPicker } from '@/shared/ui';
+import { useAuth, useToast } from '@/shared/hooks';
+import { Button, Dialog, EmptyState, Icon, SegmentPicker, Toast } from '@/shared/ui';
+import { getErrorMessage } from '@/shared/api/client';
 import { NewsletterImage } from '@/widgets/landing/NewsletterImage';
 
 type Tab = 'active' | 'paused';
@@ -22,28 +23,43 @@ const TABS: ReadonlyArray<{ value: Tab; label: string }> = [
 export default function ExplorePage() {
   const { isLoggedIn } = useAuth();
   const [tab, setTab] = useState<Tab>('active');
+  const { message, showToast } = useToast();
+  const [confirmation, setConfirmation] = useState<SubscribedNewsletter | null>(null);
+  const [actionError, setActionError] = useState('');
   const pauseMutation = usePauseSubscription();
   const resumeMutation = useResumeSubscription();
 
-  const { data: activeNewsletters = [], isLoading: isActiveLoading } = useQuery({
+  const activeQuery = useQuery({
     ...subscriptionQueries.active(),
     enabled: isLoggedIn && tab === 'active',
   });
 
-  const { data: pausedNewsletters = [], isLoading: isPausedLoading } = useQuery({
+  const pausedQuery = useQuery({
     ...subscriptionQueries.paused(),
     enabled: isLoggedIn && tab === 'paused',
   });
 
-  const currentList = tab === 'active' ? activeNewsletters : pausedNewsletters;
-  const isLoading = tab === 'active' ? isActiveLoading : isPausedLoading;
+  const currentQuery = tab === 'active' ? activeQuery : pausedQuery;
+  const currentList = currentQuery.data ?? [];
+  const isLoading = currentQuery.isLoading;
+  const isUpdating = pauseMutation.isPending || resumeMutation.isPending;
 
-  const pause = pauseMutation.mutate;
-  const resume = resumeMutation.mutate;
-  const handleAction = useCallback((id: number) => {
-    if (tab === 'active') pause(id);
-    else resume(id);
-  }, [pause, resume, tab]);
+  async function changeSubscription(id: number, action: Tab) {
+    if (isUpdating) return;
+    setActionError('');
+    try {
+      if (action === 'active') await pauseMutation.mutateAsync(id);
+      else await resumeMutation.mutateAsync(id);
+      setConfirmation(null);
+      showToast(action === 'active' ? '구독이 중지되었습니다.' : '구독이 재개되었습니다.');
+    } catch (error) { setActionError(getErrorMessage(error, '구독 상태를 변경하지 못했어요. 다시 시도해주세요.')); }
+  }
+  function handleAction(id: number) {
+    if (isUpdating) return;
+    setActionError('');
+    if (tab === 'active') setConfirmation(currentList.find((item) => item.id === id) ?? null);
+    else void changeSubscription(id, 'paused');
+  }
   const pendingId = pauseMutation.isPending ? pauseMutation.variables
     : resumeMutation.isPending ? resumeMutation.variables : undefined;
 
@@ -54,12 +70,17 @@ export default function ExplorePage() {
         <SegmentPicker value={tab} options={TABS} onChange={setTab} className="w-full" />
       </div>
 
+      {actionError && !confirmation && <p role="alert" className="px-5 py-3 text-sm text-error">{actionError}</p>}
+      {confirmation && <Dialog title="구독 중지" busy={isUpdating} onClose={() => { setConfirmation(null); setActionError(''); }}><p className="text-sm leading-7">‘{confirmation.brandName}’ 구독을 중지할까요? 새로운 아티클 수신이 중지되며 언제든 재개할 수 있어요.</p>{actionError && <p role="alert" className="mt-4 text-sm text-error">{actionError}</p>}<div className="mt-6 flex gap-2"><Button variant="neutral-outline" disabled={isUpdating} onClick={() => setConfirmation(null)} className="flex-1">취소</Button><Button disabled={isUpdating || confirmation.id == null} onClick={() => confirmation.id != null && void changeSubscription(confirmation.id, 'active')} className="flex-1">{isUpdating ? '변경 중…' : '구독 중지'}</Button></div></Dialog>}
+      {message && <Toast message={message} />}
       {!isLoggedIn ? (
         <SubscriptionEmpty tab={tab} guest />
       ) : isLoading ? (
         <div className="flex items-center justify-center flex-1 bg-bg-system text-primary">
           로딩 중...
         </div>
+      ) : currentQuery.isError ? (
+        <div role="alert"><EmptyState title="구독 목록을 불러오지 못했어요." cta={<Button onClick={() => void currentQuery.refetch()}>다시 시도</Button>} /></div>
       ) : currentList.length === 0 ? (
         <SubscriptionEmpty tab={tab} />
       ) : (
@@ -82,7 +103,7 @@ export default function ExplorePage() {
                 key={nl.id}
                 newsletter={nl}
                 isSubscribed={tab === 'active'}
-                isPending={nl.id === pendingId}
+                isPending={isUpdating || nl.id === pendingId}
                 onAction={handleAction}
               />
             ))}

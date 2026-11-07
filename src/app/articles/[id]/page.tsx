@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 
 type Props = {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ past?: string }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -30,9 +31,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export default async function ArticleDetailPage({ params }: Props) {
+export default async function ArticleDetailPage({ params, searchParams }: Props) {
   const { id } = await params;
   if (!/^[1-9]\d*$/.test(id) || !Number.isSafeInteger(Number(id))) notFound();
 
-  return <ArticleDetailClient id={Number(id)} />;
+  const { past } = await searchParams;
+  return <ArticleDetailClient id={Number(id)} archive={past === '1'} />;
 }

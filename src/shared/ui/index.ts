@@ -8,3 +8,4 @@ export { SegmentPicker } from './SegmentPicker';
 export { Card } from './Card';
 export { EmptyState } from './EmptyState';
 export { GuestNotice } from './GuestNotice';
+export { Dialog } from './Dialog';

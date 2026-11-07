@@ -11,8 +11,7 @@ import { SOCIAL_SIGNUP_STORAGE_KEY } from '@/features/auth/social';
 import { ApiError } from '@/shared/api/client';
 import { Button, ButtonLink, Input } from '@/shared/ui';
 
-const TERMS_URL = 'https://newdok.notion.site/18aacf9713bc427a850ae8da92b69087?pvs=4';
-const PRIVACY_URL = 'https://newdok.notion.site/82ef5aea46d84623b7b19bb951b6043c?pvs=4';
+import { TERMS_URL, PRIVACY_URL } from '@/shared/config/links';
 
 type SignupSession = {
   signupToken: string;
@@ -116,7 +115,7 @@ function SocialSignupFlow({ signupSession }: { signupSession: SignupSession }) {
       localStorage.setItem('user', JSON.stringify(response.user));
       sessionStorage.removeItem(SOCIAL_SIGNUP_STORAGE_KEY);
       window.dispatchEvent(new Event('auth-change'));
-      router.replace('/home');
+      router.replace('/onboarding');
     } catch (signupError) {
       setErrorMessage(
         signupError instanceof ApiError

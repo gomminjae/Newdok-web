@@ -1,33 +1,34 @@
 'use client';
 
-import { Chip } from '@/shared/ui';
+import { Button, Chip, Dialog, EmptyState } from '@/shared/ui';
 
 import Link from 'next/link';
 import { memo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { clsx } from 'clsx';
-import { bookmarkQueries, type Bookmark } from '@/entities/article';
+import { bookmarkQueries, type Bookmark, type BookmarkSort } from '@/entities/article';
 import { useAuth } from '@/shared/hooks';
 import { NewsletterImage } from '@/widgets/landing/NewsletterImage';
 
-const SORT_BY_MAP: Record<string, string> = {
-  추가순: 'bookmarkDate',
-  '최근 아티클 순': 'recent',
-  '오래된 아티클 순': 'oldest',
+const SORT_BY_MAP: Record<string, BookmarkSort> = {
+  추가순: 'bookmark_date',
+  '최근 아티클 순': 'article_date_desc',
+  '오래된 아티클 순': 'article_date_asc',
 };
 
 export default function BookmarksPage() {
   const { isLoggedIn } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState<string>('전체');
   const [selectedInterestId, setSelectedInterestId] = useState<number | undefined>();
-  const [sortOrder] = useState('추가순');
+  const [sortOrder, setSortOrder] = useState('추가순');
+  const [showSort, setShowSort] = useState(false);
 
-  const { data: interests = [] } = useQuery({
+  const { data: interests = [], isError: interestsError, refetch: refetchInterests } = useQuery({
     ...bookmarkQueries.interests(),
     enabled: isLoggedIn,
   });
 
-  const { data: bookmarkData, isLoading } = useQuery({
+  const { data: bookmarkData, isLoading, isError, refetch } = useQuery({
     ...bookmarkQueries.list(selectedInterestId, SORT_BY_MAP[sortOrder]),
     enabled: isLoggedIn,
   });
@@ -56,12 +57,14 @@ export default function BookmarksPage() {
         ))}
       </div>
 
+      {interestsError && <div role="alert" className="px-6 text-sm"><p>관심사 필터를 불러오지 못했어요.</p><Button variant="ghost" size="compact" onClick={() => void refetchInterests()}>다시 시도</Button></div>}
+      {showSort && <Dialog title="북마크 정렬" onClose={() => setShowSort(false)}><div className="flex flex-col items-start gap-3">{Object.keys(SORT_BY_MAP).map((order) => <Chip key={order} as="button" active={sortOrder === order} onClick={() => { setSortOrder(order); setShowSort(false); }}>{order}</Chip>)}</div></Dialog>}
       {/* 정렬 정보 */}
       <div className="flex items-center justify-between bg-bg px-6 pb-3 pt-5">
         <span className="text-xl font-bold text-primary">
           총 {isLoggedIn ? bookmarkData?.totalAmount ?? 0 : 0}개
         </span>
-        <Chip as="button" aria-label={`정렬: ${sortOrder}`}>
+        <Chip as="button" aria-label={`정렬: ${sortOrder}`} aria-haspopup="dialog" onClick={() => setShowSort(true)}>
           {sortOrder}
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M5 12V3m0 0L2.5 5.5M5 3l2.5 2.5M11 4v9m0 0-2.5-2.5M11 13l2.5-2.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" /></svg>
         </Chip>
@@ -73,6 +76,8 @@ export default function BookmarksPage() {
         <div className="flex-1 bg-bg-system flex items-center justify-center text-caption-neutral">
           로딩 중...
         </div>
+      ) : isError ? (
+        <div role="alert"><EmptyState title="북마크를 불러오지 못했어요." cta={<Button onClick={() => void refetch()}>다시 시도</Button>} /></div>
       ) : !bookmarkData || bookmarkData.totalAmount === 0 ? (
         <BookmarkEmpty />
       ) : (

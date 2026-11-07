@@ -179,7 +179,7 @@ export type SMSResponse = z.infer<typeof SMSResponseSchema>;
 
 export const NicknameResponseSchema = z.object({
   id: z.number(),
-  loginId: z.string(),
+  loginId: z.string().nullish(),
   nickname: z.string(),
 });
 export type NicknameResponse = z.infer<typeof NicknameResponseSchema>;
@@ -189,7 +189,7 @@ export const RecommendedBrandSchema = z.object({
   brandName: z.string(),
   firstDescription: z.string(),
   secondDescription: z.string(),
-  publicationCycle: z.string(),
+  publicationCycle: z.string().nullish().transform((value) => value ?? ''),
   subscribeUrl: z.string(),
   imageUrl: z.string().nullable(),
   interests: z.array(InterestSchema),

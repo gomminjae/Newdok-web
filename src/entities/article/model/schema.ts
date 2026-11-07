@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+export type BookmarkSort = 'bookmark_date' | 'article_date_desc' | 'article_date_asc';
+
 export const BookmarkRequestSchema = z.object({
   articleId: z.number(),
 });
@@ -18,14 +20,38 @@ export const MonthlyArticlesResponseSchema = z.object({
 });
 export type MonthlyArticlesResponse = z.infer<typeof MonthlyArticlesResponseSchema>;
 
-export const ArticleSchema = z.object({
+const FlatArticleSchema = z.object({
   id: z.number(),
   brandName: z.string(),
   imageUrl: z.string().nullable(),
   articleTitle: z.string(),
   status: z.string(),
-  publishDate: z.number().nullable(),
+  publishDate: z.number().nullish().transform((value) => value ?? null),
 });
+
+const ReceivedArticleSchema = z.object({
+  id: z.number(),
+  title: z.string(),
+  status: z.string(),
+  publishDate: z.number().nullish(),
+  newsletter: z.object({
+    brandName: z.string(),
+    imageUrl: z.string().nullish(),
+  }).nullable(),
+}).transform((article) => ({
+  id: article.id,
+  articleTitle: article.title,
+  brandName: article.newsletter?.brandName ?? '',
+  imageUrl: article.newsletter?.imageUrl ?? null,
+  status: article.status,
+  publishDate: article.publishDate ?? null,
+}));
+
+const LegacyArticleSchema = FlatArticleSchema.omit({ id: true })
+  .extend({ articleId: z.number() })
+  .transform(({ articleId, ...article }) => ({ ...article, id: articleId }));
+
+export const ArticleSchema = z.union([ReceivedArticleSchema, FlatArticleSchema, LegacyArticleSchema]);
 export type Article = z.infer<typeof ArticleSchema>;
 
 export const ArticleListSchema = z.array(ArticleSchema);

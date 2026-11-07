@@ -116,7 +116,7 @@ export const userApi = {
       schema: SMSResponseSchema,
     }),
 
-  preInvestigate: (industry: string, interest: string) =>
+  preInvestigate: (industry: string, interest: readonly string[]) =>
     apiClient('/users/preInvestigate', {
       params: { industry, interest },
       schema: RecommendedBrandListResponseSchema,

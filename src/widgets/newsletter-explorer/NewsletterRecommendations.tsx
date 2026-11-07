@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Chip } from '@/shared/ui';
+import { Button, ButtonLink, Chip } from '@/shared/ui';
 
 import Link from 'next/link';
 import { memo, useState, useRef, useEffect } from 'react';
@@ -11,8 +11,14 @@ import { userQueries } from '@/entities/user';
 import { NewsletterImage } from '@/widgets/landing/NewsletterImage';
 
 export const NewsletterRecommendations = memo(function NewsletterRecommendations({ active = true }: { active?: boolean }) {
-  const intersection = useQuery({ ...newsletterQueries.recommendIntersection(), enabled: active });
-  const union = useQuery({ ...newsletterQueries.recommendUnion(), enabled: active });
+  const profile = useQuery({ ...userQueries.profile(), enabled: active });
+  const hasPreferences = !!profile.data?.industryId && !!profile.data?.interests?.length;
+  const intersection = useQuery({ ...newsletterQueries.recommendIntersection(), enabled: active && hasPreferences });
+  const union = useQuery({ ...newsletterQueries.recommendUnion(), enabled: active && hasPreferences });
+
+  if (profile.isPending) return <p role="status" className="py-16 text-center text-caption-neutral">프로필을 불러오는 중이에요.</p>;
+  if (profile.isError) return <div role="alert" className="py-16 text-center"><p>프로필을 불러오지 못했어요.</p><Button variant="ghost" size="compact" onClick={() => void profile.refetch()}>다시 시도</Button></div>;
+  if (!hasPreferences) return <div className="px-6 py-16 text-center"><h2 className="text-xl font-bold">관심사를 알려주세요</h2><p className="mt-3 text-sm text-caption-neutral">산업과 관심사를 설정하면 맞춤 뉴스레터를 추천해드려요.</p><ButtonLink href="/onboarding" className="mt-6">추천 설정하기</ButtonLink></div>;
 
   if (intersection.isPending || union.isPending) {
     return <p role="status" className="py-16 text-center text-caption-neutral">추천 뉴스레터를 불러오는 중이에요.</p>;
@@ -24,7 +30,7 @@ export const NewsletterRecommendations = memo(function NewsletterRecommendations
     </div>;
   }
   return <div className="pt-5">
-    <RecommendationHeading active={active} />
+    <RecommendationHeading nickname={profile.data.nickname} />
     {intersection.data.length > 0 && <RecommendationCarousel key={intersection.data.map((item) => item.id).join(",")} items={intersection.data} />}
     <div className="flex items-center justify-between px-6 pt-5 pb-4">
       <h3 className="text-base font-bold">이런 뉴스레터는 어때요?</h3>
@@ -41,8 +47,7 @@ export const NewsletterRecommendations = memo(function NewsletterRecommendations
   </div>;
 });
 
-function RecommendationHeading({ active }: { active: boolean }) {
-  const { data: nickname } = useQuery({ ...userQueries.profile(), enabled: active, select: (profile) => profile.nickname });
+function RecommendationHeading({ nickname }: { nickname: string }) {
   return <h2 className="px-6 text-xl font-bold">{nickname && <>{nickname}님을 위한<br /></>}맞춤형 뉴스레터가 도착했어요.</h2>;
 }
 

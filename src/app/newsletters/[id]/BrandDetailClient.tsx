@@ -8,6 +8,7 @@ import { useQuery } from '@tanstack/react-query';
 import { newsletterQueries, usePauseSubscription, useResumeSubscription, type BrandDetail } from '@/entities/newsletter';
 import { useAuth } from '@/shared/hooks';
 import { ApiError } from '@/shared/api/client';
+import { SubscribeDialog } from '@/features/subscription/SubscribeDialog';
 import { NewsletterImage } from '@/widgets/landing/NewsletterImage';
 
 type Notice = { message: string; isError: boolean };
@@ -17,6 +18,7 @@ export function BrandDetailClient({ id, initialBrand }: { id: number; initialBra
   const [visibleCount, setVisibleCount] = useState(12);
   const [notice, setNotice] = useState<Notice | null>(null);
   const [showPauseDialog, setShowPauseDialog] = useState(false);
+  const [showSubscribeDialog, setShowSubscribeDialog] = useState(false);
   const pause = usePauseSubscription();
   const resume = useResumeSubscription();
   const { data: brand, isPending, isError, refetch } = useQuery({
@@ -87,9 +89,9 @@ export function BrandDetailClient({ id, initialBrand }: { id: number; initialBra
               {isUpdating ? '변경 중…' : isActive ? '구독중지' : '구독재개'}
             </Button>
           ) : isChecking ? (
-            <Button size="short" variant="neutral-outline" disabledTone="preserve" disabled className="w-[95px] shrink-0">확인중</Button>
+            <Button size="short" variant="neutral-outline" onClick={() => setShowSubscribeDialog(true)} aria-haspopup="dialog" className="w-[95px] shrink-0">확인하기</Button>
           ) : subscribeUrl ? (
-            <ButtonLink href={subscribeUrl} target="_blank" rel="noopener noreferrer" size="short" aria-label="발행처에서 구독하기 (새 창)" className="w-[95px] shrink-0">구독하기</ButtonLink>
+            <Button size="short" onClick={() => setShowSubscribeDialog(true)} aria-haspopup="dialog" className="w-[95px] shrink-0">구독하기</Button>
           ) : <span className="shrink-0 text-xs text-caption-assistive">구독 준비 중</span>}
         </section>
 
@@ -112,7 +114,7 @@ export function BrandDetailClient({ id, initialBrand }: { id: number; initialBra
             {brand.brandArticleList.slice(0, visibleCount).map((article) => {
               const published = formatPublicationDate(article.date);
               return <li key={article.id}>
-                <Link href={`/articles/${article.id}`} prefetch={false} className="block min-w-0 rounded-lg border border-line-neutral bg-bg p-4 transition-colors hover:border-tint-200">
+                <Link href={`/articles/${article.id}?past=1`} prefetch={false} className="block min-w-0 rounded-lg border border-line-neutral bg-bg p-4 transition-colors hover:border-tint-200">
                   <h3 className="line-clamp-2 break-words text-sm font-bold leading-5 text-caption-strong">{article.title}</h3>
                   <time dateTime={article.date} className="mt-2 flex flex-wrap items-center gap-x-2 text-xs font-medium leading-4 text-caption-neutral">
                     <span>{published.date}</span>
@@ -128,6 +130,7 @@ export function BrandDetailClient({ id, initialBrand }: { id: number; initialBra
         )}
       </section>
 
+      {showSubscribeDialog && <SubscribeDialog brand={brand} checking={isChecking} onClose={() => setShowSubscribeDialog(false)} />}
       {showPauseDialog && <PauseSubscriptionDialog brandName={brand.brandName} onClose={() => setShowPauseDialog(false)} onConfirm={() => { setShowPauseDialog(false); void changeSubscription(); }} />}
       {notice && (notice.isError ? <div role="alert" className="pointer-events-none fixed inset-x-6 bottom-[calc(var(--tabbar-height)+env(safe-area-inset-bottom)+16px)] z-50 mx-auto flex min-h-14 max-w-[600px] items-center justify-center rounded-lg bg-caption-strong px-4 py-3 text-center text-sm font-medium text-white sm:bottom-6 sm:left-[calc(var(--sidebar-width)+24px)]">{notice.message}</div> : <Toast message={notice.message} />)}
     </div>

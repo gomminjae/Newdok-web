@@ -5,23 +5,29 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { articleQueries, useToggleBookmark } from '@/entities/article';
-import { useAuth } from '@/shared/hooks';
-import { Button, ButtonLink } from '@/shared/ui';
-import { NewsletterContent } from '@/shared/ui/NewsletterContent';
-import { ApiError } from '@/shared/api/client';
+import { useAuth, useToast } from '@/shared/hooks';
+import { Button, ButtonLink, Icon, Toast } from '@/shared/ui';
+import { ArticleReader } from '@/features/reader/ArticleReader';
+import { userQueries } from '@/entities/user';
+import { ApiError, getErrorMessage } from '@/shared/api/client';
 import { NewsletterImage } from '@/widgets/landing/NewsletterImage';
 
-export function ArticleDetailClient({ id }: { id: number }) {
+export function ArticleDetailClient({ id, archive = false }: { id: number; archive?: boolean }) {
   const { isLoggedIn } = useAuth();
+  const { message, showToast } = useToast();
+  const [bookmarkError, setBookmarkError] = useState('');
+  const profile = useQuery({ ...userQueries.profile(), enabled: isLoggedIn && !archive });
   const router = useRouter();
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   const { data: article, isLoading, error, refetch } = useQuery(articleQueries.detail(id, isLoggedIn));
   const toggleBookmark = useToggleBookmark(id);
 
-  const handleBookmarkToggle = () => {
-    if (!article || !isLoggedIn) return;
-    toggleBookmark.mutate();
+  const handleBookmarkToggle = async () => {
+    if (!article || !isLoggedIn || archive || toggleBookmark.isPending) return;
+    setBookmarkError('');
+    try { await toggleBookmark.mutateAsync(); showToast(article.isBookmarked ? '북마크가 해제되었습니다.' : '북마크에 추가되었습니다.'); }
+    catch (error) { setBookmarkError(getErrorMessage(error, '북마크를 변경하지 못했어요. 다시 시도해주세요.')); }
   };
 
   useEffect(() => {
@@ -69,26 +75,10 @@ export function ArticleDetailClient({ id }: { id: number }) {
               {article.brandName}
             </span>
           </Link>
-          {isLoggedIn && (
-            <button
-              type="button"
-              onClick={handleBookmarkToggle}
-              aria-label={article.isBookmarked ? '북마크 해제' : '북마크 추가'}
-              aria-pressed={article.isBookmarked}
-              disabled={toggleBookmark.isPending}
-              className="-mr-2 flex h-11 w-11 shrink-0 items-center justify-center bg-transparent disabled:opacity-50"
-            >
-              <img
-                src={
-                  article.isBookmarked
-                    ? '/images/Fill Bookmark.svg'
-                    : '/images/Line Bookmark.svg'
-                }
-                alt=""
-                width={28}
-                height={28}
-              />
-            </button>
+          {isLoggedIn && !archive && (
+            <Button variant="ghost-neutral" size="compact" onClick={() => void handleBookmarkToggle()} aria-label={article.isBookmarked ? '북마크 해제' : '북마크 추가'} aria-pressed={article.isBookmarked} disabled={toggleBookmark.isPending}>
+              <Icon src={article.isBookmarked ? '/images/Fill Bookmark.svg' : '/images/Line Bookmark.svg'} size={28} />
+            </Button>
           )}
         </div>
       </header>
@@ -104,13 +94,15 @@ export function ArticleDetailClient({ id }: { id: number }) {
         </header>
 
         <section aria-label="아티클 본문" className="min-w-0 px-1.5 pb-10">
-          <NewsletterContent html={article.articleHTML} title={article.articleTitle} />
+          {bookmarkError && <p role="alert" className="px-4 py-3 text-sm text-error">{bookmarkError}</p>}
+          <ArticleReader key={`${id}-${profile.data?.id ?? 'guest'}-${archive}`} html={article.articleHTML} title={article.articleTitle} articleId={id} userId={isLoggedIn ? profile.data?.id : undefined} archive={archive} />
         </section>
         <div className="border-t border-line-neutral px-5 py-8 text-center">
           <ButtonLink href={`/newsletters/${article.brandId}`} variant="outline">{article.brandName}의 다른 아티클 보기 →</ButtonLink>
         </div>
       </article>
 
+      {message && <Toast message={message} />}
       {showScrollTop && (
         <button
           type="button"
