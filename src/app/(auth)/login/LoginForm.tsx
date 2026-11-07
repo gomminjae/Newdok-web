@@ -11,6 +11,7 @@ import {
   SOCIAL_SIGNUP_STORAGE_KEY,
 } from '@/features/auth/social';
 import { ApiError } from '@/shared/api/client';
+import { APPLE_WEB_CLIENT_ID } from '@/shared/config/auth';
 import { enterAsGuest } from '@/shared/hooks';
 import { Button } from '@/shared/ui';
 
@@ -130,11 +131,10 @@ export function LoginForm() {
 
   async function startAppleLogin() {
     if (loadingProvider) return;
-    const clientId = process.env.NEXT_PUBLIC_APPLE_CLIENT_ID;
     const redirectUri = process.env.NEXT_PUBLIC_APPLE_REDIRECT_URI;
 
-    if (!clientId || !redirectUri) {
-      setErrorMessage('Apple 로그인을 위한 Services ID와 Return URL이 필요합니다.');
+    if (!redirectUri) {
+      setErrorMessage('Apple 로그인을 위한 Return URL이 필요합니다.');
       return;
     }
     if (!isAppleScriptReady || !window.AppleID) {
@@ -149,7 +149,7 @@ export function LoginForm() {
       const state = createRandomUrlSafeString();
       const nonce = createRandomUrlSafeString();
       window.AppleID.auth.init({
-        clientId,
+        clientId: APPLE_WEB_CLIENT_ID,
         scope: 'name email',
         redirectURI: redirectUri,
         state,
