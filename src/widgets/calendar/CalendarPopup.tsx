@@ -111,7 +111,7 @@ export function CalendarPopup({
     <dialog
       ref={dialogRef}
       aria-label="아티클 날짜 선택"
-      className="fixed inset-0 m-auto max-h-[calc(100dvh-48px)] w-[calc(100%-48px)] max-w-[400px] overflow-y-auto bg-transparent p-0 backdrop:bg-[rgba(37,36,44,0.6)]"
+      className="fixed inset-0 m-auto max-h-[calc(100dvh-48px)] w-[calc(100%-48px)] max-w-[400px] overflow-y-auto bg-transparent p-0 backdrop:bg-bg-popup-dim/60"
       onCancel={onClose}
       onClick={(event) => {
         if (event.target !== event.currentTarget) return;
@@ -128,7 +128,7 @@ export function CalendarPopup({
             <button className="flex h-11 w-11 items-center justify-center" onClick={prevMonth} type="button" aria-label="이전 달">
               <img src="/images/Line left.svg" alt="이전" width={24} height={24} />
             </button>
-            <span className="w-[120px] text-center text-sm font-medium text-[#1E1E1E]" aria-live="polite">
+            <span className="w-[120px] text-center text-sm font-medium text-caption-deep" aria-live="polite">
               {yearMonthTitle}
             </span>
             <button className="flex h-11 w-11 items-center justify-center" onClick={nextMonth} type="button" aria-label="다음 달">
@@ -151,8 +151,8 @@ export function CalendarPopup({
                 key={day}
                 className={clsx(
                   'flex-1 text-center text-base font-normal',
-                  i === 0 && 'text-[#FF3B30]',
-                  i === 6 && 'text-[#007AFF]',
+                  i === 0 && 'text-calendar-sunday',
+                  i === 6 && 'text-calendar-saturday',
                   i !== 0 && i !== 6 && 'text-black',
                 )}
               >
@@ -194,7 +194,7 @@ export function CalendarPopup({
                           'flex h-10 w-10 max-w-full items-center justify-center rounded-lg text-base font-normal',
                           isSelected && 'bg-caption-heavy',
                           isToday && !isSelected && 'border border-caption-heavy',
-                          isFuture ? 'text-caption-disabled' : isSelected ? 'text-white' : 'text-[#171414]',
+                          isFuture ? 'text-caption-disabled' : isSelected ? 'text-white' : 'text-caption-muted',
                         )}
                       >
                         {day.dayString}
@@ -220,7 +220,7 @@ export function CalendarPopup({
           onClick={selectToday}
           aria-label="오늘 날짜로 이동"
         >
-          <Icon src="/images/Line Reload.svg" size={16} />
+          <Icon name="Line Reload" size={16} />
           오늘
         </Button>
       </div>

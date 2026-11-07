@@ -1,7 +1,7 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import { clsx } from 'clsx';
 import { ButtonLink } from './Button';
+import { AppImage } from '@/design-system/components/AppImage';
 
 type Props = {
   title?: string;
@@ -19,12 +19,12 @@ export function GuestNotice({
         className,
       )}
     >
-      <Image src="/images/app/nologin.png" alt="" width={280} height={280} className="mb-6 h-[280px] w-[280px] max-w-full object-contain" />
+      <AppImage name="nologin" alt="" width={280} height={280} className="mb-6 h-[280px] w-[280px] max-w-full object-contain" />
       <p className="text-base font-bold text-caption-heavy whitespace-pre-line mb-6">
         {title}
       </p>
       <ButtonLink
-        href="/login"
+        href="/intro"
         fullWidth
         className="mb-3 max-w-[480px]"
       >

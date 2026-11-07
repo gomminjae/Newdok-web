@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { applyHighlights, getTextSelection, type Highlight, type TextSelection } from '@/shared/lib/reader-highlights';
+import { colors } from '@/design-system/tokens';
 
 const CONTENT_STYLES = `
   html, body { margin: 0 !important; padding: 0 !important; height: auto !important; min-height: 0 !important; width: 100% !important; max-width: 100% !important; }
@@ -14,7 +15,7 @@ const CONTENT_STYLES = `
   td, th, a { overflow-wrap: anywhere; }
   pre { white-space: pre-wrap; overflow-wrap: anywhere; }
   iframe, embed, object { max-width: 100% !important; }
-  a { color: #2866d3; }
+  a { color: ${colors.primaryNormal}; }
   @media (max-width: 480px) { td, th { padding-left: 4px !important; padding-right: 4px !important; } }
 `;
 

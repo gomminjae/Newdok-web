@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { articleQueries, useToggleBookmark } from '@/entities/article';
 import { useAuth, useToast } from '@/shared/hooks';
-import { Button, ButtonLink, Icon, Toast } from '@/shared/ui';
+import { AppImage, Button, ButtonLink, Icon, Toast } from '@/shared/ui';
 import { ArticleReader } from '@/features/reader/ArticleReader';
 import { userQueries } from '@/entities/user';
 import { ApiError, getErrorMessage } from '@/shared/api/client';
@@ -62,11 +62,10 @@ export function ArticleDetailClient({ id, archive = false }: { id: number; archi
 
   return (
     <main className="min-h-dvh bg-bg">
-      <header className="sticky top-0 z-10 bg-bg">
-        <div className="mx-auto flex h-11 w-full max-w-3xl items-center px-5">
-          <button type="button" aria-label="뒤로 가기" onClick={() => window.history.length > 1 ? router.back() : router.replace(`/newsletters/${article.brandId}`)} className="-ml-2 flex h-11 w-11 shrink-0 items-center justify-center text-caption-heavy">
-            <svg aria-hidden="true" width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="m17 6-8 8 8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
-          </button>
+      <article className="mx-auto w-full max-w-3xl">
+        <ArticleReader key={`${id}-${profile.data?.id ?? 'guest'}-${archive}`} html={article.articleHTML} title={article.articleTitle} articleId={id} userId={isLoggedIn ? profile.data?.id : undefined} archive={archive} renderHeader={(controls) => <header className="sticky top-0 z-10 bg-bg">
+        <div className="flex h-11 w-full items-center gap-2 px-5">
+          <Button variant="ghost-neutral" size="icon" aria-label="뒤로 가기" onClick={() => window.history.length > 1 ? router.back() : router.replace(`/newsletters/${article.brandId}`)}><Icon name="Back" size={28} /></Button>
           <Link
             href={`/newsletters/${article.brandId}`}
             className="flex min-w-0 flex-1 items-center"
@@ -75,28 +74,24 @@ export function ArticleDetailClient({ id, archive = false }: { id: number; archi
               {article.brandName}
             </span>
           </Link>
-          {isLoggedIn && !archive && (
-            <Button variant="ghost-neutral" size="compact" onClick={() => void handleBookmarkToggle()} aria-label={article.isBookmarked ? '북마크 해제' : '북마크 추가'} aria-pressed={article.isBookmarked} disabled={toggleBookmark.isPending}>
-              <Icon src={article.isBookmarked ? '/images/Fill Bookmark.svg' : '/images/Line Bookmark.svg'} size={28} />
+          <div className="flex shrink-0 items-center gap-3">{controls}{isLoggedIn && !archive && (
+            <Button variant="ghost-neutral" size="icon" onClick={() => void handleBookmarkToggle()} aria-label={article.isBookmarked ? '북마크 해제' : '북마크 추가'} aria-pressed={article.isBookmarked} disabled={toggleBookmark.isPending}>
+              {article.isBookmarked ? <AppImage name="bookmarked" alt="" width={28} height={28} /> : <Icon name="Line Bookmark" size={28} />}
             </Button>
-          )}
+          )}</div>
         </div>
-      </header>
-
-      <article className="mx-auto w-full max-w-3xl">
+      </header>}>
         <header className="relative h-[260px] overflow-hidden bg-neutral-150 [&>span]:h-full [&>span]:aspect-auto">
           <NewsletterImage name={article.brandName} imageUrl={article.brandImageUrl || null} cover />
           <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-[120px] bg-linear-to-b from-transparent to-black/40" />
-          <div className="absolute right-[42px] bottom-4 left-5">
-            <h1 className="line-clamp-2 text-[22px] font-bold leading-[1.3] text-white">{article.articleTitle}</h1>
+          <div className="absolute right-4 bottom-4 left-4">
+            <h1 className="line-clamp-2 text-base font-bold leading-[22px] text-white">{article.articleTitle}</h1>
             <time dateTime={article.date} className="mt-1 block text-sm text-neutral-300">{formatArticleDate(article.date)}</time>
           </div>
         </header>
 
-        <section aria-label="아티클 본문" className="min-w-0 px-1.5 pb-10">
-          {bookmarkError && <p role="alert" className="px-4 py-3 text-sm text-error">{bookmarkError}</p>}
-          <ArticleReader key={`${id}-${profile.data?.id ?? 'guest'}-${archive}`} html={article.articleHTML} title={article.articleTitle} articleId={id} userId={isLoggedIn ? profile.data?.id : undefined} archive={archive} />
-        </section>
+        {bookmarkError && <p role="alert" className="px-4 py-3 text-sm text-error">{bookmarkError}</p>}
+        </ArticleReader>
         <div className="border-t border-line-neutral px-5 py-8 text-center">
           <ButtonLink href={`/newsletters/${article.brandId}`} variant="outline">{article.brandName}의 다른 아티클 보기 →</ButtonLink>
         </div>
@@ -108,7 +103,7 @@ export function ArticleDetailClient({ id, archive = false }: { id: number; archi
           type="button"
           onClick={scrollToTop}
           aria-label="아티클 맨 위로 이동"
-          className="fixed bottom-[calc(24px+env(safe-area-inset-bottom))] right-5 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-bg shadow-[0_4px_8px_#00000026] transition-colors hover:bg-neutral-50"
+          className="fixed bottom-[calc(24px+env(safe-area-inset-bottom))] right-5 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-bg shadow-scroll-top transition-colors hover:bg-neutral-50"
         >
           <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 14V2m-5 5 5-5 5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
         </button>

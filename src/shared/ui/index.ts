@@ -1,9 +1,13 @@
 export { Button, ButtonLink } from './Button';
 export { Input } from './Input';
+export { Checkbox } from './Checkbox';
+export { Select } from './Select';
+export { Tabs } from './Tabs';
 export { Chip } from './Chip';
 export { SubscriptionBadge } from './SubscriptionBadge';
 export { Toast } from './Toast';
 export { Icon } from './Icon';
+export { AppImage } from '@/design-system/components/AppImage';
 export { SegmentPicker } from './SegmentPicker';
 export { Card } from './Card';
 export { EmptyState } from './EmptyState';

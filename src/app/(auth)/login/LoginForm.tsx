@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
 import Script from 'next/script';
 import { useRouter } from 'next/navigation';
 import { userApi, type SocialLoginRequest } from '@/entities/user';
@@ -13,7 +12,7 @@ import {
 import { ApiError } from '@/shared/api/client';
 import { APPLE_WEB_CLIENT_ID } from '@/shared/config/auth';
 import { enterAsGuest } from '@/shared/hooks';
-import { Button } from '@/shared/ui';
+import { AppImage, Button, ButtonLink } from '@/shared/ui';
 
 const KAKAO_STATE_KEY = 'newdok.kakaoOAuthState';
 
@@ -193,20 +192,19 @@ export function LoginForm() {
 
       <div className="flex flex-1 flex-col items-center pb-14">
         <div className="min-h-12 flex-1" />
-        <Image
-          src="/images/landing/newdok-logo.svg"
+        <AppImage name="logo"
           alt="Newdok"
-          width={270}
+          width={210}
           height={48}
           priority
-          className="h-12 w-auto max-w-full"
+          className="h-12 w-[210px] max-w-full"
         />
         <div className="min-h-16 flex-[2]" />
       </div>
 
       <div className="flex flex-col gap-3">
         <div className="relative">
-          <div className="pointer-events-none absolute -top-[30px] left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#FB4F4F] px-3 py-1.5 text-xs font-bold text-white after:absolute after:left-1/2 after:top-full after:-translate-x-1/2 after:border-x-[5px] after:border-t-[6px] after:border-x-transparent after:border-t-[#FB4F4F]">
+          <div className="pointer-events-none absolute -top-[30px] left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-full bg-start-badge px-3 py-1.5 text-xs font-bold text-white after:absolute after:left-1/2 after:top-full after:-translate-x-1/2 after:border-x-[5px] after:border-t-[6px] after:border-x-transparent after:border-t-start-badge">
             3초만에 시작하기
           </div>
           <Button
@@ -253,21 +251,14 @@ export function LoginForm() {
         >
           비회원으로 이용하기
         </button>
+        <ButtonLink href="/intro" variant="ghost-neutral" size="compact">뉴독 서비스 소개</ButtonLink>
       </div>
     </main>
   );
 }
 
 function KakaoIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      className="absolute left-5 h-4 w-4 fill-current"
-    >
-      <path d="M12 3C6.48 3 2 6.49 2 10.8c0 2.78 1.86 5.22 4.66 6.6l-1.19 4.37a.38.38 0 0 0 .58.41l5.22-3.48c.24.02.48.03.73.03 5.52 0 10-3.49 10-7.93S17.52 3 12 3Z" />
-    </svg>
-  );
+  return <AppImage name="kakaoBubble" alt="" width={16} height={16} className="absolute left-5 h-4 w-4" />;
 }
 
 function AppleIcon() {

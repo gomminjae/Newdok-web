@@ -5,7 +5,7 @@ import { memo, Suspense, useCallback, useRef, useState, type FormEvent } from 'r
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { newsletterQueries, type NewsletterSearchResult } from '@/entities/newsletter';
-import { Button, ButtonLink } from '@/shared/ui';
+import { Button, ButtonLink, Input, Icon } from '@/shared/ui';
 import { NewsletterImage } from '@/widgets/landing/NewsletterImage';
 
 // The same registration request form used by the app's FeedbackView.
@@ -39,7 +39,7 @@ function SearchContent() {
     window.history.replaceState(null, '', `/search/newsletters${next ? `?${params}` : ''}`);
   }, [keyword, queryClient]);
 
-  return <section aria-label="뉴스레터 검색" className="-mx-4 min-h-[calc(100dvh-var(--header-height)-var(--tabbar-height))] bg-bg sm:-mx-6 xl:-mx-10">
+  return <section aria-label="뉴스레터 검색" className="-mx-4 min-h-[calc(100dvh-var(--header-height)-var(--tabbar-height))] bg-bg-system md:-mx-6 xl:-mx-10">
     <SearchForm keyword={keyword} onSearch={search} />
     {!keyword ? <PopularSearches onSearch={search} /> : <SearchResults key={`results:${keyword}`} keyword={keyword} />}
   </section>;
@@ -88,7 +88,7 @@ const SearchResultList = memo(function SearchResultList({ results }: { results: 
       <Link href={`/newsletters/${result.id}`} prefetch={false} className="flex items-center gap-3 rounded-[12px] bg-bg p-4 transition-colors hover:bg-neutral-50">
         <NewsletterImage name={result.brandName} imageUrl={result.imageUrl ?? null} variant="thumbnail" />
         <div className="min-w-0">
-          <h3 className="text-sm font-bold text-caption-title">{result.brandName}</h3>
+          <h3 className="text-base font-bold text-caption-title">{result.brandName}</h3>
           <p className="mt-1 text-sm font-medium break-words text-caption-strong">{result.firstDescription}</p>
         </div>
       </Link>
@@ -114,25 +114,14 @@ const SearchForm = memo(function SearchForm({ keyword, onSearch }: { keyword: st
     onSearch(value);
   }
 
-  return <form role="search" onSubmit={submit} className="sticky top-0 z-30 flex items-center gap-2 border-b border-line-neutral bg-bg px-4 py-2.5 sm:top-[var(--header-height)]">
-    <button type="button" aria-label="뒤로 가기" onClick={() => window.history.length > 1 ? router.back() : router.replace('/search')} className="flex h-11 w-10 shrink-0 items-center justify-center text-caption-assistive">
-      <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="m14 5-7 7 7 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
-    </button>
-    <div className="flex min-w-0 flex-1 items-center gap-2 rounded-[10px] px-3 py-1.5">
-      <label htmlFor="newsletter-search-input" className="sr-only">뉴스레터 검색어</label>
-      <input ref={inputRef} id="newsletter-search-input" type="text" inputMode="search" enterKeyHint="search" autoFocus={!keyword} autoComplete="off" autoCorrect="off" spellCheck={false} maxLength={100} value={value}
-        onChange={(event) => { setValue(event.target.value); if (!event.target.value) onSearch(''); }} placeholder="검색어를 입력하세요"
-        onKeyDown={(event) => {
-          if (event.key === 'Enter' && (event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229)) event.preventDefault();
-        }}
-        className="h-10 min-w-0 flex-1 bg-transparent text-sm text-caption-strong placeholder:text-caption-assistive" />
-      {value && <button type="button" aria-label="검색어 지우기" onClick={() => { setValue(''); onSearch(''); inputRef.current?.focus(); }} className="flex h-10 w-8 shrink-0 items-center justify-center text-line-alternative">
-        <svg aria-hidden="true" width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="10" fill="currentColor" /><path d="m7 7 6 6m0-6-6 6" stroke="white" strokeWidth="1.5" strokeLinecap="round" /></svg>
-      </button>}
-    </div>
-    <button type="submit" aria-label="검색" className="flex h-11 w-10 shrink-0 items-center justify-center text-caption-heavy">
-      <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="10.5" cy="10.5" r="7.5" stroke="currentColor" strokeWidth="1.5" /><path d="m16 16 5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
-    </button>
+  return <form role="search" onSubmit={submit} className="sticky top-[var(--header-height)] z-30 flex min-h-14 items-center gap-2 border-b border-line-neutral bg-bg px-4 py-2">
+    <Button type="submit" variant="ghost-neutral" size="compact" aria-label="검색"><Icon name="Line Search" /></Button>
+    <label htmlFor="newsletter-search-input" className="sr-only">뉴스레터 검색어</label>
+    <Input variant="search" ref={inputRef} id="newsletter-search-input" type="text" inputMode="search" enterKeyHint="search" autoFocus={!keyword} autoComplete="off" autoCorrect="off" spellCheck={false} maxLength={100} value={value}
+      onChange={(event) => { setValue(event.target.value); if (!event.target.value) onSearch(''); }} placeholder="검색어를 입력하세요."
+      onKeyDown={(event) => { if (event.key === 'Enter' && (event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229)) event.preventDefault(); }}
+      className="min-w-0 flex-1" />
+    <Button variant="ghost-neutral" size="compact" aria-label={value ? '검색어 지우기' : '검색 닫기'} onClick={() => { if (value) { setValue(''); onSearch(''); inputRef.current?.focus(); } else if (window.history.length > 1) router.back(); else router.replace('/search'); }}><Icon name="Line Close" /></Button>
   </form>;
 });
 

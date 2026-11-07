@@ -20,9 +20,9 @@ export function PopularNewsletters({ initialNewsletters }: { initialNewsletters:
   };
 
   return (
-    <section aria-labelledby="popular-newsletters" className="bg-bg px-5 py-9 sm:px-8 sm:py-11">
+    <section aria-labelledby="popular-newsletters" className="bg-bg px-5 py-9 md:px-8 md:py-11">
       <div className="mx-auto w-full max-w-6xl">
-        <h2 id="popular-newsletters" className="mb-4 text-base font-bold text-primary sm:text-lg">
+        <h2 id="popular-newsletters" className="mb-4 text-base font-bold text-primary md:text-lg">
           지금 인기 있는 뉴스레터
         </h2>
         <NewsletterListState isPending={isPending} isError={isError} isEmpty={!newsletters.length} retry={refetch} />
@@ -35,7 +35,7 @@ export function PopularNewsletters({ initialNewsletters }: { initialNewsletters:
             {newsletters.map((newsletter) => (
               <li
                 key={newsletter.brandId}
-                className="w-[86%] flex-none snap-start sm:w-[calc(50%-6px)] lg:w-[calc(33.333%-8px)]"
+                className="w-[86%] flex-none snap-start md:w-[calc(50%-6px)] lg:w-[calc(33.333%-8px)]"
               >
                 <Link
                   href={`/newsletters/${newsletter.brandId}`}
@@ -64,7 +64,7 @@ export function PopularNewsletters({ initialNewsletters }: { initialNewsletters:
             type="button"
             onClick={() => scrollCards(-1)}
             aria-label="이전 인기 뉴스레터 보기"
-            className="absolute -left-4 top-1/2 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 text-xl text-caption-alternative shadow-md transition-colors hover:text-caption-heavy sm:flex"
+            className="absolute -left-4 top-1/2 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 text-xl text-caption-alternative shadow-md transition-colors hover:text-caption-heavy md:flex"
           >
             ‹
           </button>}
@@ -72,7 +72,7 @@ export function PopularNewsletters({ initialNewsletters }: { initialNewsletters:
             type="button"
             onClick={() => scrollCards(1)}
             aria-label="다음 인기 뉴스레터 보기"
-            className="absolute -right-4 top-1/2 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 text-xl text-caption-alternative shadow-md transition-colors hover:text-caption-heavy sm:flex"
+            className="absolute -right-4 top-1/2 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 text-xl text-caption-alternative shadow-md transition-colors hover:text-caption-heavy md:flex"
           >
             ›
           </button>}

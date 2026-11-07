@@ -6,7 +6,7 @@ export default function NewslettersLayout({ children }: { children: React.ReactN
     <>
       <Header />
       <Sidebar />
-      <main id="main-content" className="min-h-[calc(100dvh-var(--header-height))] min-w-0 bg-bg-system px-4 pb-[calc(var(--tabbar-height)+env(safe-area-inset-bottom)+16px)] sm:px-6 sm:ml-[var(--sidebar-width)] xl:px-10 sm:pb-8">
+      <main id="main-content" className="min-h-[calc(100dvh-var(--header-height))] min-w-0 bg-bg-system px-4 pb-[calc(var(--tabbar-height)+env(safe-area-inset-bottom)+16px)] md:px-6 md:ml-[var(--sidebar-width)] xl:px-10 md:pb-8">
         <div className="mx-auto w-full max-w-6xl">{children}</div>
       </main>
     </>

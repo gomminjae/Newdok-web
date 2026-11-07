@@ -7,13 +7,13 @@ import { useQuery } from '@tanstack/react-query';
 import { clsx } from 'clsx';
 import { newsletterApi, newsletterQueries, type NewsletterBrand } from '@/entities/newsletter';
 import { useAuth } from '@/shared/hooks';
-import { Button, Chip, GuestNotice, SubscriptionBadge } from '@/shared/ui';
+import { Button, Chip, GuestNotice, Icon, SubscriptionBadge, Tabs } from '@/shared/ui';
 import { NewsletterImage } from '@/widgets/landing/NewsletterImage';
 import { ExplorerDialog, NewsletterFilters } from './NewsletterFilters';
 import { NewsletterRecommendations } from './NewsletterRecommendations';
 
 export function NewsletterExplorer({ initialBrands }: { initialBrands?: NewsletterBrand[] }) {
-  return <Suspense fallback={initialBrands ? <div className="-mx-4 bg-bg-system px-5 py-5 sm:-mx-6 sm:px-6 xl:-mx-10">
+  return <Suspense fallback={initialBrands ? <div className="-mx-4 bg-bg-system px-5 py-5 md:-mx-6 md:px-6 xl:-mx-10">
     <BrandList brands={initialBrands} isMember={false} />
   </div> : <ExplorerLoading />}><ExplorerRoute initialBrands={initialBrands} /></Suspense>;
 }
@@ -76,51 +76,30 @@ function ExplorerContent({ initialBrands }: { initialBrands?: NewsletterBrand[] 
   }
 
   return (
-    <section aria-label="뉴스레터 둘러보기" className="-mx-4 flex min-h-[calc(100dvh-var(--header-height)-var(--tabbar-height))] flex-col bg-bg-system sm:-mx-6 sm:min-h-[calc(100dvh-var(--header-height))] xl:-mx-10">
-      <div role="tablist" aria-label="뉴스레터 목록" className="relative flex border-b border-line-neutral bg-bg pt-4">
-        {tabs.map((value) => (
-          <button key={value} id={`newsletter-tab-${value}`} role="tab" aria-selected={tab === value} aria-controls={`newsletter-panel-${value}`}
-            tabIndex={tab === value ? 0 : -1}
-            onKeyDown={(event) => {
-              if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) {
-                event.preventDefault();
-                const next = event.key === 'Home' ? tabs[0] : event.key === 'End' ? tabs[1] : tab === 'all' ? 'recommend' : 'all';
-                updateParams({ tab: next });
-                document.getElementById(`newsletter-tab-${next}`)?.focus();
-              }
-            }}
-            onClick={() => updateParams({ tab: value })}
-            className={clsx('min-h-11 flex-1 px-2 py-3 text-sm font-bold transition-colors duration-300 ease-in-out', tab === value ? 'text-caption-strong' : 'text-caption-alternative')}>
-            {value === 'recommend' ? '추천 뉴스레터' : '모든 뉴스레터'}
-          </button>
-        ))}
-        <span aria-hidden="true" className="pointer-events-none absolute bottom-0 left-0 h-0.5 w-1/2 bg-caption-strong transition-transform duration-300 ease-in-out"
-          style={{ transform: `translateX(${tab === tabs[0] ? 0 : 100}%)` }} />
-      </div>
+    <section aria-label="뉴스레터 둘러보기" className="-mx-4 flex min-h-[calc(100dvh-var(--header-height)-var(--tabbar-height))] flex-col bg-bg-system md:-mx-6 md:min-h-[calc(100dvh-var(--header-height))] xl:-mx-10">
+      <Tabs id="newsletter" label="뉴스레터 목록" value={tab} options={tabs.map((value) => ({ value, label: value === 'recommend' ? '추천 뉴스레터' : '모든 뉴스레터' }))} onChange={(value) => updateParams({ tab: value })} />
 
         <div hidden={tab !== 'recommend'} role="tabpanel" id="newsletter-panel-recommend" aria-labelledby="newsletter-tab-recommend" className={tab === 'recommend' ? 'page-enter' : undefined}>
           {isLoggedIn ? <NewsletterRecommendations active={tab === 'recommend'} /> : <GuestNotice />}
         </div>
         <div hidden={tab !== 'all'} role="tabpanel" id="newsletter-panel-all" aria-labelledby="newsletter-tab-all" className={clsx('flex-1 pb-20', tab === 'all' && 'page-enter')}>
-          <div className="flex items-center gap-3 bg-bg px-5 pt-5 pb-4 sm:px-6 min-[1024px]:px-8">
+          <div className="flex items-center gap-3 bg-bg-system px-4 py-4 md:px-6 min-[1024px]:px-8">
             <div className="landing-scrollbar-none flex min-w-0 flex-1 items-center gap-1 overflow-x-auto">
             <FilterButton onClick={() => setDialog('sort')} active={false} label={`${orderOpt === '최신순' ? '최신등록순' : '인기순'} 정렬`}>
-              {orderOpt === '최신순' ? '최신등록순' : '인기순'} <span aria-hidden="true" className="text-xs">⇅</span>
+              {orderOpt === '최신순' ? '최신등록순' : '인기순'} <Icon name="Line Arrow Transfer" size={16} />
             </FilterButton>
             <span aria-hidden="true" className="h-5 w-px shrink-0 bg-line-neutral" />
-            <FilterButton onClick={() => setDialog('filters')} active={industries.length > 0} label={`산업 필터${industries.length ? ` ${industries.length}개 선택` : ''}`}>
+            <FilterButton onClick={() => setDialog('filters')} active={industries.length > 0} muted={!industries.length} label={`산업 필터${industries.length ? ` ${industries.length}개 선택` : ''}`}>
               산업{industries.length > 0 && ` ${industries.length}`} <Chevron />
             </FilterButton>
-            <FilterButton onClick={() => setDialog('filters')} active={days.length > 0} label={`발행 요일 필터${days.length ? ` ${days.length}개 선택` : ''}`}>
+            <FilterButton onClick={() => setDialog('filters')} active={days.length > 0} muted={!days.length} label={`발행 요일 필터${days.length ? ` ${days.length}개 선택` : ''}`}>
               발행 요일{days.length > 0 && ` ${days.length}`} <Chevron />
             </FilterButton>
             </div>
-            <button type="button" onClick={resetFilters} aria-label="필터 초기화" className="flex h-11 w-11 shrink-0 items-center justify-center text-primary">
-              <svg aria-hidden="true" width="30" height="30" viewBox="0 0 24 24" fill="none"><path d="M19 8a8 8 0 1 0 1 7M19 3v5h-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
-            </button>
+            <Button variant="ghost" size="xs" onClick={resetFilters} aria-label="필터 초기화"><Icon name="Line Reload" size={16} />초기화</Button>
           </div>
 
-          <div className="px-5 pt-3 sm:px-6 min-[1024px]:px-8">
+          <div className="px-4 md:px-6 min-[1024px]:px-8">
           {brands.isPending ? <ExplorerLoading /> : brands.isError ? (
             <div role="alert" className="py-16 text-center">
               <p>뉴스레터를 불러오지 못했어요.</p>
@@ -139,10 +118,9 @@ function ExplorerContent({ initialBrands }: { initialBrands?: NewsletterBrand[] 
       {dialog === 'sort' && <ExplorerDialog title="정렬" onClose={() => setDialog(null)}>
         <div className="mt-7 divide-y divide-line-neutral">
           {([['인기순', '인기순'], ['최신순', '최신등록순']] as const).map(([value, label]) => (
-            <button key={value} type="button" aria-pressed={orderOpt === value} onClick={() => { updateParams({ orderOpt: value }); setDialog(null); }}
-              className="flex h-14 w-full items-center justify-between text-left text-sm font-medium text-caption-strong">
-              {label}{orderOpt === value && <span aria-hidden="true" className="text-lg text-primary">✓</span>}
-            </button>
+            <Button key={value} variant="menu" fullWidth aria-pressed={orderOpt === value} onClick={() => { updateParams({ orderOpt: value }); setDialog(null); }}>
+              {label}{orderOpt === value && <span className="text-primary"><Icon name="Line Checkmark" size={24} /></span>}
+            </Button>
           ))}
         </div>
       </ExplorerDialog>}
@@ -154,11 +132,11 @@ function ExplorerContent({ initialBrands }: { initialBrands?: NewsletterBrand[] 
 }
 
 function Chevron() {
-  return <svg aria-hidden="true" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="m2 4 4 4 4-4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>;
+  return <Icon name="Line Down" size={20} />;
 }
 
-function FilterButton({ children, onClick, active, label }: { children: ReactNode; onClick: () => void; active: boolean; label: string }) {
-  return <Chip as="button" active={active} aria-label={label} aria-haspopup="dialog" onClick={onClick}>
+function FilterButton({ children, onClick, active, label, muted = false }: { children: ReactNode; onClick: () => void; active: boolean; label: string; muted?: boolean }) {
+  return <Chip as="button" variant="filter" active={active} tone={muted ? 'muted' : 'neutral'} aria-label={label} aria-haspopup="dialog" onClick={onClick}>
     {children}
   </Chip>;
 }
@@ -174,19 +152,11 @@ const BrandList = memo(function BrandList({ brands, isMember }: { brands: Newsle
 });
 
 const BrandCard = memo(function BrandCard({ brand, isMember }: { brand: NewsletterBrand; isMember: boolean }) {
-  return <li>
-    <Link href={`/newsletters/${brand.brandId}`} prefetch={false} className="grid grid-cols-[56px_minmax(0,1fr)_auto] items-start gap-x-2 gap-y-[18px] rounded-[8px] border border-line-neutral bg-bg px-5 pt-4 pb-5 transition-colors hover:border-primary min-[1024px]:grid-cols-[56px_minmax(0,1fr)_auto_auto] min-[1024px]:gap-y-0 min-[1024px]:py-3">
-      <span>
-        <NewsletterImage name={brand.brandName} imageUrl={brand.imageUrl} variant="thumbnail" />
-      </span>
-      <div className="min-w-0">
-        <h2 className="pt-0.5 text-base font-bold text-caption-heavy">{brand.brandName}</h2>
-        <p className="mt-3 line-clamp-2 text-sm font-medium leading-5 text-caption-neutral">{brand.shortDescription}</p>
-      </div>
-      {isMember && (brand.isSubscribed === 'CONFIRMED' || brand.isSubscribed === 'PAUSED') && <SubscriptionBadge status={brand.isSubscribed} />}
-      {brand.interests.length > 0 && <div className="col-span-3 flex flex-wrap items-start gap-2 pt-1 min-[1024px]:col-span-1 min-[1024px]:col-start-4 min-[1024px]:row-start-1 min-[1024px]:ml-3 min-[1024px]:max-w-72 min-[1024px]:justify-end min-[1024px]:pt-0">
-        {brand.interests.slice(0, 3).map((interest) => <Chip key={interest.id}>{interest.name}</Chip>)}
-      </div>}
-    </Link>
-  </li>;
+  return <li><Link href={`/newsletters/${brand.brandId}`} prefetch={false} className="flex items-start gap-2 rounded-xl border border-line-neutral bg-bg p-4 transition-colors hover:border-primary">
+    <NewsletterImage name={brand.brandName} imageUrl={brand.imageUrl} variant="thumbnail" />
+    <div className="min-w-0 flex-1 xl:flex xl:items-center xl:justify-between xl:gap-5">
+      <div className="min-w-0"><div className="flex flex-wrap items-center gap-1.5"><h2 className="text-base font-bold text-caption-heavy">{brand.brandName}</h2>{isMember && (brand.isSubscribed === 'CONFIRMED' || brand.isSubscribed === 'PAUSED') && <SubscriptionBadge status={brand.isSubscribed} />}</div><p className="mt-2 line-clamp-2 text-[13px] font-medium leading-[18px] text-caption-neutral">{brand.shortDescription}</p></div>
+      {brand.interests.length > 0 && <div className="mt-3 flex flex-wrap gap-1.5 xl:mt-0 xl:max-w-80 xl:justify-end">{brand.interests.slice(0, 3).map((interest) => <Chip key={interest.id}>{interest.name}</Chip>)}</div>}
+    </div>
+  </Link></li>;
 });

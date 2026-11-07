@@ -73,7 +73,7 @@ export default async function LandingPage() {
       <LandingHeader />
       <div className="min-h-dvh bg-bg">
         <Sidebar />
-        <div className="pb-[calc(var(--tabbar-height)+env(safe-area-inset-bottom))] sm:ml-[var(--sidebar-width)] sm:pb-0">
+        <div className="pb-[calc(var(--tabbar-height)+env(safe-area-inset-bottom))] md:ml-[var(--sidebar-width)] md:pb-0">
           <main id="main-content">
             <HeroSection />
             <PopularNewsletters initialNewsletters={popular.slice(0, 6)} />

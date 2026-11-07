@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 export function LandingFooter() {
   return (
-    <footer className="mx-auto w-full max-w-6xl bg-bg px-5 py-8 sm:px-8">
+    <footer className="mx-auto w-full max-w-6xl bg-bg px-5 py-8 md:px-8">
       <div className="flex items-center justify-between">
         <Image
           src="/images/landing/newdok-logo.svg"

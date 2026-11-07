@@ -1,8 +1,8 @@
 export function DiscoverSection() {
   return (
-    <section className="px-5 py-14 text-center sm:py-16">
+    <section className="px-5 py-14 text-center md:py-16">
       <div className="mx-auto max-w-6xl">
-        <h2 className="mb-3 text-2xl font-bold leading-tight text-primary sm:text-[28px]">
+        <h2 className="mb-3 text-2xl font-bold leading-tight text-primary md:text-[28px]">
           뉴독에서 다양한
           <br />
           뉴스레터를 만나보세요

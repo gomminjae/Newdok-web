@@ -25,7 +25,7 @@ function harness(respond = () => ({ body: {} }), overrides = {}) {
       setItem: (key, value) => storage.set(key, value),
       removeItem: (key) => storage.delete(key),
     },
-    window: { location: { origin: 'https://newdok.test' }, dispatchEvent: (event) => events.push(event.type) },
+    window: { location: { origin: 'https://newdok.test' }, dispatchEvent: (event) => events.push(event.type), scrollTo() {} },
     fetch: async (url, options) => {
       const request = { url: new URL(url), ...options };
       requests.push(request);
@@ -38,7 +38,7 @@ function harness(respond = () => ({ body: {} }), overrides = {}) {
     const loaded = { exports: {} };
     cache.set(filename, loaded);
     const source = readFileSync(path.join(root, filename), 'utf8');
-    const js = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX } }).outputText;
+    const js = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true } }).outputText;
     const localRequire = (name) => {
       if (name in overrides) return overrides[name];
       if (!name.startsWith('.') && !name.startsWith('@/')) return runtimeRequire(name);
@@ -162,9 +162,11 @@ function componentHarness(filename, exported, { loggedIn = true, profile = { id:
   const invalidations = [];
   const saved = [];
   const ui = Object.fromEntries(['Button', 'ButtonLink', 'Chip', 'Dialog', 'EmptyState', 'GuestNotice', 'Icon', 'Toast', 'SegmentPicker'].map((name) => [name, name]));
+  ui.Checkbox = 'input';
+  ui.Select = 'select';
   const app = harness(({ url }) => ({ body: url.pathname.endsWith('/preInvestigate') ? { data: [] } : {} }), {
     react: {
-      memo: (fn) => fn, useCallback: (fn) => fn, useMemo: (fn) => fn(), useEffect: () => {}, useRef: (value) => ({ current: value }),
+      memo: (fn) => fn, useCallback: (fn) => fn, useMemo: (fn) => fn(), useEffect: () => {}, useRef: (value) => ({ current: value }), useId: () => 'test-id',
       useState(initial) {
         const index = cursor++;
         if (!(index in slots)) slots[index] = typeof initial === 'function' ? initial() : initial;
@@ -199,7 +201,7 @@ function text(tree) {
   if (typeof tree === 'object') return text(tree.props?.children);
   return String(tree);
 }
-const control = (tree, label) => nodes(tree).find((node) => text(node) === label && node.props.onClick);
+const control = (tree, label) => nodes(tree).find((node) => text(node) === label && (node.props.onClick || node.props.type === 'submit'));
 
 test('choosing a bookmark sort changes the query to the backend sort code', () => {
   const app = componentHarness('src/app/(main)/bookmarks/page.tsx', 'default');
@@ -253,4 +255,120 @@ test('a bookmark request failure renders retry rather than the empty state', () 
   const app = componentHarness('src/app/(main)/bookmarks/page.tsx', 'default', { queryError: true });
   const tree = app.render();
   assert.equal(nodes(tree).some((node) => node.type === 'EmptyState' && node.props.title === '북마크를 불러오지 못했어요.'), true);
+});
+
+function profileField(app, props) {
+  const tree = app.render(props);
+  const field = nodes(tree).find((node) => typeof node.type === 'function' && node.props.field);
+  return field.type(field.props);
+}
+
+test('profile industry editor sends the selected numeric industry and refreshes recommendations', async () => {
+  const app = componentHarness('src/features/profile/ProfileEditor.tsx', 'ProfileEditor', { options: { industries: [{ id: 10, name: '개발' }, { id: 11, name: '교육' }], interests: [] } });
+  const props = { profile: { nickname: '뉴독5', industryId: 10, interests: [] }, onClose() {} };
+  let tree = app.render(props);
+  nodes(tree).find((node) => node.props.label === '종사산업').props.onClick();
+  tree = profileField(app, props);
+  nodes(tree).find((node) => node.type === 'select').props.onChange({ target: { value: '11' } });
+  tree = profileField(app, props);
+  tree.props.onSubmit({ preventDefault() {} });
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(app.requests[0].url.pathname, '/api/backend/users/mypage/industry');
+  assert.deepEqual(JSON.parse(app.requests[0].body), { industryId: 11 });
+  assert.deepEqual(app.invalidations, [['user'], ['newsletter']]);
+});
+
+test('profile interest editor enforces three choices before updating existing preferences', async () => {
+  const app = componentHarness('src/features/profile/ProfileEditor.tsx', 'ProfileEditor', { options: { industries: [], interests: [{ id: 1, name: '기술' }, { id: 2, name: '경제' }, { id: 3, name: '문화' }] } });
+  const props = { profile: { nickname: '뉴독5', industryId: 10, interests: [{ interestId: 1 }, { interestId: 2 }] }, onClose() {} };
+  let tree = app.render(props);
+  nodes(tree).find((node) => node.props['aria-label'] === '관심사 변경').props.onClick();
+  tree = profileField(app, props);
+  assert.equal(nodes(tree).find((node) => node.type === 'Button' && node.props.type === 'submit').props.disabled, true);
+  control(tree, '문화').props.onClick();
+  tree = profileField(app, props);
+  assert.equal(nodes(tree).find((node) => node.type === 'Button' && node.props.type === 'submit').props.disabled, false);
+  tree.props.onSubmit({ preventDefault() {} });
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.deepEqual(JSON.parse(app.requests[0].body), { interestIds: [1, 2, 3] });
+});
+
+test('withdrawal requires acknowledging deletion, choosing a reason and pressing the final action', async () => {
+  const app = componentHarness('src/app/(main)/mypage/page.tsx', 'default');
+  let tree = app.render();
+  nodes(tree).find((node) => node.props.label === '계정 관리').props.onClick();
+  tree = app.render();
+  nodes(tree).find((node) => node.props.label === '회원탈퇴').props.onClick();
+  const render = () => { const root = app.render(); const child = nodes(root).find((node) => typeof node.type === 'function' && node.props.onWithdrawn); return child.type(child.props); };
+  tree = render();
+  assert.equal(control(tree, '계속하기').props.disabled, true);
+  nodes(tree).find((node) => node.type === 'input').props.onChange({ target: { checked: true } });
+  tree = render(); control(tree, '계속하기').props.onClick();
+  tree = render();
+  assert.equal(control(tree, '탈퇴하기').props.disabled, true);
+  assert.equal(app.requests.length, 0);
+  nodes(tree).find((node) => node.type === 'input').props.onChange();
+  tree = render();
+  assert.equal(control(tree, '탈퇴하기').props.disabled, false);
+  assert.equal(app.requests.length, 0);
+  control(tree, '탈퇴하기').props.onClick();
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(app.requests.length, 1);
+  assert.equal(app.requests[0].url.pathname, '/api/backend/users/withdraw');
+});
+
+test('signup onboarding shows email completion and recommendation guidance before preferences', () => {
+  const app = componentHarness('src/app/(auth)/onboarding/page.tsx', 'default');
+  let tree = app.render();
+  assert.match(JSON.stringify(tree), /이메일이 생성되었어요/);
+  control(tree, '다음').props.onClick();
+  tree = app.render();
+  assert.match(JSON.stringify(tree), /더 알려주세요/);
+  control(tree, '뉴스레터 추천받기').props.onClick();
+  tree = app.render();
+  assert.ok(nodes(tree).some((node) => node.props.stepwise === true && node.props.onSaved));
+  assert.equal(app.requests.length, 0);
+});
+
+test('stepwise onboarding keeps industry selection and only saves after three interests', async () => {
+  const app = componentHarness('src/features/profile/PreferenceForm.tsx', 'PreferenceForm', { options: { industries: [{ id: 11, name: 'IT' }], interests: [{ id: 1, name: '기술' }, { id: 2, name: '경제' }, { id: 3, name: '문화' }] } });
+  const props = { profile: { industryId: null, interests: [] }, stepwise: true, onSaved() {} };
+  let tree = app.render(props);
+  assert.equal(control(tree, '다음').props.disabled, true);
+  nodes(tree).find((node) => node.type === 'select').props.onChange({ target: { value: '11' } });
+  tree = app.render(props);
+  tree.props.onSubmit({ preventDefault() {} });
+  tree = app.render(props);
+  assert.equal(app.requests.length, 0);
+  assert.equal(control(tree, '뉴스레터 추천받기').props.disabled, true);
+  for (const interest of ['기술', '경제', '문화']) { control(tree, interest).props.onClick(); tree = app.render(props); }
+  control(tree, '산업 다시 선택').props.onClick();
+  tree = app.render(props);
+  assert.equal(nodes(tree).find((node) => node.type === 'select').props.value, '11');
+  tree.props.onSubmit({ preventDefault() {} });
+  tree = app.render(props);
+  assert.equal(control(tree, '뉴스레터 추천받기').props.disabled, false);
+  tree.props.onSubmit({ preventDefault() {} });
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(app.requests.length, 1);
+  assert.equal(app.requests[0].url.searchParams.get('industry'), '11');
+  assert.deepEqual(app.requests[0].url.searchParams.getAll('interest'), ['1', '2', '3']);
+});
+
+test('shared tabs support keyboard selection and focus while preserving panel associations', () => {
+  const app = componentHarness('src/design-system/components/Tabs.tsx', 'Tabs');
+  const changes = [];
+  const focused = [];
+  const props = { id: 'newsletter', label: '뉴스레터 목록', value: 'recommend', options: [{ value: 'recommend', label: '추천 뉴스레터' }, { value: 'all', label: '모든 뉴스레터' }], onChange: (value) => changes.push(value) };
+  let tree = app.render(props);
+  const tabs = nodes(tree).filter((node) => node.props.role === 'tab');
+  tabs.forEach((tab, index) => tab.props.ref({ focus: () => focused.push(index) }));
+  tabs[0].props.onKeyDown({ key: 'ArrowRight', preventDefault() {} });
+  assert.deepEqual(changes, ['all']);
+  assert.deepEqual(focused, [1]);
+  tree = app.render({ ...props, value: 'all' });
+  const selected = nodes(tree).find((node) => node.props.role === 'tab' && node.props['aria-selected']);
+  assert.equal(selected.props.id, 'newsletter-tab-all');
+  assert.equal(selected.props['aria-controls'], 'newsletter-panel-all');
+  assert.equal(selected.props.tabIndex, 0);
 });

@@ -9,7 +9,7 @@ import {
 } from '@/entities/user';
 import { SOCIAL_SIGNUP_STORAGE_KEY } from '@/features/auth/social';
 import { ApiError } from '@/shared/api/client';
-import { Button, ButtonLink, Input } from '@/shared/ui';
+import { Button, ButtonLink, Checkbox, Icon, Input, Select } from '@/shared/ui';
 
 import { TERMS_URL, PRIVACY_URL } from '@/shared/config/links';
 
@@ -143,9 +143,7 @@ function SocialSignupFlow({ signupSession }: { signupSession: SignupSession }) {
             aria-label="뒤로 가기"
             className="absolute left-2 flex h-11 w-11 items-center justify-center text-caption-strong"
           >
-            <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <path d="m15 5-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <Icon name="Back" />
           </button>
           <h1 className="text-base font-bold">회원가입</h1>
         </div>
@@ -186,19 +184,15 @@ function SocialSignupFlow({ signupSession }: { signupSession: SignupSession }) {
             <label className="flex flex-col gap-2 text-sm font-medium text-caption-neutral">
               <span className="pl-1">출생연도</span>
               <span className="relative">
-                <select
+                <Select
                   value={birthYear}
                   onChange={(event) => setBirthYear(event.target.value)}
-                  className="h-12 w-full appearance-none rounded-sm border border-line-alternative bg-bg px-4 pr-12 text-sm font-medium text-caption-strong outline-none transition-colors focus:border-primary"
                 >
                   <option value="">선택</option>
                   {birthYears.map((year) => (
                     <option key={year} value={year}>{year}</option>
                   ))}
-                </select>
-                <svg aria-hidden="true" className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-caption-alternative" width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="m5 8 5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+                </Select>
               </span>
               <span className="text-xs font-medium text-caption-neutral">
                 출생연도는 뉴스레터 추천에 활용돼요.
@@ -209,19 +203,7 @@ function SocialSignupFlow({ signupSession }: { signupSession: SignupSession }) {
               <legend className="mb-2 text-sm font-medium text-caption-neutral">성별</legend>
               <div className="grid grid-cols-3 gap-2">
                 {['남자', '여자', '그외'].map((option) => (
-                  <button
-                    key={option}
-                    type="button"
-                    aria-pressed={gender === option}
-                    onClick={() => setGender(option)}
-                    className={`h-12 rounded-sm border bg-bg text-base font-medium transition-colors ${
-                      gender === option
-                        ? 'border-primary text-primary'
-                        : 'border-line-alternative text-caption-assistive'
-                    }`}
-                  >
-                    {option}
-                  </button>
+                  <Button key={option} variant="choice" aria-pressed={gender === option} onClick={() => setGender(option)}>{option}</Button>
                 ))}
               </div>
               <p className="mt-2 text-xs font-medium text-caption-neutral">
@@ -391,38 +373,17 @@ function AgreementRow({
         </label>
       )}
       <label className="relative flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center">
-        <input
+        <Checkbox
           id={checkboxId}
           aria-labelledby={labelId}
-          type="checkbox"
           checked={checked}
           onChange={(event) => onChange(event.target.checked)}
-          className="peer sr-only"
         />
-        <span
-          aria-hidden="true"
-          className={`flex h-6 w-6 items-center justify-center rounded-sm border transition-colors peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary ${
-            checked
-              ? emphasized
-                ? 'border-primary bg-primary text-white'
-                : 'border-caption-strong bg-bg text-primary'
-              : 'border-line-alternative bg-bg text-transparent'
-          }`}
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="m6 12 4 4 8-8" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </span>
       </label>
     </div>
   );
 }
 
 function ProfileIcon() {
-  return (
-    <svg aria-hidden="true" className="text-caption-assistive transition-colors group-focus-within:text-caption-strong" width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.25">
-      <circle cx="10" cy="6" r="3" />
-      <path d="M3.5 17v-1a6.5 6.5 0 0 1 13 0v1z" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
+  return <span className="flex text-caption-assistive group-focus-within:text-caption-strong"><Icon name="Line User" size={20} /></span>;
 }

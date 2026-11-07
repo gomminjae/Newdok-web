@@ -1,0 +1,641 @@
+[
+  {
+    "asset": "calendar",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/calendar.imageset/calendar.pdf",
+    "sourceSha256": "679a701c7bf22326890df0db165daa4ec371f5318597a2650b66bf189dd88068",
+    "output": "images/app/calendar.png",
+    "outputSha256": "b1c71106e4a1b239088970348dbe3dba84068072d5cb57822048f23c548e945e",
+    "width": 640,
+    "height": 640
+  },
+  {
+    "asset": "check",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/check.imageset/Check box (1).pdf",
+    "sourceSha256": "826412fad0bb1e889fe76a8dc1b79fdd8e364bc51e486ac2036e056b5c6e910f",
+    "output": "images/app/check.svg",
+    "outputSha256": "02f55d1e4257927b832358f12045f0698e63b36b75c802114d99a8bf01b1e9f6",
+    "width": 24.0,
+    "height": 24.0
+  },
+  {
+    "asset": "darklogo",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/darklogo.imageset/Frame 1000006781.pdf",
+    "sourceSha256": "cea778fd9311b3181e018c8e4b4e6adac8aa5c2a7b77603d3d26984365311abd",
+    "output": "images/app/darklogo.svg",
+    "outputSha256": "e663af4a37d7e1b0f70ebd8ccfafd9d701b2c9c0ecf5e10531c0f7274be2d821",
+    "width": 111.428466796875,
+    "height": 20.0
+  },
+  {
+    "asset": "emptybookmark",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/emptybookmark.imageset/emptybookmark.pdf",
+    "sourceSha256": "1de2da2c09d2b517bf69a843f1e83b46a1ad29190be7cf803fa7681964c87b33",
+    "output": "images/app/emptybookmark.png",
+    "outputSha256": "e53ee12bf3961b707615c31446ab8ff066686fc7a10362e5f4920f58765fe363",
+    "width": 520,
+    "height": 520
+  },
+  {
+    "asset": "font",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/font.imageset/Icon Button.pdf",
+    "sourceSha256": "df1bf9af6e8dce51b4fe4a2628d6e07dda1ab04823d616c0c7c831c80d693cf5",
+    "output": "images/app/font.svg",
+    "outputSha256": "00e2d6e2ac11db4ced42a491bfea831a7dd8fdc833dced7b6032349971c0462e",
+    "width": 36.0,
+    "height": 36.0
+  },
+  {
+    "asset": "highlight",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/highlight.imageset/Icon Button.pdf",
+    "sourceSha256": "319df71b7086dfce8841c4da8db3734337f7bdd2a6ecdbc71e7f050d3634185b",
+    "output": "images/app/highlight.svg",
+    "outputSha256": "837488885eb90357659a9480cfe4cff4fc7043f95c28ebcfbfe6a865d6a215af",
+    "width": 36.0,
+    "height": 36.0
+  },
+  {
+    "asset": "kakaoBubble",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/kakaoBubble.imageset/kakaoBubble.pdf",
+    "sourceSha256": "af0eaa6dc4a16e0865dd02620a4c33a4b4af06f44441acf32ddf4240b7e2eee5",
+    "output": "images/app/kakaoBubble.svg",
+    "outputSha256": "56f9756bbb3aa485be3bc88743687918879c71bd77a9549fa9354dc953724afd",
+    "width": 16.0,
+    "height": 14.933349609375
+  },
+  {
+    "asset": "letter",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/letter.imageset/letter.pdf",
+    "sourceSha256": "b7fb3431b05e77bf7c961237b13623283275d11663333f87bc20f639bc558a91",
+    "output": "images/app/letter.png",
+    "outputSha256": "4a7b14fbd2803c854b194bd7d512f611c3381a321944359f821dedd539396c30",
+    "width": 640,
+    "height": 640
+  },
+  {
+    "asset": "logo",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/logo.imageset/Frame 1000007433@3x.png",
+    "sourceSha256": "3ee4e365d7f53a61aaafae6d7bf952d34a6fadb45d7a090af74d8223825b57d5",
+    "output": "images/app/home-logo.png",
+    "outputSha256": "3ee4e365d7f53a61aaafae6d7bf952d34a6fadb45d7a090af74d8223825b57d5",
+    "width": 418,
+    "height": 96
+  },
+  {
+    "asset": "nodata",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/nodata.imageset/nodata.pdf",
+    "sourceSha256": "df7bcb5ecb37e3455a9fa8ccfcc3fe2d75a5c9a0667f5d3f29b94d244d1d9a44",
+    "output": "images/app/nodata.png",
+    "outputSha256": "f493512831f3f2d1ee33ba12273ab09c9de3c32fad6b4a76f63eef5fcdf63891",
+    "width": 520,
+    "height": 520
+  },
+  {
+    "asset": "nohighlight",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/nohighlight.imageset/nohighlight.pdf",
+    "sourceSha256": "51ab77d846c888af2c4506bff958dc577aa7525be0a44541df9cf813e6fc1b50",
+    "output": "images/app/nohighlight.png",
+    "outputSha256": "c8e47589911f743df48706ee1f0ce71caa78edd2194f5f0f959768d6b062b546",
+    "width": 520,
+    "height": 520
+  },
+  {
+    "asset": "nologin",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/nologin.imageset/nologin.pdf",
+    "sourceSha256": "b93f875291bd92574009f21d84e56c5e321f2168256f5cd2e41856f5d5ae2b42",
+    "output": "images/app/nologin.png",
+    "outputSha256": "77befe8f22527b6721ff8f44c2c217307ddff127cff13b3fa417bd22e929a243",
+    "width": 520,
+    "height": 520
+  },
+  {
+    "asset": "noprofile",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/noprofile.imageset/noprofile.pdf",
+    "sourceSha256": "d8a6978e8c75aeb5aea9fc8d57f512803851cc3e34643d2af42651c719c0d22c",
+    "output": "images/app/noprofile.png",
+    "outputSha256": "4f4b5c1ef482f2fbba39f48bd50e57d6298e0242f768b1c09f4dd5e7d77caa62",
+    "width": 520,
+    "height": 520
+  },
+  {
+    "asset": "nosubscribe",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/nosubscribe.imageset/nosubscribe.pdf",
+    "sourceSha256": "6dbf0647ec3de07623f7997a99975ac8fbe6f26286c97b7002d18d7369640a5f",
+    "output": "images/app/nosubscribe.png",
+    "outputSha256": "4cc2bda930fa5a2538ce4fa3998fc0d3e1dd84fe509d45cb06442eb677e768d6",
+    "width": 520,
+    "height": 520
+  },
+  {
+    "asset": "pen",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/pen.imageset/Icon.pdf",
+    "sourceSha256": "bedd28fec4c0d91cae667767d980bff1591e30fdc4ef9cbb5df3e13bf3b0e4e6",
+    "output": "images/app/pen.svg",
+    "outputSha256": "5e47394859974183d5ed2b99c0e9d0867901c709871824403013b98ef4718ea0",
+    "width": 14.0,
+    "height": 14.0
+  },
+  {
+    "asset": "post",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/post.imageset/post.pdf",
+    "sourceSha256": "089facd8f88fda5ce47b9b8a0d668631032c2f58d3acc1ef3a9e507bc2e069f9",
+    "output": "images/app/post.png",
+    "outputSha256": "dc65ac83c81647b6c4b289147baa51cfdd080816656a4304ae8e45d1d6d31784",
+    "width": 640,
+    "height": 640
+  },
+  {
+    "asset": "signup",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/signup.imageset/signup.pdf",
+    "sourceSha256": "cca747da682c975e1fb8e0cb7542aba6099a79c52f0554ae6e5e71bd5b1d5131",
+    "output": "images/app/signup.png",
+    "outputSha256": "8a965396b087b95a5df375c211e4caf1f5c251a064967d35e48bbc8202170619",
+    "width": 520,
+    "height": 520
+  },
+  {
+    "asset": "trashbin",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/trashbin.imageset/Icon Button.pdf",
+    "sourceSha256": "cc1bb50ca26229ab52c2f18bcd4e592d8772be3eceb01770542e4f965a44ab09",
+    "output": "images/app/trashbin.svg",
+    "outputSha256": "533e8ade9446af2b2b3892eaf37c0b826bab58c4264b8f95ff070d8bd835c7c3",
+    "width": 36.0,
+    "height": 36.0
+  },
+  {
+    "asset": "uncheck",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/uncheck.imageset/Check box.pdf",
+    "sourceSha256": "863f770caba27faa293036643e38cbe8ac7a22daa3c8407bb9344c21edc23912",
+    "output": "images/app/uncheck.svg",
+    "outputSha256": "b430a56a319e1a917762533729739fab4b0c6a0bc393ce19fb157c97af67a04f",
+    "width": 24.0,
+    "height": 24.0
+  },
+  {
+    "asset": "warning",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/warning.imageset/image_04@3x 2.pdf",
+    "sourceSha256": "f240444bb26f0d806b1e2135ed36a5d9be643ac9eeed75b289d289c206ac9b64",
+    "output": "images/app/warning.png",
+    "outputSha256": "28c51fe86656d34c035b9679ee4f2c6f6a3468bbbcc9f6b9c391068bf76fb9d7",
+    "width": 160,
+    "height": 160
+  },
+  {
+    "asset": "Back",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Back.imageset/Back.pdf",
+    "sourceSha256": "712331b40ff239218fecec555b4e2fcb2988115921b12b21a659c186e08aaeb6",
+    "output": "images/Back.svg",
+    "outputSha256": "d461b3fc017532ddc52bb57cf5ec9413697aab79deb2295b2be8c739ea5da0d7",
+    "width": 28.0,
+    "height": 28.0
+  },
+  {
+    "asset": "Fill Bell",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Fill Bell.imageset/Fill Bell.pdf",
+    "sourceSha256": "1fb1864b6a69556cbd83a01eb18f12037537a0e0303ee967ba81fa3d16e66018",
+    "output": "images/Fill Bell.svg",
+    "outputSha256": "b2f59106bd56b478a0b7905a2ba4d0462cb1b406c6e5a0a92cb135318271f321",
+    "width": 20.0,
+    "height": 20.0
+  },
+  {
+    "asset": "Fill Bookmark",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Fill Bookmark.imageset/Fill Bookmark.pdf",
+    "sourceSha256": "69e45c101f9e4bd931ba5fd9d4c00c30ec217ac8990009f64c2826140cbe81c3",
+    "output": "images/Fill Bookmark.svg",
+    "outputSha256": "c002b390f5f012143898cc586aaa0c9f277fc9ce8956fc2f79b06cbf59b48870",
+    "width": 20.0,
+    "height": 20.0
+  },
+  {
+    "asset": "Fill Heart",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Fill Heart.imageset/Fill Heart.pdf",
+    "sourceSha256": "80aabd2acbc444db09367be98fede96d64d448d1deee7f720291b6209e7089fd",
+    "output": "images/Fill Heart.svg",
+    "outputSha256": "1d78983ce2c83ae8a3ac1f714dc1a816f69f22ee5b4a5ca5dafe6d14be08275e",
+    "width": 20.0,
+    "height": 20.0
+  },
+  {
+    "asset": "Fill Home",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Fill Home.imageset/Fill Home.pdf",
+    "sourceSha256": "14b39b00c95d1e991d0b3c08ee6acd6315a90dcb239497685da7b2ea231e9c93",
+    "output": "images/Fill Home.svg",
+    "outputSha256": "8f0542c1793eca5cac58ce9960eea9d87f56d7989f8babc5fa1c79bd279139b4",
+    "width": 20.0,
+    "height": 20.5999755859375
+  },
+  {
+    "asset": "Fill Mailbox",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Fill Mailbox.imageset/Fill Mailbox.pdf",
+    "sourceSha256": "a17db3bde86a6f211cfed4556e468b73384642683444081ae1dc47c08d40ed97",
+    "output": "images/Fill Mailbox.svg",
+    "outputSha256": "a836967680cbf99c6fb67148065abb6ab3d2caa79b8cd8a99d12a25bc0cbc54c",
+    "width": 20.0,
+    "height": 20.0
+  },
+  {
+    "asset": "Fill Newsletter",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Fill Newsletter.imageset/Fill Newsletter.pdf",
+    "sourceSha256": "b4e9c5f77c5cafd31e2086c37fc193c13f852f7886a5537e6d7e18e387d392e5",
+    "output": "images/Fill Newsletter.svg",
+    "outputSha256": "a3ba3b380f9130784fd5c57f2f9acdf49ad7a65ca696b7f2470ba7772a4a7c45",
+    "width": 20.0,
+    "height": 20.0
+  },
+  {
+    "asset": "Fill Star",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Fill Star.imageset/Fill Star.pdf",
+    "sourceSha256": "035319f6268b911a244bdc7a5232af93bf8892ebd1033dc2f34748dcd2c7fb1e",
+    "output": "images/Fill Star.svg",
+    "outputSha256": "7e9c0b4879cbfe7bb3af4f7aba4e6b852a4312ed2fcfff15e1a96d0b7cd3525f",
+    "width": 20.0,
+    "height": 20.0
+  },
+  {
+    "asset": "Fill Thumbs down",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Fill Thumbs down.imageset/Fill Thumbs down.pdf",
+    "sourceSha256": "55084c4fa62bf2b23a5947ed602acf34cdbb59132dcd4d56077a57633befb90b",
+    "output": "images/Fill Thumbs down.svg",
+    "outputSha256": "292ba5f4d4e38c7931a8e56eb402d7fd0eb064e0281469531434c6c34d41e097",
+    "width": 20.0,
+    "height": 20.0
+  },
+  {
+    "asset": "Fill Thumbs up",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Fill Thumbs up.imageset/Fill Thumbs up.pdf",
+    "sourceSha256": "f54411193603d91fc01e34df6354ebf2ba0c3538e8354b4722c25e4dc9c0d182",
+    "output": "images/Fill Thumbs up.svg",
+    "outputSha256": "33f5a41079bdbdfa6505f8cb5df7c37df7fdbe2d0adbf9ab314f181b5ad7eceb",
+    "width": 20.0,
+    "height": 20.0
+  },
+  {
+    "asset": "Fill User",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Fill User.imageset/Fill User.pdf",
+    "sourceSha256": "b0760406d7cfc9ce7afab5b884565f44c409cb7dfe8fba96beed3b109cd3f497",
+    "output": "images/Fill User.svg",
+    "outputSha256": "ca8dd1a775bb3517e5334343bcda5a23569197287217818b98cf71b4376c9182",
+    "width": 20.0,
+    "height": 20.0
+  },
+  {
+    "asset": "Line Arrow Transfer",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Line Arrow Transfer.imageset/Line Arrow Transfer.pdf",
+    "sourceSha256": "0f37a08783b4eb708fbc33c2a4c4dff468a3751d94abd777fb7a7ca15e1a1f4b",
+    "output": "images/Line Arrow Transfer.svg",
+    "outputSha256": "097183f9aa58b2fc7ffe0a24eb2eabe4dd14608dae175ad512c1b27c24628b7a",
+    "width": 28.0,
+    "height": 28.0
+  },
+  {
+    "asset": "Line Bell",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Line Bell.imageset/Line Bell.pdf",
+    "sourceSha256": "937910dd753e6418183c1b699949e8c158398584faedef2d692f1001a969f1a5",
+    "output": "images/Line Bell.svg",
+    "outputSha256": "6a741788b02bf77a0cb93e40cda451f2ec35111e91d9a60aea43f825b2257ea0",
+    "width": 28.0,
+    "height": 28.0
+  },
+  {
+    "asset": "Line Bookmark",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Line Bookmark.imageset/Line Bookmark.pdf",
+    "sourceSha256": "4b6eabcc92e71f7eda1b2c6489ff1577f6953c962d9e848ddb7b3bdbf9ec2454",
+    "output": "images/Line Bookmark.svg",
+    "outputSha256": "9930580961b9fbf314cc4a12936469066bdd01dbffc3aa2630314c424c08b508",
+    "width": 28.0,
+    "height": 28.0
+  },
+  {
+    "asset": "Line Calendar",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Line Calendar.imageset/Line Calendar.pdf",
+    "sourceSha256": "6573f26e310d6805e3072824a0a8212ac9fa62746782d5c8d5244823bde35a92",
+    "output": "images/Line Calendar.svg",
+    "outputSha256": "b3d89afde615a4974002a133e95a6ae456633983fbb03777f3c5f59604a39289",
+    "width": 28.0,
+    "height": 28.0
+  },
+  {
+    "asset": "Line Check circle",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Line Check circle.imageset/Line Check circle.pdf",
+    "sourceSha256": "1e4a55c76375e37af78f7ac9351af666b6307addd9c1ddc89e8d7fb22cbb60b1",
+    "output": "images/Line Check circle.svg",
+    "outputSha256": "db9dcffa2b858c1024a0e27067c95cf1d281082f8c000ec8007286c780bdf433",
+    "width": 28.0,
+    "height": 28.0
+  },
+  {
+    "asset": "Line Checkmark",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Line Checkmark.imageset/Line Checkmark.pdf",
+    "sourceSha256": "fc4372cdd7f10c6a18f57554f5950caa8d5ffed8214422dfe15bc8eefff6c242",
+    "output": "images/Line Checkmark.svg",
+    "outputSha256": "aa2f2ddadebe51e70c896c3e912d8eeb2be3ee6ee6652f4b3ac300a0021d423d",
+    "width": 28.0,
+    "height": 28.0
+  },
+  {
+    "asset": "Line Clock",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Line Clock.imageset/Line Clock.pdf",
+    "sourceSha256": "b1c8686b69d38d8013e2f9e4435c05eb5737edfbe74fdfefeb483c97e54932af",
+    "output": "images/Line Clock.svg",
+    "outputSha256": "28395385623b3e00fc4e732c65f8fb6417ac2a99ce7b20ac800ce01e9531ddd2",
+    "width": 28.0,
+    "height": 28.0
+  },
+  {
+    "asset": "Line Close",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Line Close.imageset/Line Close.pdf",
+    "sourceSha256": "aebaa2c669e8f261bdbd066a6f70c07d3a569bf185e68b5bc80eaa505a65c4f1",
+    "output": "images/Line Close.svg",
+    "outputSha256": "c9682b88f9f9ed1c10f29a79527022e50e6cbbea07db6c5064e7f2a5877823f2",
+    "width": 28.0,
+    "height": 28.0
+  },
+  {
+    "asset": "Line Copy",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Line Copy.imageset/Line Copy.pdf",
+    "sourceSha256": "c74b37442eddc7f8f34578e2e9abd6761daad53dd49b63d03bfcd2817bf5567a",
+    "output": "images/Line Copy.svg",
+    "outputSha256": "614b6d27cac4270adbb25dd2d7fa3e058a94be7776af66899a29f12f4706767d",
+    "width": 28.0,
+    "height": 28.0
+  },
+  {
+    "asset": "Line Dots",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Line Dots.imageset/Line Dots.pdf",
+    "sourceSha256": "4c4ba50cef19e64df17c9dafed4862ec9561d8c349d87e317e267b3f7f1a0681",
+    "output": "images/Line Dots.svg",
+    "outputSha256": "7d3f6fcdf87561c22d5b52035eff0d3a0a443b63b8690ae5507755b2afef00ef",
+    "width": 28.0,
+    "height": 28.0
+  },
+  {
+    "asset": "Line Down",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Line Down.imageset/Line Down.pdf",
+    "sourceSha256": "7dedb0154562920ac6a2d5621796b5ca53adc1eeacf38b2510fd6ab625010303",
+    "output": "images/Line Down.svg",
+    "outputSha256": "ab3f32e96c0004f04fbcfa4a06f4371d9bb509c0bce56f7f985683af880ad9be",
+    "width": 28.0,
+    "height": 28.0
+  },
+  {
+    "asset": "Line Edit",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Line Edit.imageset/Line Edit.pdf",
+    "sourceSha256": "f77633d23fa7330cf53c83b8d656cf76d8703b7298bece626c079bb9b8190103",
+    "output": "images/Line Edit.svg",
+    "outputSha256": "63d1503df2d47cb5e0f953509afb30dae9f83dfd39ad5ce37b0dab26a0502c2b",
+    "width": 28.0,
+    "height": 28.0
+  },
+  {
+    "asset": "Line Email",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Line Email.imageset/Line Email.pdf",
+    "sourceSha256": "0ad97272ca1ff5db54131eec24d0f0eda9595e84d3d06875773faaca120f930b",
+    "output": "images/Line Email.svg",
+    "outputSha256": "290948324fd6e6b974b21cf04538b843d8b08ed5cf9a3b4e1edae4b61d15edd9",
+    "width": 28.0,
+    "height": 28.0
+  },
+  {
+    "asset": "Line Eye",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Line Eye.imageset/Line Eye.pdf",
+    "sourceSha256": "bb11ab01db2a1aec63f5f58bae01ebe179321d7fe79f401786f5e2a398cae9de",
+    "output": "images/Line Eye.svg",
+    "outputSha256": "d5575aa4e490a5f817f7fd22643a653e13a387e92b600f59982bd726b0618953",
+    "width": 28.0,
+    "height": 28.0
+  },
+  {
+    "asset": "Line Globe",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Line Globe.imageset/Line Globe.pdf",
+    "sourceSha256": "ad42ba53e83b3d6eab90a091330715c4f12e9c4b7d2ccea7dcd465c7774bf208",
+    "output": "images/Line Globe.svg",
+    "outputSha256": "da3603c7acd7e0d7d1bb5936cba01a81eb832aea50b1995d1ad4e86a8f6835ba",
+    "width": 28.0,
+    "height": 28.0
+  },
+  {
+    "asset": "Line Heart",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Line Heart.imageset/Line Heart.pdf",
+    "sourceSha256": "7ac00f8c2eaf9f963f19d0724148ecea9c881cbafde8a56b8d1a148d63455e0d",
+    "output": "images/Line Heart.svg",
+    "outputSha256": "aeb11926d2e4bf61cd67f3274496bdf733221c9e84a4a69471c95a5969044d0a",
+    "width": 28.0,
+    "height": 28.0
+  },
+  {
+    "asset": "Line Home",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Line Home.imageset/Line Home.pdf",
+    "sourceSha256": "79d03cec5bf963e60732deb09d37bb962bf6db889e84211d592940360ae1c976",
+    "output": "images/Line Home.svg",
+    "outputSha256": "964f6da770bc3e2243b76ea356d3fa4dada6d99daa6695386e28b6d7794b55bc",
+    "width": 28.0,
+    "height": 28.0
+  },
+  {
+    "asset": "Line Lock",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Line Lock.imageset/Line Lock.pdf",
+    "sourceSha256": "1ef2542e7c5a29a174c1cdc04f01eaeac1aae401d6b3fd1bd0e891a51fd28b2e",
+    "output": "images/Line Lock.svg",
+    "outputSha256": "19a0ee5bb8a343444dedb7b8c286177c42287850eb14e485bed2886efc7c9820",
+    "width": 28.0,
+    "height": 28.0
+  },
+  {
+    "asset": "Line Mailbox",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Line Mailbox.imageset/Line Mailbox.pdf",
+    "sourceSha256": "5b314aadbffcd16662e589d4d6af7800174ac2846a80fc5c0d26e468b3512525",
+    "output": "images/Line Mailbox.svg",
+    "outputSha256": "32f1c851656499ea5cfb0a6decf1b83f67a3e025e70a2380ea23a35b3cdb6a40",
+    "width": 28.0,
+    "height": 28.0
+  },
+  {
+    "asset": "Line Menu",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Line Menu.imageset/Line Menu.pdf",
+    "sourceSha256": "1cba2c7c8fb3e1bb3b419f5d70535d59439cfad124ccad8433f690135899adce",
+    "output": "images/Line Menu.svg",
+    "outputSha256": "96958fa56a82b73b44cc9c7a862690a55834ebe6ff2013d40a4d3783e033f7c4",
+    "width": 28.0,
+    "height": 28.0
+  },
+  {
+    "asset": "Line Minus",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Line Minus.imageset/Line Minus.pdf",
+    "sourceSha256": "3174309626ee94cbf89e8ecf5b91462e3697366b7672315858740c9da45cccbd",
+    "output": "images/Line Minus.svg",
+    "outputSha256": "7bbcd5556fd1e533d313df168208415332ca414b915c8a62868818c260bf0452",
+    "width": 28.0,
+    "height": 28.0
+  },
+  {
+    "asset": "Line Mobile",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Line Mobile.imageset/Line Mobile.pdf",
+    "sourceSha256": "a8e16e7b7f60bb5cd1da3d12b282a2322d4d0c82453099c9c9019bd635fa4afe",
+    "output": "images/Line Mobile.svg",
+    "outputSha256": "1f39a7224fd14afcac0ef5764631c6c2db72c29634cb89856b046b5f5103e9d8",
+    "width": 28.0,
+    "height": 28.0
+  },
+  {
+    "asset": "Line Newsletter",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Line Newsletter.imageset/Line Newsletter.pdf",
+    "sourceSha256": "04247bb7a38b6ddf8140291a7204f6529ad2acbc64b201b47b16fccd1e4ff5b1",
+    "output": "images/Line Newsletter.svg",
+    "outputSha256": "090d7193d0f9b5e0b9043dc4373e9950dc3a265e461db2a47cc71b1ad0d492de",
+    "width": 28.0,
+    "height": 28.0
+  },
+  {
+    "asset": "Line Plus",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Line Plus.imageset/Line Plus.pdf",
+    "sourceSha256": "62e3a151856bd41c80deed3cbeccdf885740e974afba0bbc795d0b7bde1a5be6",
+    "output": "images/Line Plus.svg",
+    "outputSha256": "64c204a744bac4fbe460394960487ff1fdcb68f56689e6d2e6aa39907294f891",
+    "width": 28.0,
+    "height": 28.0
+  },
+  {
+    "asset": "Line Question mark",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Line Question mark.imageset/Line Question mark.pdf",
+    "sourceSha256": "0f3853e8342e71cd6276068ccf1c47243db6c8e05f7eb8872218e72651fbb1ce",
+    "output": "images/Line Question mark.svg",
+    "outputSha256": "751395e11d6514bc6d44924117479dd96ae536b6186fae0b37149484592091e4",
+    "width": 28.0,
+    "height": 28.0
+  },
+  {
+    "asset": "Line Reload",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Line Reload.imageset/Line Reload.pdf",
+    "sourceSha256": "9906193caefd6bd06c5f4e2cdfd53aea2d182637840c36cb7e090d5596ac5165",
+    "output": "images/Line Reload.svg",
+    "outputSha256": "d1329b57208b4430d4b177fbdce198172a9311d2857632d4ffe64eb4b3e4fff7",
+    "width": 28.0,
+    "height": 28.0
+  },
+  {
+    "asset": "Line Search",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Line Search.imageset/Line Search.pdf",
+    "sourceSha256": "c35aa3fb405fcbe82030cb4479d718e3473b672540879d72b7b6ad1484ae6f60",
+    "output": "images/Line Search.svg",
+    "outputSha256": "59efb38dd17fffb6b260f9566f1a7e5575e1ef02949fb9199d2db30b25026156",
+    "width": 28.0,
+    "height": 28.0
+  },
+  {
+    "asset": "Line Settings",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Line Settings.imageset/Line Settings.pdf",
+    "sourceSha256": "017e58fbb6c8276737076af0f182c70ea7195b889a064ba026e6569fad9421ef",
+    "output": "images/Line Settings.svg",
+    "outputSha256": "9f62ef7f1b7a6f237e3ad9c62ee4f4af7beaabe4f8c8ebd2b419cdb701994f18",
+    "width": 28.0,
+    "height": 28.0
+  },
+  {
+    "asset": "Line Slider",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Line Slider.imageset/Line Slider.pdf",
+    "sourceSha256": "a4b905a19e988ff3f779f79d2655479815793593db1aed0b05c67d2721a52867",
+    "output": "images/Line Slider.svg",
+    "outputSha256": "afde3a48099f89234a58387c4d03578ad7c15ab6082359f47fc0c49ee9e382fd",
+    "width": 28.0,
+    "height": 28.0
+  },
+  {
+    "asset": "Line Star",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Line Star.imageset/Line Star.pdf",
+    "sourceSha256": "4ee57edbb8d5defa76dc2b0ec6792aeaec5a0d9b0a0b2c10fb52f9f889936ff0",
+    "output": "images/Line Star.svg",
+    "outputSha256": "d972ee1c6a6bedbbd7e0ab2b23c3f9635b3325a32c36c718e5e738af942a93d5",
+    "width": 28.0,
+    "height": 28.0
+  },
+  {
+    "asset": "Line Thumbs down",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Line Thumbs down.imageset/Line Thumbs down.pdf",
+    "sourceSha256": "c9c5f083edaefdbfe85b402f34367c68f9543977f4a822667c497faba8c5271d",
+    "output": "images/Line Thumbs down.svg",
+    "outputSha256": "ae91d8cd5ab6e5cd98fb80a621f0569ce94d5e8c670add9d073aeb57dea52dc7",
+    "width": 28.0,
+    "height": 28.0
+  },
+  {
+    "asset": "Line Thumbs up",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Line Thumbs up.imageset/Line Thumbs up.pdf",
+    "sourceSha256": "3ee9ad5d590ac0dfba6d550598e0309d1b951e0834c3870b7dfb579c7867dedc",
+    "output": "images/Line Thumbs up.svg",
+    "outputSha256": "d1e79ff7d0ec907e972b7cec4d53b2122a52cc682e596ccc364fff59dcc04d3f",
+    "width": 28.0,
+    "height": 28.0
+  },
+  {
+    "asset": "Line Trash",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Line Trash.imageset/Line Trash.pdf",
+    "sourceSha256": "72cf77b62f33aaa354be83e26d3d137fc4b1814cc49418eb1fe040e25f7a572e",
+    "output": "images/Line Trash.svg",
+    "outputSha256": "9bbb5c0665f4c2126218b08408b3ef5a9a36ad917517f04905a0aa25c2bab594",
+    "width": 28.0,
+    "height": 28.0
+  },
+  {
+    "asset": "Line Unlocked",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Line Unlocked.imageset/Line Unlocked.pdf",
+    "sourceSha256": "aa6804c62bff5f2036d459425b4bb8752d876ee818cec8faa6670f9ea5119c9a",
+    "output": "images/Line Unlocked.svg",
+    "outputSha256": "6cd62c6d5cee0997b3df3ce958c8a78ef612802f584e530f7646c804c0e2f00d",
+    "width": 28.0,
+    "height": 28.0
+  },
+  {
+    "asset": "Line Up",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Line Up.imageset/Line Up.pdf",
+    "sourceSha256": "8639df242dd1178dbbb2d60a6a89b52cf8c745fd2534b979585804aec99ef32b",
+    "output": "images/Line Up.svg",
+    "outputSha256": "4482d462566f2c90a933fc842d8514bd4ab331646cafc1ce567fb96133b4ee79",
+    "width": 28.0,
+    "height": 28.0
+  },
+  {
+    "asset": "Line User",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Line User.imageset/Line User.pdf",
+    "sourceSha256": "7427841910c6d97419674d4d3cd5a841a90bb9791db00613348b31421189620d",
+    "output": "images/Line User.svg",
+    "outputSha256": "e5739efb7c7db53039ebfbaa0aad42f7772cf0c705f35491d985fbf896c333f7",
+    "width": 28.0,
+    "height": 28.0
+  },
+  {
+    "asset": "Line left",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Line left.imageset/Line left.pdf",
+    "sourceSha256": "33accc1fd4a29eefce061373d5e745c982d2eb88a7d16fb89807db902361ff38",
+    "output": "images/Line left.svg",
+    "outputSha256": "1defba6948c58d64aa83c65325e62e27e54aa7489af98f0fead4d46824ca86fd",
+    "width": 28.0,
+    "height": 28.0
+  },
+  {
+    "asset": "Line right",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/Line right.imageset/Line right.pdf",
+    "sourceSha256": "a83f919181ac9b54ef99d122b67c101f235c8649fbcdf777181b47390c918dd8",
+    "output": "images/Line right.svg",
+    "outputSha256": "8a5f017c47b63d8fa9d43f7b6b2713f02955cce92690da472a7c77668f974783",
+    "width": 28.0,
+    "height": 28.0
+  },
+  {
+    "asset": "_Line Close Eye",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/_Line Close Eye.imageset/_Line Close Eye.pdf",
+    "sourceSha256": "8a8c08e2fa90719c972c72107d769cba08422ed413a27c207b93549aa4ce734f",
+    "output": "images/_Line Close Eye.svg",
+    "outputSha256": "bd20ddee7c33c557e21015841d305b32f42b39f565f1fc64fb415a461b5c0f52",
+    "width": 28.0,
+    "height": 28.0
+  },
+  {
+    "asset": "bookmarked",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/뉴독 (1)/bookmarked.imageset/Icons_24.pdf",
+    "sourceSha256": "60bf17ab9e73e0a45c17a4c05ed924b8de631f24b652290fc10342793466961f",
+    "output": "images/app/bookmarked.svg",
+    "outputSha256": "11de855ff12f04ad40ace3b420f9be1091972eb3277ad86ba88a350b8cb0670b",
+    "width": 28.0,
+    "height": 28.0
+  }
+]

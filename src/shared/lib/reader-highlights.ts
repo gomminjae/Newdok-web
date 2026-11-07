@@ -1,3 +1,5 @@
+import { colors } from '@/design-system/tokens';
+
 export type Highlight = { id: string; start: number; end: number; text: string };
 export type TextSelection = Omit<Highlight, 'id'>;
 
@@ -68,7 +70,7 @@ export function applyHighlights(document: Document, highlights: readonly Highlig
       range.setEnd(node, portion.to);
       const mark = document.createElement('mark');
       mark.dataset.newdokHighlight = portion.id;
-      mark.style.backgroundColor = '#fff2a8';
+      mark.style.backgroundColor = colors.highlightYellow;
       mark.style.color = 'inherit';
       range.surroundContents(mark);
     }

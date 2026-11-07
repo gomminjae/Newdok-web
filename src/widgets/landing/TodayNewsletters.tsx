@@ -34,9 +34,9 @@ export function TodayNewsletters({ initialTomorrow, initialNewest, initialTomorr
   const newest = useQuery({ ...newsletterQueries.landingNewest(), initialData: initialNewest });
 
   return (
-    <section className="px-5 pb-12 sm:px-8 sm:pb-14">
+    <section className="px-5 pb-12 md:px-8 md:pb-14">
       <div className="mx-auto w-full max-w-6xl">
-        <h2 className="mb-4 text-base font-bold text-caption-heavy sm:text-lg">
+        <h2 className="mb-4 text-base font-bold text-caption-heavy md:text-lg">
           내일 발행되는 뉴스레터
         </h2>
         <NewsletterListState
@@ -47,7 +47,7 @@ export function TodayNewsletters({ initialTomorrow, initialNewest, initialTomorr
           emptyMessage="내일 발행 예정인 뉴스레터가 없어요. 다른 뉴스레터도 둘러보세요."
         />
         {!tomorrow.isPending && !tomorrow.isError && (
-          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <ul className="grid grid-cols-1 gap-3 md:grid-cols-3">
             {tomorrow.data?.map((newsletter) => (
               <li key={newsletter.brandId}>
                 <Link
@@ -71,7 +71,7 @@ export function TodayNewsletters({ initialTomorrow, initialNewest, initialTomorr
           </ul>
         )}
 
-        <h2 className="mb-4 mt-10 text-base font-bold text-caption-heavy sm:text-lg">
+        <h2 className="mb-4 mt-10 text-base font-bold text-caption-heavy md:text-lg">
           NEW! 새로 등록된 뉴스레터
         </h2>
         <NewsletterListState
@@ -81,7 +81,7 @@ export function TodayNewsletters({ initialTomorrow, initialNewest, initialTomorr
           retry={newest.refetch}
         />
         {!newest.isPending && !newest.isError && (
-          <ul className="grid gap-3 sm:grid-cols-2">
+          <ul className="grid gap-3 md:grid-cols-2">
             {newest.data?.map((newsletter) => (
               <li key={newsletter.brandId}>
                 <Link

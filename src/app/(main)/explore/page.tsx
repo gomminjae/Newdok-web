@@ -10,7 +10,7 @@ import {
   type SubscribedNewsletter,
 } from '@/entities/newsletter';
 import { useAuth, useToast } from '@/shared/hooks';
-import { Button, Dialog, EmptyState, Icon, SegmentPicker, Toast } from '@/shared/ui';
+import { AppImage, Button, Dialog, EmptyState, Icon, SegmentPicker, Toast } from '@/shared/ui';
 import { getErrorMessage } from '@/shared/api/client';
 import { NewsletterImage } from '@/widgets/landing/NewsletterImage';
 
@@ -64,9 +64,9 @@ export default function ExplorePage() {
     : resumeMutation.isPending ? resumeMutation.variables : undefined;
 
   return (
-    <div className="-mx-4 flex min-h-[calc(100dvh-var(--header-height)-var(--tabbar-height))] flex-col bg-bg sm:-mx-6 sm:min-h-[calc(100dvh-var(--header-height))] xl:-mx-10">
+    <div className="-mx-4 flex min-h-[calc(100dvh-var(--header-height)-var(--tabbar-height))] flex-col bg-bg-system md:-mx-6 md:min-h-[calc(100dvh-var(--header-height))] xl:-mx-10">
       {/* 세그먼트 피커 */}
-      <div className="flex px-5 pb-[18px] pt-2">
+      <div className="flex px-4 py-4">
         <SegmentPicker value={tab} options={TABS} onChange={setTab} className="w-full" />
       </div>
 
@@ -85,7 +85,7 @@ export default function ExplorePage() {
         <SubscriptionEmpty tab={tab} />
       ) : (
         <>
-          <div className="bg-bg-system px-5 pb-5 pt-[30px]">
+          <div className="bg-bg-system px-5 pb-4 pt-1">
             <p className="text-base font-bold text-caption-heavy mb-2">
               {tab === 'active'
                 ? `총 ${currentList.length}개의 뉴스레터를 구독중이에요.`
@@ -97,7 +97,7 @@ export default function ExplorePage() {
                 : '구독을 재개하면 다시 아티클을 받아볼 수 있어요.'}
             </p>
           </div>
-          <div className="flex-1 bg-bg-system px-5 pb-7 flex flex-col gap-3">
+          <div className="flex-1 bg-bg-system px-4 pb-7 flex flex-col gap-2">
             {currentList.map((nl) => (
               <SubscribeRow
                 key={nl.id}
@@ -117,7 +117,7 @@ export default function ExplorePage() {
 function SubscriptionEmpty({ tab, guest = false }: { tab: Tab; guest?: boolean }) {
   return (
     <div className="flex flex-1 flex-col items-center bg-bg-system px-5 pb-8 text-center">
-      <img src="/images/app/nosubscribe.png" alt="" width={280} height={280} className="mb-6 mt-5 h-[280px] w-[280px] max-w-full object-contain" />
+      <AppImage name="nosubscribe" alt="" width={280} height={280} className="mb-6 mt-5 h-[280px] w-[280px] max-w-full object-contain" />
       <p className="mb-1 text-base font-bold text-caption-heavy">
         {tab === 'active' ? '구독 중인 뉴스레터가 없어요.' : '구독을 중지한 뉴스레터가 없어요.'}
       </p>
@@ -142,25 +142,25 @@ const SubscribeRow = memo(function SubscribeRow({
   onAction: (id: number) => void;
 }) {
   return (
-    <div className="flex items-center gap-2 rounded-lg border border-line-neutral bg-bg px-4 py-3 shadow-[0_1px_1px_rgba(0,0,0,0.02)]">
+    <div className="flex items-center gap-2 rounded-lg border border-line-neutral bg-bg px-4 py-3 shadow-subscription-card">
       <Link
         href={newsletter.id != null ? `/newsletters/${newsletter.id}` : '#'}
         className="flex items-center gap-2 flex-1 min-w-0"
       >
         <NewsletterImage name={newsletter.brandName} imageUrl={newsletter.imageUrl} variant="thumbnail" />
         <div className="flex flex-col gap-1 min-w-0">
-          <span className="text-sm font-bold text-caption-heavy truncate">
+          <span className="text-base font-bold text-caption-heavy truncate">
             {newsletter.brandName}
           </span>
           <span className="flex items-center gap-1 text-xs font-medium text-caption-assistive">
-            <Icon src="/images/Line Clock.svg" size={20} />
+            <Icon name="Line Clock" size={20} />
             {newsletter.publicationCycle}
           </span>
         </div>
       </Link>
       <Button
-        variant={isSubscribed ? 'neutral-outline' : 'outline'}
-        size="xs"
+        variant="outline"
+        size="sm"
         disabled={isPending || newsletter.id == null}
         aria-label={isSubscribed ? '구독 중지' : '구독 재개'}
         onClick={() => newsletter.id != null && onAction(newsletter.id)}

@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, ButtonLink, Chip } from '@/shared/ui';
+import { AppImage, Button, ButtonLink, Chip, Icon } from '@/shared/ui';
 
 import Link from 'next/link';
 import { memo, useState, useRef, useEffect } from 'react';
@@ -18,7 +18,7 @@ export const NewsletterRecommendations = memo(function NewsletterRecommendations
 
   if (profile.isPending) return <p role="status" className="py-16 text-center text-caption-neutral">프로필을 불러오는 중이에요.</p>;
   if (profile.isError) return <div role="alert" className="py-16 text-center"><p>프로필을 불러오지 못했어요.</p><Button variant="ghost" size="compact" onClick={() => void profile.refetch()}>다시 시도</Button></div>;
-  if (!hasPreferences) return <div className="px-6 py-16 text-center"><h2 className="text-xl font-bold">관심사를 알려주세요</h2><p className="mt-3 text-sm text-caption-neutral">산업과 관심사를 설정하면 맞춤 뉴스레터를 추천해드려요.</p><ButtonLink href="/onboarding" className="mt-6">추천 설정하기</ButtonLink></div>;
+  if (!hasPreferences) return <div className="px-6 pt-5 pb-10 text-center"><AppImage name="noprofile" alt="" width={280} height={280} className="mx-auto mb-6 h-[280px] w-[280px] max-w-full object-contain" /><h2 className="text-xl font-bold">관심사를 알려주세요</h2><p className="mt-3 text-sm text-caption-neutral">산업과 관심사를 설정하면 맞춤 뉴스레터를 추천해드려요.</p><ButtonLink href="/onboarding" fullWidth className="mt-6">프로필 등록하기</ButtonLink></div>;
 
   if (intersection.isPending || union.isPending) {
     return <p role="status" className="py-16 text-center text-caption-neutral">추천 뉴스레터를 불러오는 중이에요.</p>;
@@ -35,9 +35,7 @@ export const NewsletterRecommendations = memo(function NewsletterRecommendations
     <div className="flex items-center justify-between px-6 pt-5 pb-4">
       <h3 className="text-base font-bold">이런 뉴스레터는 어때요?</h3>
       <Button variant="ghost" size="compact" disabled={union.isFetching} onClick={() => void union.refetch()} aria-label={union.isFetching ? '추천 새로고침 중' : '추천 새로고침'}>
-        <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" className={clsx('h-5 w-5', union.isFetching && 'animate-spin motion-reduce:animate-none')}>
-          <path d="M16 6a7 7 0 1 0 1 7M16 2v4h-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>새로고침
+        <span className={clsx('flex', union.isFetching && 'animate-spin motion-reduce:animate-none')}><Icon name="Line Reload" size={20} /></span>새로고침
       </Button>
     </div>
     <RecommendationList items={union.data} />

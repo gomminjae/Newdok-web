@@ -9,11 +9,11 @@ import { ProfileEditor } from '@/features/profile/ProfileEditor';
 import { getErrorMessage } from '@/shared/api/client';
 import { TERMS_URL, PRIVACY_URL, FEEDBACK_URL } from '@/shared/config/links';
 import { useAuth, useToast } from '@/shared/hooks';
-import { Button, ButtonLink, Dialog, EmptyState, GuestNotice, Toast } from '@/shared/ui';
+import { Button, ButtonLink, Checkbox, Dialog, EmptyState, GuestNotice, Icon, Toast } from '@/shared/ui';
 import { version } from '../../../../package.json';
 
-type Panel = 'profile' | 'email' | 'notifications' | 'faq' | 'terms' | 'logout' | 'withdraw';
-const TITLES: Record<Panel, string> = { profile: '프로필 편집', email: '구독 이메일 안내', notifications: '알림 설정', faq: 'FAQ', terms: '약관 및 정책', logout: '로그아웃', withdraw: '회원 탈퇴' };
+type Panel = 'profile' | 'email' | 'notifications' | 'faq' | 'terms' | 'logout' | 'withdraw' | 'account' | 'version';
+const TITLES: Record<Panel, string> = { profile: '프로필 편집', email: '구독 이메일 안내', notifications: '알림 설정', faq: 'FAQ', terms: '약관 및 정책', logout: '로그아웃', withdraw: '회원 탈퇴', account: '계정 관리', version: '버전' };
 const EMAIL_HELP = '회원가입 시 발급된 뉴스레터 수신 전용 주소예요. 발행처의 구독 신청란에 이 주소를 입력하면 뉴독 홈에서 아티클을 받아볼 수 있어요. 개인 메일 발신에는 사용할 수 없어요.';
 const FAQS = [
   ['구독 이메일이 뭔가요?', EMAIL_HELP],
@@ -40,60 +40,69 @@ export default function MyPage() {
   }
 
   if (!isLoggedIn) return <GuestNotice />;
-  return <div className="-mx-4 flex min-h-[calc(100dvh-var(--header-height)-var(--tabbar-height))] flex-col bg-bg pt-5 sm:-mx-6 sm:min-h-[calc(100dvh-var(--header-height))] xl:-mx-10">
-    <div className="flex flex-col gap-4 px-5">
-      {profile.isPending ? <p role="status" className="pt-8">프로필을 불러오는 중이에요.</p> : profile.isError ? <div role="alert"><EmptyState title="프로필을 불러오지 못했어요." cta={<Button onClick={() => void profile.refetch()}>다시 시도</Button>} /></div> : <>
-        <p className="line-clamp-2 pt-8 text-base font-bold text-caption-heavy">{profile.data.nickname}</p>
-        <div className="flex items-center gap-2"><span className="text-sm text-caption-neutral">구독 이메일</span><Button variant="ghost-neutral" size="compact" aria-label="구독 이메일 도움말" onClick={() => setPanel('email')}>ⓘ</Button></div>
-        <p className="select-all break-all text-sm text-caption-heavy">{subscribeEmail || '구독 이메일을 준비하고 있어요.'}</p>
-        <Button variant="outline" size="compact" disabled={!subscribeEmail} onClick={() => void copyEmail()}>구독 이메일 복사</Button>
-        {copyError && <p role="alert" className="text-sm text-error">{copyError}</p>}
-        <Button variant="neutral-outline" size="compact" fullWidth onClick={() => setPanel('profile')}>프로필 편집</Button>
+  return <div className="-mx-4 flex min-h-[calc(100dvh-var(--header-height)-var(--tabbar-height))] flex-col bg-bg md:-mx-6 md:min-h-[calc(100dvh-var(--header-height))] xl:-mx-10">
+    <div className="px-5 pt-8 pb-6 md:px-7 xl:px-10">
+      {profile.isPending ? <p role="status">프로필을 불러오는 중이에요.</p> : profile.isError ? <div role="alert"><EmptyState title="프로필을 불러오지 못했어요." cta={<Button onClick={() => void profile.refetch()}>다시 시도</Button>} /></div> : <>
+        <div className="md:flex md:items-center md:justify-between md:gap-6"><div className="min-w-0"><p className="text-base font-bold text-caption-heavy">{profile.data.nickname}</p>
+        <div className="mt-4 space-y-4 md:flex md:items-center md:gap-3 md:space-y-0"><div className="flex items-center gap-1"><span className="text-sm font-medium text-caption-neutral">구독이메일</span><Button variant="ghost-neutral" size="icon" aria-label="구독 이메일 도움말" onClick={() => setPanel('email')}><Icon name="Line Question mark" size={20} /></Button></div>
+        <div className="flex min-h-6 items-center gap-1.5"><Button variant="ghost" size="icon" aria-label="구독 이메일 복사" disabled={!subscribeEmail} onClick={() => void copyEmail()}><Icon name="Line Copy" size={24} /></Button><p className="select-all break-all text-sm text-caption-heavy">{subscribeEmail || '구독 이메일을 준비하고 있어요.'}</p></div></div>
+        {copyError && <p role="alert" className="mt-2 text-sm text-error">{copyError}</p>}
+        </div><Button variant="neutral-outline" size="compact" className="mt-7 w-full md:mt-0 md:w-[144px]" onClick={() => setPanel('profile')}>프로필 편집</Button></div>
       </>}
     </div>
-    <div className="mt-6 px-5"><p className="pb-2 text-xs text-caption-assistive">서비스</p><MenuItem label="알림 설정" onClick={() => setPanel('notifications')} /></div>
-    <div className="mt-6 border-t border-line-neutral px-5">
-      <p className="pt-6 pb-2 text-xs text-caption-assistive">고객센터</p>
+    <div className="mt-6 px-5 pb-2 md:px-7 xl:px-10"><p className="mb-2 text-sm text-caption-neutral">서비스</p><MenuItem label="계정 관리" onClick={() => setPanel('account')} /></div>
+    <div className="mt-6 px-5 pb-6 md:px-7 xl:px-10">
+      <p className="mb-2 text-sm text-caption-neutral">고객센터</p>
       <MenuItem label="FAQ" onClick={() => setPanel('faq')} />
-      <ButtonLink href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer" variant="ghost-neutral" fullWidth className="justify-between">서비스 피드백 <span aria-hidden="true">↗</span></ButtonLink>
+      <ButtonLink href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer" variant="menu" size="lg" fullWidth>서비스 피드백<Icon name="Line right" /></ButtonLink>
       <MenuItem label="약관 및 정책" onClick={() => setPanel('terms')} />
-      <div className="flex h-12 items-center justify-between"><span>웹 버전</span><span className="text-sm text-caption-assistive">{version}</span></div>
+      <MenuItem label="버전" onClick={() => setPanel('version')} />
     </div>
-    <div className="mt-auto border-t border-line-neutral px-5 pb-4"><p className="pt-6 pb-2 text-xs text-caption-assistive">기타</p><MenuItem label="로그아웃" onClick={() => setPanel('logout')} /><MenuItem label="회원탈퇴" onClick={() => setPanel('withdraw')} /></div>
-    {panel === 'withdraw' ? <WithdrawDialog onClose={() => setPanel(null)} onWithdrawn={logout} /> : panel && <Dialog title={TITLES[panel]} onClose={() => setPanel(null)}>
-      {panel === 'profile' && profile.data && <ProfileEditor profile={profile.data} onSaved={(message) => { setPanel(null); showToast(message); }} />}
+    {panel === 'profile' && profile.data ? <ProfileEditor profile={profile.data} onClose={() => setPanel(null)} /> : panel === 'withdraw' ? <WithdrawDialog nickname={profile.data?.nickname ?? ''} onClose={() => setPanel('account')} onWithdrawn={logout} /> : panel && <Dialog title={TITLES[panel]} presentation={['account', 'faq', 'terms', 'notifications', 'version'].includes(panel) ? 'page' : 'dialog'} onClose={() => setPanel(null)}>
+      {panel === 'account' && <div><MenuItem label="로그아웃" onClick={() => setPanel('logout')} /><MenuItem label="회원탈퇴" onClick={() => setPanel('withdraw')} /><MenuItem label="알림 설정" onClick={() => setPanel('notifications')} /></div>}
+      {panel === 'version' && <p className="text-sm text-caption-neutral">Newdok 웹 {version}</p>}
       {panel === 'email' && <p className="text-sm leading-7">{EMAIL_HELP}</p>}
       {panel === 'notifications' && <div className="space-y-5"><p className="text-sm leading-7">웹 알림은 아직 지원하지 않아요. 새로 받은 아티클은 홈에서 확인해주세요.</p><ButtonLink href="/home" fullWidth>홈으로 가기</ButtonLink></div>}
-      {panel === 'faq' && <div className="space-y-4">{FAQS.map(([question, answer]) => <details key={question} className="border-b border-line-neutral pb-4"><summary className="cursor-pointer font-bold">{question}</summary><p className="mt-3 text-sm leading-7 text-caption-neutral">{answer}</p></details>)}</div>}
-      {panel === 'terms' && <div className="flex flex-col gap-3"><ButtonLink href={TERMS_URL} target="_blank" rel="noopener noreferrer" variant="neutral-outline">이용약관 ↗</ButtonLink><ButtonLink href={PRIVACY_URL} target="_blank" rel="noopener noreferrer" variant="neutral-outline">개인정보 처리방침 ↗</ButtonLink></div>}
-      {panel === 'logout' && <><p className="mb-6">로그아웃할까요?</p><div className="flex gap-2"><Button variant="neutral-outline" onClick={() => setPanel(null)} className="flex-1">취소</Button><Button onClick={logout} className="flex-1">로그아웃</Button></div></>}
+      {panel === 'faq' && <div className="space-y-3">{FAQS.map(([question, answer]) => <details key={question} className="rounded-xl border border-line-neutral bg-bg p-5"><summary className="cursor-pointer text-sm font-medium">{question}</summary><p className="mt-3 text-sm leading-7 text-caption-neutral">{answer}</p></details>)}</div>}
+      {panel === 'terms' && <div className="flex flex-col gap-3"><ButtonLink href={TERMS_URL} target="_blank" rel="noopener noreferrer" variant="menu" size="lg">서비스 이용약관 ↗</ButtonLink><ButtonLink href={PRIVACY_URL} target="_blank" rel="noopener noreferrer" variant="menu" size="lg">개인정보 처리방침 ↗</ButtonLink></div>}
+      {panel === 'logout' && <><p className="mb-6">로그아웃할까요?</p><div className="flex gap-2"><Button variant="neutral-outline" onClick={() => setPanel('account')} className="flex-1">취소</Button><Button onClick={logout} className="flex-1">로그아웃</Button></div></>}
     </Dialog>}
     {message && <Toast message={message} />}
   </div>;
 }
 
 function MenuItem({ label, onClick }: { label: string; onClick: () => void }) {
-  return <Button variant="ghost-neutral" fullWidth onClick={onClick} className="justify-between">{label}<span aria-hidden="true">›</span></Button>;
+  return <Button variant="menu" size="lg" fullWidth onClick={onClick}>{label}<Icon name="Line right" /></Button>;
 }
 
-function WithdrawDialog({ onClose, onWithdrawn }: { onClose: () => void; onWithdrawn: () => void }) {
+function WithdrawDialog({ nickname, onClose, onWithdrawn }: { nickname: string; onClose: () => void; onWithdrawn: () => void }) {
   const [agreed, setAgreed] = useState(false);
+  const [stage, setStage] = useState<'confirm' | 'reason'>('confirm');
+  const [reasons, setReasons] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const subscriptions = useQuery({ queryKey: ['subscription', 'count'], queryFn: newsletterApi.fetchSubscriptionCount });
   const articles = useQuery({ queryKey: ['article', 'received', 'count'], queryFn: articleApi.fetchReceivedArticleCount });
   async function withdraw() {
-    if (!agreed || saving) return;
+    if (!agreed || reasons.length === 0 || stage !== 'reason' || saving) return;
     setSaving(true);
     setError('');
     try { await userApi.withdraw(); onWithdrawn(); }
     catch (error) { setError(getErrorMessage(error, '탈퇴를 완료하지 못했어요. 다시 시도해주세요.')); setSaving(false); }
   }
-  return <Dialog title="회원 탈퇴" busy={saving} onClose={onClose}>
-    <p className="text-sm leading-7">탈퇴하면 등록 정보와 활동 기록이 삭제되며 복구할 수 없어요.</p>
-    <dl className="my-6 space-y-3 text-sm"><div className="flex justify-between"><dt>구독 중인 뉴스레터</dt><dd>{subscriptions.data ? `${subscriptions.data.count}개` : subscriptions.isError ? '조회 실패' : '조회 중…'}</dd></div><div className="flex justify-between"><dt>수신한 아티클</dt><dd>{articles.data ? `${articles.data.count}개` : articles.isError ? '조회 실패' : '조회 중…'}</dd></div></dl>
-    <label className="flex items-start gap-3 text-sm leading-6"><input type="checkbox" checked={agreed} disabled={saving} onChange={(event) => setAgreed(event.target.checked)} className="mt-1" />정보가 삭제되고 복구할 수 없다는 점을 확인했습니다.</label>
-    {error && <p role="alert" className="mt-4 text-sm text-error">{error}</p>}
-    <div className="mt-6 flex gap-2"><Button variant="neutral-outline" disabled={saving} onClick={onClose} className="flex-1">취소</Button><Button variant="danger" disabled={!agreed || saving} onClick={() => void withdraw()} className="flex-1">{saving ? '탈퇴 처리 중…' : '회원 탈퇴'}</Button></div>
+  return <Dialog title="회원탈퇴" presentation="page" busy={saving} onClose={onClose} onBack={() => stage === 'reason' ? setStage('confirm') : onClose()}>
+    <div className="flex min-h-[calc(100dvh-136px)] flex-col md:min-h-[440px]">
+      {stage === 'confirm' ? <>
+        <h3 className="text-lg font-bold leading-6">‘{nickname}’님<br />정말 떠나시나요?</h3><p className="mt-2 text-sm text-caption-neutral">뉴독을 탈퇴하면 활동 내용이 다 사라져요.</p>
+        <dl className="my-12 space-y-5 text-base"><div className="flex justify-between"><dt>구독 중인 뉴스레터</dt><dd className="font-bold text-primary">{subscriptions.data ? `${subscriptions.data.count}개` : subscriptions.isError ? '조회 실패' : '조회 중…'}</dd></div><div className="flex justify-between"><dt>지금까지 수신받은 아티클</dt><dd className="font-bold text-primary">{articles.data ? `${articles.data.count}개` : articles.isError ? '조회 실패' : '조회 중…'}</dd></div></dl>
+        <label className="mt-auto flex items-start gap-3 text-sm leading-6"><Checkbox checked={agreed} disabled={saving} onChange={(event) => setAgreed(event.target.checked)} className="mt-0.5" />탈퇴하시면 등록한 정보는 모두 삭제되어 복구할 수 없습니다.</label>
+        <Button fullWidth className="mt-6" disabled={!agreed} onClick={() => setStage('reason')}>계속하기</Button>
+      </> : <>
+        <h3 className="text-lg font-bold leading-6">떠나시는 이유는<br />무엇인가요?</h3><p className="mt-2 text-sm text-caption-neutral">하나 이상의 항목을 선택하시면 탈퇴가 완료돼요.</p>
+        <fieldset disabled={saving} className="mt-8 space-y-5"><legend className="sr-only">탈퇴 이유</legend>{['뉴스레터 관리 기능이 부족해서', '콘텐츠가 부족해서', '더이상 필요가 없어서', '기타'].map((reason) => <label key={reason} className="flex items-center gap-3 text-sm text-caption-neutral"><Checkbox checked={reasons.includes(reason)} onChange={() => setReasons((previous) => previous.includes(reason) ? previous.filter((item) => item !== reason) : [...previous, reason])} />{reason}</label>)}</fieldset>
+        {error && <p role="alert" className="mt-4 text-sm text-error">{error}</p>}
+        <div className="mt-auto pt-6"><Button fullWidth disabled={reasons.length === 0 || saving} onClick={() => void withdraw()}>{saving ? '탈퇴 처리 중…' : '탈퇴하기'}</Button></div>
+      </>}
+    </div>
   </Dialog>;
 }

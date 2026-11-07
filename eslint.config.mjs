@@ -1,10 +1,17 @@
 import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
+import designSystem from './scripts/eslint-design-system.mjs';
 
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/design-system/**'],
+    plugins: { 'newdok-design': designSystem },
+    rules: { 'newdok-design/shared-appearance': 'error' },
+  },
   {
     rules: {
       "@next/next/no-img-element": "off",

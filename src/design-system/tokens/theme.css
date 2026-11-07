@@ -1,0 +1,70 @@
+/* Existing feature class names resolve to the canonical app palette. */
+@theme inline {
+  --color-primary: var(--color-primary-normal);
+  --color-bg: var(--color-bg-normal);
+  --color-error: var(--color-error-normal);
+  --color-white: var(--color-bg-normal);
+  --color-black: var(--color-ink);
+  --color-neutral-50: var(--color-gray-bg);
+  --color-neutral-150: var(--color-line-neutral);
+  --color-neutral-300: var(--color-gray-medium);
+  --color-neutral-800: var(--color-caption-strong);
+  --color-neutral-900: var(--color-caption-heavy);
+  --color-tint-50: var(--color-primary-bg-light);
+  --color-tint-100: var(--color-primary-bg-subtle);
+  --color-tint-200: var(--color-primary-bg-muted);
+  --color-tint-300: var(--color-primary-soft);
+}
+
+@theme {
+  --color-ink: #000000;
+  /* SwiftUI Color.gray in iOS light appearance. Apple HIG: https://developer.apple.com/design/human-interface-guidelines/color */
+  --color-system-gray: #8E8E93;
+  --color-calendar-sunday: #FF3B30;
+  --color-calendar-saturday: #007AFF;
+  --color-kakao: #FEE500;
+  --color-kakao-press: #FADA0A;
+  --color-start-badge: #FB4F4F;
+  /* Web landing extension; app screens use the semantic palette above. */
+  --color-landing-gradient-start: #6991F1;
+  --color-landing-gradient-end: #5378DF;
+  --color-landing-muted: #F7F7FA;
+  --radius-full: 9999px;
+  --font-sans: var(--font-spoqa), 'Spoqa Han Sans Neo', -apple-system, BlinkMacSystemFont, sans-serif;
+  --breakpoint-md: 768px;
+  --breakpoint-xl: 1280px;
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px rgb(0 0 0 / 0.07);
+  --shadow-lg: 0 10px 15px rgb(0 0 0 / 0.1);
+  --shadow-segment: 0 1px 1px rgb(0 0 0 / 0.06);
+  --shadow-scroll-top: 0 4px 8px rgb(0 0 0 / 0.15);
+  --shadow-brand-cover: 0 2px 4px rgb(25 25 25 / 0.04);
+  --shadow-brand-subscribe: 0 4px 8px rgb(0 0 0 / 0.04);
+  --shadow-brand-section: 0 1px 2px rgb(0 0 0 / 0.02);
+  --shadow-subscription-card: 0 1px 1px rgb(0 0 0 / 0.02);
+}
+
+:root {
+  color-scheme: light;
+  --header-height: 56px;
+  --tabbar-height: 50px;
+  --sidebar-width: 120px;
+  --ds-button-height: 48px;
+  --ds-button-radius: var(--radius-sm);
+  --ds-input-height: 50px;
+  --ds-segment-height: 40px;
+  --ds-segment-radius: 6px;
+  --ds-segment-track: var(--color-bg-system);
+  --ds-segment-thumb: var(--color-bg-normal);
+  --ds-segment-border: var(--color-line-neutral);
+  --ds-segment-active: var(--color-ink);
+  --ds-segment-inactive: var(--color-system-gray);
+  --ds-tab-active: var(--color-caption-strong);
+  --ds-tab-inactive: var(--color-caption-alternative);
+  --ds-tab-indicator: var(--color-caption-strong);
+  --ds-dialog-radius: var(--radius-lg);
+}
+
+@media (min-width: 1280px) {
+  :root { --sidebar-width: 200px; }
+}

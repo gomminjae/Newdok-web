@@ -62,7 +62,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" className={spoqa.variable}>
+    <html lang="ko" data-scroll-behavior="smooth" className={spoqa.variable}>
       <body>
         <QueryProvider>{children}</QueryProvider>
       </body>

@@ -1,9 +1,9 @@
 'use client';
 
-import { Button, Chip, Dialog, EmptyState } from '@/shared/ui';
+import { AppImage, Button, Chip, Dialog, EmptyState, Icon } from '@/shared/ui';
 
 import Link from 'next/link';
-import { memo, useState } from 'react';
+import { memo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { clsx } from 'clsx';
 import { bookmarkQueries, type Bookmark, type BookmarkSort } from '@/entities/article';
@@ -18,6 +18,7 @@ const SORT_BY_MAP: Record<string, BookmarkSort> = {
 
 export default function BookmarksPage() {
   const { isLoggedIn } = useAuth();
+  const categoryTrack = useRef<HTMLDivElement>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('전체');
   const [selectedInterestId, setSelectedInterestId] = useState<number | undefined>();
   const [sortOrder, setSortOrder] = useState('추가순');
@@ -39,13 +40,14 @@ export default function BookmarksPage() {
   ];
 
   return (
-    <div className="-mx-4 flex min-h-[calc(100dvh-var(--header-height)-var(--tabbar-height))] flex-col bg-bg sm:-mx-6 sm:min-h-[calc(100dvh-var(--header-height))] xl:-mx-10">
+    <div className="-mx-4 flex min-h-[calc(100dvh-var(--header-height)-var(--tabbar-height))] flex-col bg-bg-system md:-mx-6 md:min-h-[calc(100dvh-var(--header-height))] xl:-mx-10">
       {/* 카테고리 필터 */}
-      <div className="flex gap-1 py-2 px-4 overflow-x-auto bg-bg [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex items-center gap-1 px-4 py-4">{categories.length > 3 && <Button variant="outline" size="icon" radius="xl" aria-label="이전 관심사" onClick={() => categoryTrack.current?.scrollBy({ left: -160, behavior: 'smooth' })}><Icon name="Back" size={16} /></Button>}<div ref={categoryTrack} className="landing-scrollbar-none flex flex-1 gap-1 overflow-x-auto">
         {(isLoggedIn ? categories : [{ id: undefined, name: '전체' }]).map((cat) => (
           <Chip
             key={cat.id ?? 'all'}
             as="button"
+            variant="category"
             active={selectedCategory === cat.name}
             onClick={() => {
               setSelectedCategory(cat.name);
@@ -54,19 +56,19 @@ export default function BookmarksPage() {
           >
             {cat.name}
           </Chip>
-        ))}
+        ))}</div>{categories.length > 3 && <Button variant="outline" size="icon" radius="xl" aria-label="다음 관심사" onClick={() => categoryTrack.current?.scrollBy({ left: 160, behavior: 'smooth' })}><Icon name="Line right" size={16} /></Button>}
       </div>
 
       {interestsError && <div role="alert" className="px-6 text-sm"><p>관심사 필터를 불러오지 못했어요.</p><Button variant="ghost" size="compact" onClick={() => void refetchInterests()}>다시 시도</Button></div>}
-      {showSort && <Dialog title="북마크 정렬" onClose={() => setShowSort(false)}><div className="flex flex-col items-start gap-3">{Object.keys(SORT_BY_MAP).map((order) => <Chip key={order} as="button" active={sortOrder === order} onClick={() => { setSortOrder(order); setShowSort(false); }}>{order}</Chip>)}</div></Dialog>}
+      {showSort && <Dialog title="북마크 정렬" onClose={() => setShowSort(false)}><div>{Object.keys(SORT_BY_MAP).map((order) => <Button key={order} variant="menu" size="lg" fullWidth aria-pressed={sortOrder === order} onClick={() => { setSortOrder(order); setShowSort(false); }}>{order}{sortOrder === order && <Icon name="Line Checkmark" size={20} />}</Button>)}</div></Dialog>}
       {/* 정렬 정보 */}
-      <div className="flex items-center justify-between bg-bg px-6 pb-3 pt-5">
-        <span className="text-xl font-bold text-primary">
+      <div className="flex items-center justify-between bg-bg-system px-4 pb-3">
+        <span className="text-sm font-bold text-caption-strong">
           총 {isLoggedIn ? bookmarkData?.totalAmount ?? 0 : 0}개
         </span>
         <Chip as="button" aria-label={`정렬: ${sortOrder}`} aria-haspopup="dialog" onClick={() => setShowSort(true)}>
           {sortOrder}
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M5 12V3m0 0L2.5 5.5M5 3l2.5 2.5M11 4v9m0 0-2.5-2.5M11 13l2.5-2.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          <Icon name="Line Arrow Transfer" size={16} />
         </Chip>
       </div>
 
@@ -81,7 +83,7 @@ export default function BookmarksPage() {
       ) : !bookmarkData || bookmarkData.totalAmount === 0 ? (
         <BookmarkEmpty />
       ) : (
-        <div className="flex-1 bg-bg-system px-6 py-5">
+        <div className="flex-1 bg-bg-system px-4 py-2">
           {bookmarkData.bookmarkForMonth.map((section, i) => (
             <div key={section.month} className={clsx(i > 0 && 'mt-8')}>
               <p className="text-lg font-bold text-caption-strong mb-3">
@@ -101,7 +103,7 @@ export default function BookmarksPage() {
 function BookmarkEmpty({ guest = false }: { guest?: boolean }) {
   return (
     <div className="flex flex-1 flex-col items-center bg-bg-system px-6 pb-8 text-center">
-      <img src="/images/app/emptybookmark.png" alt="" width={280} height={280} className="mb-6 mt-5 h-[280px] w-[280px] max-w-full object-contain" />
+      <AppImage name="emptybookmark" alt="" width={280} height={280} className="mb-6 mt-5 h-[280px] w-[280px] max-w-full object-contain" />
       <p className="mb-1 text-base font-bold text-caption-heavy">저장한 아티클이 없어요.</p>
       <p className="text-sm font-medium text-caption-neutral">
         {guest ? <><Link href="/login" className="text-primary underline underline-offset-2">로그인</Link> 후 다시 보고 싶은 아티클을 저장해보세요.</>
@@ -115,18 +117,18 @@ const BookmarkCard = memo(function BookmarkCard({ article }: { article: Bookmark
   return (
     <Link
       href={`/articles/${article.articleId}`}
-      className="mb-2 block rounded-md border border-line-neutral bg-bg px-4 py-5 transition-colors hover:bg-neutral-50"
+      className="mb-2 block rounded-xl border border-line-neutral bg-bg px-4 py-5 transition-colors hover:bg-neutral-50"
     >
-      <p className="text-base font-bold text-caption-strong line-clamp-2 mb-2">
+      <p className="text-sm font-bold leading-5 text-caption-strong line-clamp-2 mb-2">
         {article.articleTitle}
       </p>
-      <p className="text-sm font-normal text-caption-neutral line-clamp-2 mb-3">
+      <p className="text-[13px] leading-[18px] font-normal text-caption-neutral line-clamp-2 mb-3">
         {article.sampleText}
       </p>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1">
           <NewsletterImage name={article.brandName} imageUrl={article.imageURL} variant="bookmark" />
-          <span className="text-xs font-medium text-[#808080]">
+          <span className="text-xs font-medium text-system-gray">
             {article.brandName}
           </span>
         </div>

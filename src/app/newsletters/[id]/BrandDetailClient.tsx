@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, ButtonLink, Chip, SubscriptionBadge, Toast } from '@/shared/ui';
+import { AppImage, Button, ButtonLink, Chip, Icon, SubscriptionBadge, Toast } from '@/shared/ui';
 
 import Link from 'next/link';
 import { useEffect, useId, useRef, useState } from 'react';
@@ -68,19 +68,19 @@ export function BrandDetailClient({ id, initialBrand }: { id: number; initialBra
   }
 
   return (
-    <div className="-mx-4 min-h-[calc(100dvh-var(--header-height))] bg-bg-system px-4 pb-8 sm:-mx-6 sm:px-6 min-[960px]:pt-5 xl:-mx-10 xl:px-8">
-      <div className="relative grid min-w-0 min-[960px]:grid-cols-2 min-[960px]:grid-rows-[auto_1fr] min-[960px]:gap-x-3 min-[960px]:gap-y-2">
-        <div className="relative -mx-4 h-[260px] overflow-hidden rounded-b-xl bg-bg shadow-[0_2px_4px_#1919190a] sm:-mx-6 min-[960px]:mx-0 min-[960px]:row-span-2 min-[960px]:h-full min-[960px]:min-h-64 min-[960px]:rounded-xl [&>span]:h-full [&>span]:aspect-auto">
+    <div className="-mx-4 min-h-[calc(100dvh-var(--header-height))] bg-bg-system px-4 pb-8 md:-mx-6 md:px-6 xl:pt-5 xl:-mx-10 xl:px-8">
+      <div className="relative grid min-w-0 xl:grid-cols-2 xl:grid-rows-[auto_1fr] xl:gap-x-3 xl:gap-y-2">
+        <div className="relative -mx-4 h-[260px] overflow-hidden rounded-b-xl bg-bg shadow-brand-cover md:-mx-6 xl:mx-0 xl:row-span-2 xl:h-full xl:min-h-64 xl:rounded-xl [&>span]:h-full [&>span]:aspect-auto">
           <NewsletterImage name={brand.brandName} imageUrl={brand.imageUrl} cover />
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-linear-to-b from-transparent to-black/[0.06]" />
-          {isChecking && <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-base font-medium text-white">구독 확인 중</div>}
+          {isChecking && <div className="absolute inset-0 flex items-center justify-center bg-bg-popup-dim/60 text-base font-medium text-white">구독 확인 중</div>}
         </div>
 
-        <section aria-label="뉴스레터 구독" className="relative z-10 -mt-[52px] flex min-w-0 items-center justify-between gap-3 rounded-lg bg-bg/60 px-6 pt-5 pb-[21px] shadow-[0_4px_8px_#0000000a] backdrop-blur-xl min-[960px]:col-start-2 min-[960px]:mt-0 min-[960px]:bg-bg">
+        <section aria-label="뉴스레터 구독" className="relative z-10 -mt-[52px] flex min-w-0 items-center justify-between gap-3 rounded-lg bg-bg/60 px-6 pt-5 pb-[21px] shadow-brand-subscribe backdrop-blur-xl xl:col-start-2 xl:mt-0 xl:bg-bg">
           <div className="min-w-0">
             <h1 className="break-words text-base font-bold text-caption-heavy">{brand.brandName}</h1>
             <p className="mt-1 flex items-start gap-1 text-xs font-medium leading-5 text-caption-neutral">
-              <svg aria-hidden="true" width="20" height="20" viewBox="0 0 20 20" fill="none" className="shrink-0"><circle cx="10" cy="10" r="7.5" stroke="currentColor" /><path d="M10 5v5l3.5 2.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              <Icon name="Line Clock" size={20} />
               {brand.publicationCycle || '발행 일정은 발행처에서 확인해주세요.'}
             </p>
           </div>
@@ -95,19 +95,19 @@ export function BrandDetailClient({ id, initialBrand }: { id: number; initialBra
           ) : <span className="shrink-0 text-xs text-caption-assistive">구독 준비 중</span>}
         </section>
 
-        <section aria-label="뉴스레터 소개" className="flex min-w-0 flex-col py-6 min-[960px]:col-start-2 min-[960px]:rounded-xl min-[960px]:bg-bg min-[960px]:p-5 min-[960px]:shadow-[0_1px_2px_#00000005]">
+        <section aria-label="뉴스레터 소개" className="flex min-w-0 flex-col py-6 xl:col-start-2 xl:rounded-xl xl:bg-bg xl:p-5 xl:shadow-brand-section">
           <p className="whitespace-pre-line break-words text-sm leading-6 text-caption-body">{brand.detailDescription || '뉴스레터의 지난 아티클을 읽어보세요.'}</p>
           {!isActive && !isPaused && !isChecking && subscribeUrl && <p className="mt-2 text-xs leading-5 text-caption-alternative">구독 신청은 발행처 페이지에서 진행돼요.</p>}
-          <div className="absolute inset-x-0 top-3 flex items-start justify-between gap-3 min-[960px]:static min-[960px]:mt-auto min-[960px]:pt-6">
+          <div className="absolute inset-x-0 top-3 flex items-start justify-between gap-3 xl:static xl:mt-auto xl:pt-6">
             <ul aria-label="관심사" className="flex flex-wrap gap-1.5">
-              {brand.interests.slice(0, 3).map((interest) => <li key={interest.id}><Chip>{interest.name}</Chip></li>)}
+              {brand.interests.slice(0, 3).map((interest) => <li key={interest.id}><Chip tone="overlay">{interest.name}</Chip></li>)}
             </ul>
             {(isActive || isPaused) && <SubscriptionBadge status={isActive ? 'CONFIRMED' : 'PAUSED'} size="compact" />}
           </div>
         </section>
       </div>
 
-      <section aria-labelledby="brand-articles" className="mt-5 min-w-0 min-[960px]:mt-8">
+      <section aria-labelledby="brand-articles" className="mt-5 min-w-0 xl:mt-8">
         <h2 id="brand-articles" className="mb-2 px-1 text-sm font-bold text-caption-neutral">지난 아티클 보기</h2>
         {brand.brandArticleList.length ? (
           <ul className="space-y-2">
@@ -132,7 +132,7 @@ export function BrandDetailClient({ id, initialBrand }: { id: number; initialBra
 
       {showSubscribeDialog && <SubscribeDialog brand={brand} checking={isChecking} onClose={() => setShowSubscribeDialog(false)} />}
       {showPauseDialog && <PauseSubscriptionDialog brandName={brand.brandName} onClose={() => setShowPauseDialog(false)} onConfirm={() => { setShowPauseDialog(false); void changeSubscription(); }} />}
-      {notice && (notice.isError ? <div role="alert" className="pointer-events-none fixed inset-x-6 bottom-[calc(var(--tabbar-height)+env(safe-area-inset-bottom)+16px)] z-50 mx-auto flex min-h-14 max-w-[600px] items-center justify-center rounded-lg bg-caption-strong px-4 py-3 text-center text-sm font-medium text-white sm:bottom-6 sm:left-[calc(var(--sidebar-width)+24px)]">{notice.message}</div> : <Toast message={notice.message} />)}
+      {notice && (notice.isError ? <div role="alert" className="pointer-events-none fixed inset-x-6 bottom-[calc(var(--tabbar-height)+env(safe-area-inset-bottom)+16px)] z-50 mx-auto flex min-h-14 max-w-[600px] items-center justify-center rounded-lg bg-caption-strong px-4 py-3 text-center text-sm font-medium text-white md:bottom-6 md:left-[calc(var(--sidebar-width)+24px)]">{notice.message}</div> : <Toast message={notice.message} />)}
     </div>
   );
 }
@@ -158,7 +158,7 @@ function PauseSubscriptionDialog({ brandName, onClose, onConfirm }: { brandName:
     const bounds = event.currentTarget.getBoundingClientRect();
     if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) onClose();
   }} className="fixed inset-0 m-auto max-h-[calc(100dvh-48px)] w-[calc(100%-48px)] max-w-[400px] overflow-y-auto rounded-[12px] bg-bg p-6 text-center backdrop:bg-black/30">
-    <img src="/images/app/warning.png" alt="" width="80" height="80" className="mx-auto h-20 w-20" />
+    <AppImage name="warning" alt="" width="80" height="80" className="mx-auto h-20 w-20" />
     <h2 id={titleId} className="text-xl font-bold text-caption-heavy">‘{brandName}’<br />구독 중지</h2>
     <p id={descriptionId} className="mt-1.5 text-sm font-medium text-caption-body">구독을 중지하면 더이상<br />새로운 아티클이 수신되지 않아요.</p>
     <p className="my-6 rounded-[6px] bg-bg-secondary p-4 text-xs font-medium text-primary">구독 재개로 언제든 아티클을 다시 받아볼 수 있어요.</p>

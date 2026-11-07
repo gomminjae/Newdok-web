@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { memo, useCallback, useMemo, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -8,7 +7,7 @@ import { clsx } from 'clsx';
 import { articleApi, articleKeys, articleQueries, type Article } from '@/entities/article';
 import { subscriptionQueries } from '@/entities/newsletter';
 import { useAuth } from '@/shared/hooks';
-import { Button, ButtonLink, Icon } from '@/shared/ui';
+import { AppImage, Button, ButtonLink, Icon } from '@/shared/ui';
 import { CalendarPopup } from '@/widgets/calendar';
 import { NewsletterImage } from '@/widgets/landing/NewsletterImage';
 
@@ -95,13 +94,13 @@ function HomeContent({ isLoggedIn }: { isLoggedIn: boolean }) {
   const refreshButton = <Button variant="ghost" size="compact" disabledTone="preserve" disabled={refresh.isPending}
     aria-busy={refresh.isPending} onClick={() => refresh.mutate()}>
     <span aria-hidden="true" className="inline-flex transition-transform duration-800 ease-linear" style={{ transform: `rotate(${refreshAngle}deg)` }}>
-      <Icon src="/images/Line Reload.svg" size={20} />
+      <Icon name="Line Reload" size={20} />
     </span>
     새로고침
   </Button>;
 
   return (
-    <section aria-label="홈" className="home-page -mx-4 -mb-[calc(var(--tabbar-height)+env(safe-area-inset-bottom)+16px)] flex min-h-[calc(100dvh-var(--header-height))] flex-col bg-bg-system pb-[calc(var(--tabbar-height)+env(safe-area-inset-bottom)+16px)] sm:-mx-6 sm:-mb-8 sm:pb-8 xl:-mx-10">
+    <section aria-label="홈" className="home-page -mx-4 -mb-[calc(var(--tabbar-height)+env(safe-area-inset-bottom)+16px)] flex min-h-[calc(100dvh-var(--header-height))] flex-col bg-bg-system pb-[calc(var(--tabbar-height)+env(safe-area-inset-bottom)+16px)] md:-mx-6 md:-mb-8 md:pb-8 xl:-mx-10">
       {isLoading ? (
         <div role="status" className="flex flex-1 items-center justify-center py-20 text-primary">
           <span aria-hidden="true" className="h-6 w-6 animate-spin rounded-full border-2 border-primary/20 border-t-primary" />
@@ -115,7 +114,7 @@ function HomeContent({ isLoggedIn }: { isLoggedIn: boolean }) {
           <button type="button" aria-label="캘린더" aria-haspopup="dialog" aria-expanded={showCalendar}
             className="-mr-2.5 flex h-11 w-11 items-center justify-center rounded-sm text-caption-heavy"
             onClick={() => { setDisplayedMonth(selectedDate); setShowCalendar(true); }}>
-            <Icon src="/images/Line Calendar.svg" />
+            <Icon name="Line Calendar" />
           </button>
         </div>
 
@@ -157,21 +156,21 @@ function HomeEmptyState({ type, selectedDate, refreshButton }: {
   const weekday = `${WEEKDAYS[selectedDate.getDay()]}요일`;
   const dayId = selectedDate.getDay() || 7;
   const content = {
-    guest: { image: 'nologin', title: '회원이 되면 뉴스레터를\n간편하게 모아볼 수 있어요!', subtitle: '', button: '회원가입', href: '/login' },
-    noSubscriptions: { image: 'nosubscribe', title: '구독 중인 뉴스레터가 없어요.', subtitle: '뉴스레터를 구독하면\n발행일에 맞춰 여기에 배달해드려요.', button: '내게 필요한 뉴스레터 추천받기', href: '/search?tab=recommend' },
-    noArticles: { image: 'nodata', title: '오늘 도착한 아티클이 없어요.', subtitle: '구독 신청 이후 수신된 아티클만 볼 수 있어요.', button: `${weekday}에 발행되는 뉴스레터 보기`, href: `/search?tab=all&day=${dayId}` },
+    guest: { image: 'nologin' as const, title: '회원이 되면 뉴스레터를\n간편하게 모아볼 수 있어요!', subtitle: '', button: '회원가입', href: '/intro' },
+    noSubscriptions: { image: 'nosubscribe' as const, title: '구독 중인 뉴스레터가 없어요.', subtitle: '뉴스레터를 구독하면\n발행일에 맞춰 여기에 배달해드려요.', button: '내게 필요한 뉴스레터 추천받기', href: '/search?tab=recommend' },
+    noArticles: { image: 'nodata' as const, title: '오늘 도착한 아티클이 없어요.', subtitle: '구독 신청 이후 수신된 아티클만 볼 수 있어요.', button: `${weekday}에 발행되는 뉴스레터 보기`, href: `/search?tab=all&day=${dayId}` },
   }[type];
 
   return <div className="flex flex-col items-center pb-8 text-center">
     <div className="mt-0.5 self-end pr-4">{refreshButton}</div>
-    <Image src={`/images/app/${content.image}.png`} alt="" width={280} height={280}
+    <AppImage name={content.image} alt="" width={280} height={280}
       className="mt-3 h-[280px] w-[280px] max-w-full object-contain" />
     <h2 className="mt-6 px-6 text-base font-bold whitespace-pre-line text-caption-heavy">{content.title}</h2>
     {content.subtitle && <p className="mt-1 px-6 text-sm font-medium whitespace-pre-line text-caption-neutral">{content.subtitle}</p>}
-    <div className="mt-6 w-full px-6 sm:max-w-[528px]">
+    <div className="mt-6 w-full px-6 md:max-w-[528px]">
       <ButtonLink href={content.href} fullWidth>{content.button}</ButtonLink>
     </div>
-    {type === 'guest' && <p className="mt-3 flex items-center gap-2 text-sm text-[#808080]">
+    {type === 'guest' && <p className="mt-3 flex items-center gap-2 text-sm text-system-gray">
       이미 계정이 있나요?
       <Link href="/login" className="font-bold text-primary underline underline-offset-2">로그인</Link>
     </p>}

@@ -1,41 +1,12 @@
 'use client';
 
-import { Button, Chip } from '@/shared/ui';
+import { Button, Chip, Dialog, Icon } from '@/shared/ui';
 
-import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import type { OptionList, OptionItem } from '@/entities/newsletter';
 
 export function ExplorerDialog({ title, children, onClose }: { title: string; children: ReactNode; onClose: () => void }) {
-  const ref = useRef<HTMLDialogElement>(null);
-  const titleId = useId();
-
-  useEffect(() => {
-    const dialog = ref.current;
-    const previousOverflow = document.body.style.overflow;
-    dialog?.showModal();
-    document.body.style.overflow = 'hidden';
-    return () => {
-      dialog?.close();
-      document.body.style.overflow = previousOverflow;
-    };
-  }, []);
-
-  return <dialog ref={ref} aria-labelledby={titleId} onCancel={onClose}
-    onClick={(event) => {
-      if (event.target !== event.currentTarget) return;
-      const bounds = event.currentTarget.getBoundingClientRect();
-      if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) onClose();
-    }}
-    className={`fixed inset-x-0 top-auto bottom-0 m-0 max-h-[90dvh] w-full max-w-none overflow-y-auto rounded-t-[24px] bg-bg px-6 pt-5 pb-[calc(22px+env(safe-area-inset-bottom))] text-caption-strong backdrop:bg-black/40 sm:inset-0 sm:m-auto sm:max-h-[calc(100dvh-32px)] sm:w-[calc(100%-32px)] sm:max-w-[600px] sm:rounded-[24px] sm:p-6 ${title === '정렬' ? 'min-h-[280px] sm:min-h-0' : ''}`}>
-    <span aria-hidden="true" className={`mx-auto block h-[5px] w-10 rounded-full bg-caption-assistive/50 sm:hidden ${title === '정렬' ? 'mb-8' : 'mb-4'}`} />
-    <div className="flex items-center justify-between">
-      <h2 id={titleId} className="text-xl font-bold">{title}</h2>
-      <button type="button" aria-label={`${title} 닫기`} onClick={onClose} className="-mr-2 -my-2 flex h-11 w-11 items-center justify-center rounded-full hover:bg-bg-system">
-        <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
-      </button>
-    </div>
-    {children}
-  </dialog>;
+  return <Dialog title={title} onClose={onClose}>{children}</Dialog>;
 }
 
 export function NewsletterFilters({ options, industries, days, onClose, onApply, isError, retry }: {
@@ -63,8 +34,8 @@ export function NewsletterFilters({ options, industries, days, onClose, onApply,
       <FilterGroup title="발행요일" items={options.days} selected={draftDays} onToggle={(id) => setDraftDays((values) => toggle(values, id))} />
     </>}
     <div className="mt-7 flex items-center gap-3">
-      <Button variant="ghost-neutral" size="short" onClick={() => { setDraftIndustries([]); setDraftDays([]); }} className="w-[88px]"><span aria-hidden="true">↻</span>재설정</Button>
-      <Button size="short" disabled={!options || !changed} onClick={() => onApply(draftIndustries, draftDays)} className="flex-1">적용하기</Button>
+      <Button variant="ghost-neutral" onClick={() => { setDraftIndustries([]); setDraftDays([]); }} className="w-[88px]"><Icon name="Line Reload" size={20} />재설정</Button>
+      <Button disabled={!options || !changed} onClick={() => onApply(draftIndustries, draftDays)} className="flex-1">적용하기</Button>
     </div>
   </ExplorerDialog>;
 }

@@ -6,11 +6,11 @@ import { clsx } from 'clsx';
 import { Icon } from '@/shared/ui';
 
 const NAV_ITEMS = [
-  { href: '/home', label: '홈', lineIcon: '/images/Line Home.svg', fillIcon: '/images/Fill Home.svg' },
-  { href: '/explore', label: '구독관리', lineIcon: '/images/Line Mailbox.svg', fillIcon: '/images/Fill Mailbox.svg' },
-  { href: '/bookmarks', label: '북마크함', lineIcon: '/images/Line Bookmark.svg', fillIcon: '/images/Fill Bookmark.svg' },
-  { href: '/search', label: '둘러보기', lineIcon: '/images/Line Newsletter.svg', fillIcon: '/images/Fill Newsletter.svg' },
-  { href: '/mypage', label: '마이페이지', lineIcon: '/images/Line User.svg', fillIcon: '/images/Fill User.svg' },
+  { href: '/home', label: '홈', lineIcon: 'Line Home' },
+  { href: '/explore', label: '구독관리', lineIcon: 'Line Mailbox' },
+  { href: '/bookmarks', label: '북마크함', lineIcon: 'Line Bookmark' },
+  { href: '/search', label: '둘러보기', lineIcon: 'Line Newsletter' },
+  { href: '/mypage', label: '마이페이지', lineIcon: 'Line User' },
 ] as const;
 
 export function Sidebar() {
@@ -23,9 +23,9 @@ export function Sidebar() {
 
   return (
     <>
-      <nav aria-label="주 메뉴" className="hidden sm:flex fixed left-0 top-[var(--header-height)] w-[var(--sidebar-width)] h-[calc(100dvh-var(--header-height))] bg-bg px-2 py-2 min-[960px]:px-4 z-40 flex-col">
-        <ul className="flex flex-col gap-3 min-[960px]:gap-1">
-          {NAV_ITEMS.map(({ href, label, lineIcon, fillIcon }) => {
+      <nav aria-label="주 메뉴" className="hidden md:flex fixed left-0 top-[var(--header-height)] w-[var(--sidebar-width)] h-[calc(100dvh-var(--header-height))] bg-bg px-3 py-2 z-40 flex-col">
+        <ul className="flex flex-col gap-3 xl:gap-1">
+          {NAV_ITEMS.map(({ href, label, lineIcon }) => {
             const isActive = isItemActive(href);
             return (
               <li key={href}>
@@ -33,19 +33,13 @@ export function Sidebar() {
                   href={href}
                   aria-current={isActive ? 'page' : undefined}
                   className={clsx(
-                    'group relative flex flex-col items-center gap-1 py-3 px-2 rounded-xl text-[11px] min-[960px]:flex-row min-[960px]:gap-2 min-[960px]:py-2.5 min-[960px]:text-xs transition-all duration-200 ease-out',
+                    'group relative flex flex-col items-center gap-1 py-3 px-2 rounded-xl text-[11px] xl:flex-row xl:gap-2 xl:py-2.5 xl:text-sm transition-all duration-200 ease-out',
                     isActive
                       ? 'bg-tint-50 text-primary font-semibold'
                       : 'text-caption-alternative hover:bg-bg-system hover:text-caption-heavy',
                   )}
                 >
-                  <img
-                    src={isActive ? fillIcon : lineIcon}
-                    alt=""
-                    width={28}
-                    height={28}
-                    className="transition-transform duration-200 ease-out group-hover:scale-110 group-active:scale-95"
-                  />
+                  <Icon name={lineIcon} size={28} />
                   <span>{label}</span>
                 </Link>
               </li>
@@ -54,7 +48,7 @@ export function Sidebar() {
         </ul>
       </nav>
 
-      <nav aria-label="하단 메뉴" className="sm:hidden fixed bottom-0 left-0 right-0 flex min-h-[calc(var(--tabbar-height)+env(safe-area-inset-bottom))] bg-bg pb-[env(safe-area-inset-bottom)] z-40">
+      <nav aria-label="하단 메뉴" className="md:hidden fixed bottom-0 left-0 right-0 flex min-h-[calc(var(--tabbar-height)+env(safe-area-inset-bottom))] bg-bg pb-[env(safe-area-inset-bottom)] z-40">
         {mobileItems.map(({ href, label, lineIcon }) => {
           const isActive = isItemActive(href);
           return (
@@ -67,7 +61,7 @@ export function Sidebar() {
                 isActive ? 'text-primary' : 'text-caption-assistive',
               )}
             >
-              <Icon src={lineIcon} size={28} />
+              <Icon name={lineIcon} size={24} />
               <span className="text-[10px] leading-3">{label}</span>
             </Link>
           );

@@ -36,7 +36,7 @@ export function SubscribeDialog({ brand, checking = false, onClose }: { brand: B
     catch { setCopyError('복사하지 못했어요. 아래 주소를 선택해 직접 복사해주세요.'); }
   }
 
-  return <Dialog title={`${brand.brandName} 구독${stage === 'check' ? ' 확인' : '하기'}`} onClose={onClose}>
+  return <Dialog title={stage === 'check' ? checking || brand.subscribeCheck ? '구독 확인 필요' : '구독 상태 안내' : `${brand.brandName} 구독하기`} onClose={onClose}>
     {!isLoggedIn ? <div className="space-y-5"><p className="text-sm leading-7">로그인하면 뉴스레터 수신 전용 이메일이 발급돼요. 이 주소로 신청한 아티클을 뉴독에서 받아보세요.</p><ButtonLink href="/login" fullWidth>로그인하고 구독하기</ButtonLink></div> : profile.isPending ? <p role="status">구독 이메일을 불러오는 중이에요.</p> : profile.isError ? <div role="alert"><p>구독 이메일을 불러오지 못했어요.</p><Button variant="ghost" onClick={() => void profile.refetch()}>다시 시도</Button></div> : <div className="space-y-5">
       {stage === 'apply' ? <>
         <p className="text-sm leading-7">아래 뉴독 구독 이메일을 복사하고 발행처의 신청란에 붙여넣어주세요.</p>
@@ -49,7 +49,7 @@ export function SubscribeDialog({ brand, checking = false, onClose }: { brand: B
       </> : <>
         <p className="text-sm leading-7">{checking || brand.subscribeCheck ? '홈에서 구독 확인 메일을 열고 본문의 구독 확인 버튼을 눌러주세요.' : '발행처에서 신청을 완료해주세요. 확인 메일이 도착하면 홈에서 메일 본문의 구독 확인 버튼을 눌러주세요.'}</p>
         <p className="text-sm leading-7 text-caption-neutral">첫 아티클을 수신하면 내 구독에 추가돼요. 뉴스레터의 다음 발행일까지 시간이 걸릴 수 있어요.</p>
-        <ButtonLink href="/home" fullWidth>홈에서 메일 확인하기</ButtonLink>
+        <ButtonLink href="/home" fullWidth>{checking || brand.subscribeCheck ? '메일 확인하기' : '홈에서 확인하기'}</ButtonLink>
         <Button variant="neutral-outline" fullWidth onClick={() => setStage('apply')}>구독 신청 다시 하기</Button>
       </>}
     </div>}

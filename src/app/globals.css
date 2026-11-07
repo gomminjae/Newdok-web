@@ -1,127 +1,5 @@
 @import "tailwindcss";
-
-/* ══════════════════════════════════════
-   Design Tokens (Figma) → Tailwind @theme
-   각 토큰이 자동으로 클래스로 노출됨
-   --color-*    → bg-*, text-*, border-*
-   --radius-*   → rounded-*
-   --breakpoint-* → md:, xl:
-   --font-*     → font-*
-   ══════════════════════════════════════ */
-@theme {
-  /* ── Palette: Neutral ── */
-  --color-neutral-0: #FFFFFF;
-  --color-neutral-50: #F7F7F7;
-  --color-neutral-100: #F5F5F7;
-  --color-neutral-150: #EBEBEB;
-  --color-neutral-200: #DADADA;
-  --color-neutral-300: #C6C6C6;
-  --color-neutral-350: #C0C0C0;
-  --color-neutral-400: #A6A6A6;
-  --color-neutral-500: #969696;
-  --color-neutral-600: #767676;
-  --color-neutral-700: #565656;
-  --color-neutral-750: #464646;
-  --color-neutral-800: #363636;
-  --color-neutral-900: #262626;
-  --color-neutral-950: #161616;
-  --color-neutral-1000: #000000;
-
-  /* ── Palette: Tint (Blue) ── */
-  --color-tint-900: #2866D3;
-  --color-tint-800: #3D75D7;
-  --color-tint-700: #5184DB;
-  --color-tint-600: #6893E0;
-  --color-tint-500: #7FA3E4;
-  --color-tint-400: #93B2E9;
-  --color-tint-300: #AAC1ED;
-  --color-tint-200: #BFD1F1;
-  --color-tint-100: #D4E0F6;
-  --color-tint-50: #E9EFFA;
-
-  /* ── Palette: Shades (Navy) ── */
-  --color-shade-100: #1D4793;
-  --color-shade-200: #193D7E;
-  --color-shade-300: #143369;
-  --color-shade-400: #102854;
-  --color-shade-500: #0B1E3F;
-  --color-shade-600: #08142A;
-  --color-shade-700: #040A15;
-
-  /* ── Semantic: Primary ── */
-  --color-primary: #2866D3;
-  --color-primary-strong: #245BBD;
-  --color-primary-heavy: #2051A8;
-  --color-primary-hover: #2866D30D;
-  --color-primary-press: #2866D31F;
-  --color-primary-light: #5184DB;
-  --color-primary-bg: #ECF3FF;
-  --color-primary-bg-muted: #CCDFFF;
-
-  /* ── Semantic: Background ── */
-  --color-bg: #FFFFFF;
-  --color-bg-system: #F5F5F7;
-  --color-bg-elevated: #FAFAFA;
-  --color-bg-input: #F1F2F6;
-  --color-bg-secondary: #F5F5F5;
-  --color-bg-dimmed: #0000000F;
-
-  /* ── Semantic: Caption (Text) ── */
-  --color-caption-heavy: #161616;
-  --color-caption-strong: #363636;
-  --color-caption-neutral: #565656;
-  --color-caption-alternative: #767676;
-  --color-caption-assistive: #969696;
-  --color-caption-disabled: #C0C0C0;
-  --color-caption-body: #555555;
-  --color-caption-title: #333333;
-  --color-gray-light: #BDBDBD;
-
-  /* ── Semantic: Line (Border) ── */
-  --color-line-neutral: #EBEBEB;
-  --color-line-alternative: #DADADA;
-  --color-line-disabled: #C0C0C0;
-
-  /* ── Status ── */
-  --color-success: #10B981;
-  --color-warning: #F59E0B;
-  --color-error: #E32727;
-  --color-error-bg: #FEE6E6;
-  --color-info: #3B82F6;
-
-  /* ── Radius ── */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-  --radius-full: 9999px;
-
-  /* ── Layout 매직 넘버 → 토큰화 ── */
-  --header-height: 56px;
-  --tabbar-height: 50px;
-  --sidebar-width: 112px;
-
-  /* ── Breakpoints (Figma 3단계) ── */
-  --breakpoint-md: 768px;
-  --breakpoint-xl: 1280px;
-
-  /* ── Font ── */
-  --font-sans: var(--font-spoqa), 'Spoqa Han Sans Neo', -apple-system, BlinkMacSystemFont, sans-serif;
-
-  /* ── Shadow ── */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
-}
-
-/* ── Reset & Base ── */
-@media (min-width: 640px) {
-  :root { --header-height: 56px; }
-}
-
-@media (min-width: 960px) {
-  :root { --sidebar-width: 168px; }
-}
+@import "../design-system/styles.css";
 
 html {
   height: 100%;
@@ -161,7 +39,7 @@ body {
 
 button:not(:disabled), select:not(:disabled) { cursor: pointer; }
 
-@media (max-width: 639px) {
+@media (max-width: 767px) {
   select { font-size: 16px; }
 }
 
