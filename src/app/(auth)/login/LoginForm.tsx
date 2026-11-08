@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { userApi, type SocialLoginRequest } from '@/entities/user';
 import {
   createRandomUrlSafeString,
+  createOAuthConfig,
   readJwtPayload,
   SOCIAL_SIGNUP_STORAGE_KEY,
   validateOAuthConfig,
@@ -106,7 +107,7 @@ export function LoginForm({ config }: { config: SocialLoginConfig }) {
     setErrorMessage(null);
 
     try {
-      const { clientId, redirectUri } = validateOAuthConfig('kakao', config.kakao, window.location.origin);
+      const { clientId, redirectUri } = createOAuthConfig('kakao', config.kakao.clientId, window.location.origin);
       setLoadingProvider('kakao');
       const state = createRandomUrlSafeString();
 
@@ -135,7 +136,7 @@ export function LoginForm({ config }: { config: SocialLoginConfig }) {
     setErrorMessage(null);
     let appleConfig;
     try {
-      appleConfig = validateOAuthConfig('apple', config.apple, window.location.origin);
+      appleConfig = createOAuthConfig('apple', config.apple.clientId, window.location.origin);
     } catch (loginError) {
       setErrorMessage(getLoginErrorMessage(loginError));
       return;

@@ -30,9 +30,7 @@ Vercel Git 연동으로 배포하며 Vercel CLI는 사용하지 않습니다.
 | `API_INTERNAL_URL` | `https://api-dev.newdok.store` | `https://api.newdok.store` |
 | `NEXT_PUBLIC_SITE_URL` | 고정 테스트 주소 | 기존 공개 웹 주소 |
 | `NEXT_PUBLIC_KAKAO_REST_API_KEY` | 개발 Kakao 앱의 웹 REST 키 | 운영 Kakao 앱의 웹 REST 키 |
-| `NEXT_PUBLIC_KAKAO_REDIRECT_URI` | 테스트 주소 + `/login` | 공개 웹 주소 + `/login` |
 | `NEXT_PUBLIC_APPLE_CLIENT_ID` | `com.newdok.dev.web` | `com.newdok.web` (기존 Production 설정) |
-| `NEXT_PUBLIC_APPLE_REDIRECT_URI` | 테스트 주소 + `/login` | 공개 웹 주소 + `/login` |
 
 Vercel Preview와 Production에 해당 환경의 API·로그인 값을 각각 설정합니다.
 환경변수 변경은 새 배포부터 적용됩니다. 변경은 `develop`에서 검증한 뒤 `main`에 병합합니다.
@@ -54,9 +52,13 @@ API 프록시와 서버 렌더링은 `getApiBaseUrl()`을 공통으로 사용합
 배포 환경의 API 주소 누락, Preview/Production과 `APP_ENV` 불일치, 개발·운영 API 주소 혼용은 오류로 처리합니다.
 개발·운영 API의 `/public/**` 이미지 모두 최적화할 수 있습니다.
 
-로그인 페이지는 서버에서 해당 환경의 공개 키·콜백을 읽어 폼에 전달합니다.
+로그인 페이지는 서버에서 해당 환경의 공개 키를 읽어 폼에 전달합니다.
 Apple Services ID를 코드에 고정하지 않습니다. 클라이언트 시크릿은 백엔드에만 둡니다.
-현재 웹과 다른 주소의 로그인 콜백은 인증 시작 전에 차단합니다.
+로그인 콜백은 브라우저의 실제 접속 주소 + `/login`으로 생성합니다.
+예전 `NEXT_PUBLIC_KAKAO_REDIRECT_URI`, `NEXT_PUBLIC_APPLE_REDIRECT_URI` 값은 사용하지 않습니다.
+주소 별칭을 바꿔도 오래된 콜백 env 때문에 로그인이 차단되지 않습니다.
+Kakao·Apple 콘솔에는 각 실제 접속 주소의 `/login`을 등록해야 합니다.
+돌아온 Kakao 콜백의 세션·주소 검증은 유지합니다.
 Kakao 인가 코드 요청에 사용한 콜백을 세션에 저장하고, 코드 교환 요청에도 같은 값을 전달합니다.
 로그인 토큰·가입 진행·OAuth 상태도 환경별 저장 키를 사용합니다.
 기존 주소의 구분 없는 로그인 토큰은 개발 API에서 발급됐을 수 있어 이전하지 않고 다시 로그인합니다.

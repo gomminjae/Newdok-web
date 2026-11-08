@@ -137,20 +137,20 @@ test('signup and OAuth state use environment-specific storage keys', () => {
     production.load('src/features/auth/social/index.ts').SOCIAL_SIGNUP_STORAGE_KEY);
 });
 
-test('OAuth config uses each environment’s web keys, Services ID and callbacks without a dev ID fallback', () => {
+test('OAuth config uses each environment’s web keys and Services ID without stale callback values', () => {
   for (const name of ['development', 'production']) {
     const site = `https://${name}.newdok.test`;
     const env = {
       NEXT_PUBLIC_SITE_URL: site,
       NEXT_PUBLIC_KAKAO_REST_API_KEY: `${name}-rest-key`,
-      NEXT_PUBLIC_KAKAO_REDIRECT_URI: `${site}/login`,
+      NEXT_PUBLIC_KAKAO_REDIRECT_URI: 'https://old-preview.test/login',
       NEXT_PUBLIC_APPLE_CLIENT_ID: `${name}.web`,
-      NEXT_PUBLIC_APPLE_REDIRECT_URI: `${site}/login`,
+      NEXT_PUBLIC_APPLE_REDIRECT_URI: 'https://old-preview.test/login',
     };
     const config = harness(undefined, {}, env).load('src/shared/config/auth.ts').getSocialLoginConfig();
     assert.deepEqual(plain(config), {
-      kakao: { clientId: `${name}-rest-key`, redirectUri: `${site}/login` },
-      apple: { clientId: `${name}.web`, redirectUri: `${site}/login` },
+      kakao: { clientId: `${name}-rest-key` },
+      apple: { clientId: `${name}.web` },
     });
   }
   const { getSocialLoginConfig } = harness().load('src/shared/config/auth.ts');
@@ -256,17 +256,36 @@ test('Apple SDK and backend receive the matching environment Services ID and cal
   }
 });
 
-test('login UI refuses cross-environment callbacks before opening either provider', async () => {
+test('renaming the preview alias uses the actual origin for both providers despite stale redirect props', async () => {
   const wrongCallback = { clientId: 'configured-key', redirectUri: 'https://other-environment.test/login' };
   const app = loginHarness({ kakao: wrongCallback, apple: wrongCallback });
+  app.context.window.location.origin = 'https://newdok-dev.vercel.app';
   nodes(app.render()).find((node) => node.type === 'script').props.onReady();
   control(app.render(), '카카오로 계속하기').props.onClick();
-  assert.match(text(app.render()), /현재 사이트와 다릅니다/);
-  control(app.render(), 'Apple로 계속하기').props.onClick();
+  assert.equal(app.redirects[0].searchParams.get('redirect_uri'), 'https://newdok-dev.vercel.app/login');
+  app.context.window.location.search = `?code=kakao-code&state=${app.redirects[0].searchParams.get('state')}`;
+  app.render();
+  app.effects[0]();
   await new Promise(setImmediate);
+  assert.equal(app.credentials[0].redirectUri, 'https://newdok-dev.vercel.app/login');
+  const appleApp = loginHarness({ kakao: wrongCallback, apple: wrongCallback });
+  appleApp.context.window.location.origin = 'https://newdok-dev.vercel.app';
+  nodes(appleApp.render()).find((node) => node.type === 'script').props.onReady();
+  control(appleApp.render(), 'Apple로 계속하기').props.onClick();
+  await new Promise(setImmediate);
+  assert.equal(appleApp.appleInitializations[0].redirectURI, 'https://newdok-dev.vercel.app/login');
+  assert.equal(appleApp.credentials[0].redirectUri, 'https://newdok-dev.vercel.app/login');
+});
+
+test('missing provider keys stop login before any OAuth navigation or SDK call', () => {
+  const app = loginHarness({ kakao: { clientId: '' }, apple: { clientId: '' } });
+  nodes(app.render()).find((node) => node.type === 'script').props.onReady();
+  for (const name of ['카카오로 계속하기', 'Apple로 계속하기']) {
+    control(app.render(), name).props.onClick();
+    assert.match(text(app.render()), /로그인 설정이 누락/);
+  }
   assert.equal(app.redirects.length, 0);
   assert.equal(app.appleInitializations.length, 0);
-  assert.equal(app.credentials.length, 0);
 });
 
 test('nonempty day/today article responses normalize to the home card contract', async () => {

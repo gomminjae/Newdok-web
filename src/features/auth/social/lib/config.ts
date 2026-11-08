@@ -1,5 +1,14 @@
 import type { OAuthProviderConfig } from '@/shared/config/auth';
 
+export function createOAuthConfig(
+  provider: 'kakao' | 'apple', clientId: string, currentOrigin: string,
+): OAuthProviderConfig {
+  return validateOAuthConfig(provider, {
+    clientId,
+    redirectUri: new URL('/login', currentOrigin).href,
+  }, currentOrigin);
+}
+
 export function validateOAuthConfig(
   provider: 'kakao' | 'apple', config: OAuthProviderConfig, currentOrigin: string,
 ): OAuthProviderConfig {
