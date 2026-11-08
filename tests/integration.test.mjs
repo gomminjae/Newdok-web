@@ -25,7 +25,7 @@ function harness(respond = () => ({ body: {} }), overrides = {}) {
       setItem: (key, value) => storage.set(key, value),
       removeItem: (key) => storage.delete(key),
     },
-    window: { location: { origin: 'https://newdok.test' }, dispatchEvent: (event) => events.push(event.type), scrollTo() {} },
+    window: { location: { origin: 'https://newdok.test' }, innerHeight: 640, dispatchEvent: (event) => events.push(event.type), scrollTo() {} },
     fetch: async (url, options) => {
       const request = { url: new URL(url), ...options };
       requests.push(request);
@@ -163,7 +163,7 @@ function componentHarness(filename, exported, { loggedIn = true, profile = { id:
   const saved = [];
   const ui = Object.fromEntries(['Button', 'ButtonLink', 'Chip', 'Dialog', 'EmptyState', 'GuestNotice', 'Icon', 'Toast', 'SegmentPicker'].map((name) => [name, name]));
   ui.Checkbox = 'input';
-  ui.Select = 'select';
+  ui.Dropdown = 'Dropdown';
   const app = harness(({ url }) => ({ body: url.pathname.endsWith('/preInvestigate') ? { data: [] } : {} }), {
     react: {
       memo: (fn) => fn, useCallback: (fn) => fn, useMemo: (fn) => fn(), useEffect: () => {}, useRef: (value) => ({ current: value }), useId: () => 'test-id',
@@ -269,7 +269,7 @@ test('profile industry editor sends the selected numeric industry and refreshes 
   let tree = app.render(props);
   nodes(tree).find((node) => node.props.label === '종사산업').props.onClick();
   tree = profileField(app, props);
-  nodes(tree).find((node) => node.type === 'select').props.onChange({ target: { value: '11' } });
+  nodes(tree).find((node) => node.type === 'Dropdown').props.onValueChange('11');
   tree = profileField(app, props);
   tree.props.onSubmit({ preventDefault() {} });
   await new Promise((resolve) => setImmediate(resolve));
@@ -335,7 +335,7 @@ test('stepwise onboarding keeps industry selection and only saves after three in
   const props = { profile: { industryId: null, interests: [] }, stepwise: true, onSaved() {} };
   let tree = app.render(props);
   assert.equal(control(tree, '다음').props.disabled, true);
-  nodes(tree).find((node) => node.type === 'select').props.onChange({ target: { value: '11' } });
+  nodes(tree).find((node) => node.type === 'Dropdown').props.onValueChange('11');
   tree = app.render(props);
   tree.props.onSubmit({ preventDefault() {} });
   tree = app.render(props);
@@ -344,7 +344,7 @@ test('stepwise onboarding keeps industry selection and only saves after three in
   for (const interest of ['기술', '경제', '문화']) { control(tree, interest).props.onClick(); tree = app.render(props); }
   control(tree, '산업 다시 선택').props.onClick();
   tree = app.render(props);
-  assert.equal(nodes(tree).find((node) => node.type === 'select').props.value, '11');
+  assert.equal(nodes(tree).find((node) => node.type === 'Dropdown').props.value, '11');
   tree.props.onSubmit({ preventDefault() {} });
   tree = app.render(props);
   assert.equal(control(tree, '뉴스레터 추천받기').props.disabled, false);
@@ -371,4 +371,39 @@ test('shared tabs support keyboard selection and focus while preserving panel as
   assert.equal(selected.props.id, 'newsletter-tab-all');
   assert.equal(selected.props['aria-controls'], 'newsletter-panel-all');
   assert.equal(selected.props.tabIndex, 0);
+});
+
+test('dropdown opens an overlay above a low trigger and commits keyboard selection only on Enter', () => {
+  const app = componentHarness('src/design-system/components/Dropdown.tsx', 'Dropdown');
+  const changes = [];
+  const props = { value: '', placeholder: '산업군을 선택해주세요.', options: [{ value: 'it', label: 'IT' }, { value: 'finance', label: '금융' }, { value: 'design', label: '디자인' }], onValueChange: (value) => changes.push(value) };
+  let tree = app.render(props);
+  tree.props.ref.current = { getBoundingClientRect: () => ({ top: 500, bottom: 548 }), closest: () => null };
+  nodes(tree).find((node) => node.props.role === 'combobox').props.onClick();
+  tree = app.render(props);
+  const popup = nodes(tree).find((node) => node.props.role === 'listbox');
+  assert.equal(popup.props.hidden, false);
+  assert.equal(popup.props['data-side'], 'above');
+  const key = (key) => ({ key, nativeEvent: {}, preventDefault() {}, stopPropagation() {} });
+  nodes(tree).find((node) => node.props.role === 'combobox').props.onKeyDown(key('ArrowDown'));
+  tree = app.render(props);
+  assert.deepEqual(changes, []);
+  nodes(tree).find((node) => node.props.role === 'combobox').props.onKeyDown(key('Enter'));
+  assert.deepEqual(changes, ['finance']);
+  tree = app.render({ ...props, value: 'finance' });
+  assert.equal(nodes(tree).find((node) => node.props.role === 'listbox').props.hidden, true);
+  assert.equal(nodes(tree).find((node) => node.props.role === 'option' && node.props['aria-selected']).props.children, '금융');
+});
+
+test('dropdown Escape closes the list without selecting or cancelling its parent dialog', () => {
+  const app = componentHarness('src/design-system/components/Dropdown.tsx', 'Dropdown');
+  const props = { value: 'it', placeholder: '선택', options: [{ value: 'it', label: 'IT' }], onValueChange() { assert.fail('Escape must not select'); } };
+  let tree = app.render(props);
+  nodes(tree).find((node) => node.props.role === 'combobox').props.onClick();
+  tree = app.render(props);
+  const prevented = [];
+  nodes(tree).find((node) => node.props.role === 'combobox').props.onKeyDown({ key: 'Escape', nativeEvent: {}, preventDefault() { prevented.push('default'); }, stopPropagation() { prevented.push('propagation'); } });
+  tree = app.render(props);
+  assert.equal(nodes(tree).find((node) => node.props.role === 'combobox').props['aria-expanded'], false);
+  assert.deepEqual(prevented, ['default', 'propagation']);
 });

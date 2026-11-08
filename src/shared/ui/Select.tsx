@@ -1,1 +1,1 @@
-export { Select } from '@/design-system/components/Select';
+export { Dropdown as Select } from '@/design-system/components/Dropdown';

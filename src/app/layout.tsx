@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { QueryProvider } from "@/shared/lib/query-provider";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/shared/config/site";
 import { spoqa } from "@/shared/styles/fonts";
+import "@/design-system/styles.css";
 import "./globals.css";
 
 export const viewport: Viewport = {

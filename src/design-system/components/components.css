@@ -79,8 +79,20 @@
   .nd-input[data-right-slot='true'] { padding-right: 48px; }
   .nd-input[data-variant='search'] { @apply h-10 border-0 bg-transparent text-caption-strong; padding-inline: 0; }
 
-  .nd-select { @apply h-12 w-full appearance-none border border-line-alternative bg-bg pl-4 pr-11 text-sm font-medium text-caption-heavy outline-none; border-radius: var(--radius-sm); }
-  .nd-select:focus { border-color: var(--color-primary-normal); }
-  .nd-select:disabled { color: var(--color-caption-disabled); }
-  @media (max-width: 767px) { .nd-select { font-size: 16px; } }
+  .nd-dropdown { position: relative; width: 100%; }
+  .nd-dropdown[data-open='true'] { z-index: 50; }
+  .nd-dropdown-trigger { @apply flex h-12 w-full items-center justify-between gap-3 border border-line-alternative bg-bg px-4 text-left text-sm font-medium text-black; border-radius: var(--radius-sm); }
+  .nd-dropdown-trigger > :last-child { color: var(--color-caption-strong); }
+  .nd-dropdown-trigger[data-placeholder='true'] { color: var(--color-system-gray); }
+  .nd-dropdown-trigger[aria-expanded='true'] { border-color: var(--color-primary-normal); }
+  .nd-dropdown-trigger:disabled { cursor: default; color: var(--color-caption-disabled); }
+  .nd-dropdown-trigger:disabled > :last-child { color: var(--color-caption-disabled); }
+  .nd-dropdown-list { @apply absolute inset-x-0 overflow-y-auto overscroll-contain bg-bg py-2; z-index: 1; border-radius: var(--radius-sm); box-shadow: var(--shadow-dropdown); }
+  .nd-dropdown-list[hidden] { display: none; }
+  .nd-dropdown-list[data-side='below'] { top: calc(100% + 8px); }
+  .nd-dropdown-list[data-side='above'] { bottom: calc(100% + 8px); }
+  .nd-dropdown-option { @apply flex min-h-12 cursor-pointer items-center px-4 text-sm font-medium text-black; }
+  .nd-dropdown-option[data-active='true'] { background: var(--color-bg-system); }
+  .nd-dropdown-option[aria-selected='true'] { background: var(--color-primary-bg-light); color: var(--color-primary-normal); }
+  .nd-dropdown-option[aria-disabled='true'] { cursor: default; color: var(--color-caption-disabled); }
 }

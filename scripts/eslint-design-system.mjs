@@ -1,4 +1,4 @@
-const controls = new Set(['Button', 'ButtonLink', 'Chip', 'Input', 'Select', 'SegmentPicker', 'Tabs']);
+const controls = new Set(['Button', 'ButtonLink', 'Chip', 'Input', 'Select', 'Dropdown', 'SegmentPicker', 'Tabs']);
 const appearance = /(?:^|\s)(?:[\w-]+:)*(?:bg-|text-|font-|border(?:-|$)|rounded|h-|min-h-|max-h-|p[xytrbl]?-|opacity-|shadow)/;
 const rawColor = /(?:bg|text|border|fill|stroke|from|to|via|shadow)-\[[^\]]*(?:#[\da-f]{3,8}|rgba?\()/i;
 

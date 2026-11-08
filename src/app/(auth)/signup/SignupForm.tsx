@@ -9,7 +9,7 @@ import {
 } from '@/entities/user';
 import { SOCIAL_SIGNUP_STORAGE_KEY } from '@/features/auth/social';
 import { ApiError } from '@/shared/api/client';
-import { Button, ButtonLink, Checkbox, Icon, Input, Select } from '@/shared/ui';
+import { Button, ButtonLink, Checkbox, Icon, Input, Dropdown } from '@/shared/ui';
 
 import { TERMS_URL, PRIVACY_URL } from '@/shared/config/links';
 
@@ -184,15 +184,7 @@ function SocialSignupFlow({ signupSession }: { signupSession: SignupSession }) {
             <label className="flex flex-col gap-2 text-sm font-medium text-caption-neutral">
               <span className="pl-1">출생연도</span>
               <span className="relative">
-                <Select
-                  value={birthYear}
-                  onChange={(event) => setBirthYear(event.target.value)}
-                >
-                  <option value="">선택</option>
-                  {birthYears.map((year) => (
-                    <option key={year} value={year}>{year}</option>
-                  ))}
-                </Select>
+                <Dropdown id="signup-birth-year" aria-label="출생연도" value={birthYear} onValueChange={setBirthYear} placeholder="선택" options={birthYears.map((year) => ({ value: year, label: year }))} />
               </span>
               <span className="text-xs font-medium text-caption-neutral">
                 출생연도는 뉴스레터 추천에 활용돼요.

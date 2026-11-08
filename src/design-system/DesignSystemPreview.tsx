@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { AppImage, Button, ButtonLink, Checkbox, Chip, Dialog, Icon, Input, SegmentPicker, Select, SubscriptionBadge, Tabs, Toast, colors, fontSizes, iconAssets, type IconName } from './index';
+import { AppImage, Button, ButtonLink, Checkbox, Chip, Dialog, Icon, Input, SegmentPicker, Dropdown, SubscriptionBadge, Tabs, Toast, colors, fontSizes, iconAssets, type IconName } from './index';
 
 const COLOR_GROUPS = [
   ['브랜드', 'primary'], ['배경', 'bg'], ['텍스트', 'caption'], ['테두리', 'line'], ['회색', 'gray'], ['오류', 'error'], ['하이라이트', 'highlight'],
@@ -9,6 +9,7 @@ const COLOR_GROUPS = [
 
 export function DesignSystemPreview() {
   const [segment, setSegment] = useState('active');
+  const [industry, setIndustry] = useState('');
   const [tab, setTab] = useState('recommend');
   const [selected, setSelected] = useState(true);
   const [checked, setChecked] = useState(false);
@@ -31,7 +32,7 @@ export function DesignSystemPreview() {
 
     <section className="space-y-4"><h2 className="text-xl font-bold">칩과 상태</h2><div className="flex flex-wrap items-center gap-3"><Chip>경제</Chip><Chip size="md">프로필 관심사</Chip><Chip as="button" active={selected} onClick={() => setSelected((value) => !value)}>필터 선택</Chip><Chip as="button" disabled>비활성 필터</Chip><SubscriptionBadge status="CONFIRMED" /><SubscriptionBadge status="PAUSED" /></div><div className="grid max-w-lg grid-cols-2 gap-3"><Chip as="button" variant="option" active>선택한 관심사</Chip><Chip as="button" variant="option">기본 관심사</Chip></div></section>
 
-    <section className="space-y-4"><h2 className="text-xl font-bold">입력과 선택</h2><div className="grid max-w-3xl gap-5 md:grid-cols-2"><Input label="기본 입력" placeholder="내용을 입력해주세요." /><Input label="오류 입력" defaultValue="잘못된 입력" error="입력 내용을 확인해주세요." /><Input label="비활성 입력" defaultValue="수정할 수 없는 값" disabled /><label className="space-y-1 text-sm font-medium text-caption-neutral">종사산업<Select defaultValue=""><option value="">산업군을 선택해주세요.</option><option value="IT">IT·기술</option></Select></label></div><label className="flex items-center gap-3 text-sm"><Checkbox checked={checked} onChange={(event) => setChecked(event.target.checked)} />앱 원본 체크박스</label></section>
+    <section id="inputs" className="space-y-4"><h2 className="text-xl font-bold">입력과 선택</h2><div className="grid max-w-3xl gap-5 md:grid-cols-2"><Input label="기본 입력" placeholder="내용을 입력해주세요." /><Input label="오류 입력" defaultValue="잘못된 입력" error="입력 내용을 확인해주세요." /><Input label="비활성 입력" defaultValue="수정할 수 없는 값" disabled /><div><label htmlFor="preview-industry" className="mb-1 block text-sm font-medium text-caption-neutral">종사산업</label><Dropdown id="preview-industry" value={industry} onValueChange={setIndustry} placeholder="산업군을 선택해주세요." options={[{ value: 'IT', label: 'IT·기술' }, { value: 'finance', label: '금융·경제' }, { value: 'design', label: '디자인·예술' }]} /></div></div><label className="flex items-center gap-3 text-sm"><Checkbox checked={checked} onChange={(event) => setChecked(event.target.checked)} />앱 원본 체크박스</label></section>
 
     <section className="space-y-4"><h2 className="text-xl font-bold">아이콘</h2><p className="text-sm text-caption-neutral">앱 PDF에서 추출한 벡터. 단색 아이콘은 주변 텍스트 색상을 따릅니다.</p><div className="grid grid-cols-3 gap-3 md:grid-cols-6">{(Object.keys(iconAssets) as IconName[]).map((name) => <div key={name} className="flex flex-col items-center gap-3 rounded-lg border border-line-neutral p-4 text-primary"><Icon name={name} size={28} /><p className="text-center text-xs text-caption-neutral">{name}</p></div>)}</div></section>
 

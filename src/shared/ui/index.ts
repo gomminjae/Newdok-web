@@ -2,6 +2,7 @@ export { Button, ButtonLink } from './Button';
 export { Input } from './Input';
 export { Checkbox } from './Checkbox';
 export { Select } from './Select';
+export { Dropdown } from './Dropdown';
 export { Tabs } from './Tabs';
 export { Chip } from './Chip';
 export { SubscriptionBadge } from './SubscriptionBadge';

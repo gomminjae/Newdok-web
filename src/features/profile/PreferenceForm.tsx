@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { userApi, userKeys, type UserProfile, type RecommendedBrand } from '@/entities/user';
 import { newsletterApi, newsletterKeys } from '@/entities/newsletter';
 import { getErrorMessage } from '@/shared/api/client';
-import { Button, Chip, Icon, Select } from '@/shared/ui';
+import { Button, Chip, Icon, Dropdown } from '@/shared/ui';
 
 export function PreferenceForm({ profile, onSaved, stepwise = false }: { profile: UserProfile; onSaved: (recommendations: RecommendedBrand[]) => void; stepwise?: boolean }) {
   const queryClient = useQueryClient();
@@ -44,12 +44,9 @@ export function PreferenceForm({ profile, onSaved, stepwise = false }: { profile
 
   return <form onSubmit={(event) => void save(event)} className="flex flex-1 flex-col gap-6" aria-busy={saving}>
     {stepwise && <><div className="h-1 bg-tint-50"><div className="h-full bg-primary transition-[width]" style={{ width: step === 'industry' ? '30%' : '70%' }} /></div><div><h1 className="whitespace-pre-line text-xl font-bold leading-7">{step === 'industry' ? '종사 중인 산업을\n선택해주세요.' : '정확한 추천을 위해\n관심사를 3개 이상 선택해주세요.'}</h1><p className="mt-2 text-sm font-medium text-caption-neutral">{step === 'industry' ? '선택하신 산업과 관련된 뉴스레터를 찾아드려요.' : '취향에 맞는 뉴스레터를 추천해드려요.'}</p></div></>}
-    {(!stepwise || step === 'industry') && <label className="block text-sm font-medium text-caption-neutral" htmlFor="profile-industry">종사산업
-      <Select id="profile-industry" value={industry} disabled={saving} onChange={(event) => setIndustry(event.target.value)} required className="mt-2">
-        <option value="">산업을 선택해주세요</option>
-        {options.data.industries.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-      </Select>
-    </label>}
+    {(!stepwise || step === 'industry') && <div><label className="block text-sm font-medium text-caption-neutral" htmlFor="profile-industry">종사산업</label>
+      <Dropdown id="profile-industry" value={industry} disabled={saving} onValueChange={setIndustry} required className="mt-2" placeholder="산업군을 선택해주세요." options={options.data.industries.map((item) => ({ value: String(item.id), label: item.name }))} />
+    </div>}
     {(!stepwise || step === 'interests') && <fieldset disabled={saving}>
       <legend className="mb-2 text-sm font-bold">관심사 <span className="font-normal text-caption-neutral">3개 이상 선택 ({interests.length}개)</span></legend>
       <div className="grid grid-cols-2 gap-3">
