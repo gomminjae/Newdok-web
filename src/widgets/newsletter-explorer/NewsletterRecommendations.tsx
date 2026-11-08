@@ -1,8 +1,7 @@
 'use client';
 
-import { AppImage, Button, ButtonLink, Chip, Icon } from '@/shared/ui';
+import { CardLink, LoadingState, AppImage, Button, ButtonLink, Chip, Icon } from '@/shared/ui';
 
-import Link from 'next/link';
 import { memo, useState, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { clsx } from 'clsx';
@@ -16,42 +15,39 @@ export const NewsletterRecommendations = memo(function NewsletterRecommendations
   const intersection = useQuery({ ...newsletterQueries.recommendIntersection(), enabled: active && hasPreferences });
   const union = useQuery({ ...newsletterQueries.recommendUnion(), enabled: active && hasPreferences });
 
-  if (profile.isPending) return <p role="status" className="py-16 text-center text-caption-neutral">프로필을 불러오는 중이에요.</p>;
+  if (profile.isPending) return <LoadingState label="프로필을 불러오는 중이에요." />;
   if (profile.isError) return <div role="alert" className="py-16 text-center"><p>프로필을 불러오지 못했어요.</p><Button variant="ghost" size="compact" onClick={() => void profile.refetch()}>다시 시도</Button></div>;
   if (!hasPreferences) return <div className="px-6 pt-5 pb-10 text-center"><AppImage name="noprofile" alt="" width={280} height={280} className="mx-auto mb-6 h-[280px] w-[280px] max-w-full object-contain" /><h2 className="text-xl font-bold">관심사를 알려주세요</h2><p className="mt-3 text-sm text-caption-neutral">산업과 관심사를 설정하면 맞춤 뉴스레터를 추천해드려요.</p><ButtonLink href="/onboarding" fullWidth className="mt-6">프로필 등록하기</ButtonLink></div>;
 
-  if (intersection.isPending || union.isPending) {
-    return <p role="status" className="py-16 text-center text-caption-neutral">추천 뉴스레터를 불러오는 중이에요.</p>;
-  }
-  if (intersection.isError || union.isError) {
-    return <div role="alert" className="py-16 text-center">
-      <p>추천 뉴스레터를 불러오지 못했어요.</p>
-      <Button variant="ghost" size="compact" onClick={() => { void intersection.refetch(); void union.refetch(); }} className="mt-4">다시 시도</Button>
-    </div>;
-  }
   return <div className="pt-5">
     <RecommendationHeading nickname={profile.data.nickname} />
-    {intersection.data.length > 0 && <RecommendationCarousel key={intersection.data.map((item) => item.id).join(",")} items={intersection.data} />}
+    {intersection.isPending ? <LoadingState label="맞춤 추천을 불러오는 중이에요." /> : intersection.isError ? <RecommendationError onRetry={() => void intersection.refetch()} /> : intersection.data.length > 0 && <RecommendationCarousel key={intersection.data.map((item) => item.id).join(",")} items={intersection.data} />}
     <div className="flex items-center justify-between px-6 pt-5 pb-4">
       <h3 className="text-base font-bold">이런 뉴스레터는 어때요?</h3>
       <Button variant="ghost" size="compact" disabled={union.isFetching} onClick={() => void union.refetch()} aria-label={union.isFetching ? '추천 새로고침 중' : '추천 새로고침'}>
         <span className={clsx('flex', union.isFetching && 'animate-spin motion-reduce:animate-none')}><Icon name="Line Reload" size={20} /></span>새로고침
       </Button>
     </div>
-    <RecommendationList items={union.data} />
+    {union.isPending ? <LoadingState label="다른 추천을 불러오는 중이에요." /> : union.isError ? <RecommendationError onRetry={() => void union.refetch()} /> : <RecommendationList key={union.data.map((item) => item.id).join(',')} items={union.data} />}
     <div className="px-5 pb-20">
-      {!union.data.length && !intersection.data.length && <p className="py-8 text-center text-caption-neutral">아직 추천할 뉴스레터가 없어요. 모든 뉴스레터를 둘러보세요.</p>}
+      {!intersection.isPending && !intersection.isError && !union.isPending && !union.isError && !union.data.length && !intersection.data.length && <p className="py-8 text-center text-caption-neutral">아직 추천할 뉴스레터가 없어요. 모든 뉴스레터를 둘러보세요.</p>}
     </div>
   </div>;
 });
+
+function RecommendationError({ onRetry }: { onRetry: () => void }) {
+  return <div role="alert" className="px-6 py-8 text-center text-sm text-caption-neutral"><p>이 추천 목록을 불러오지 못했어요.</p><Button variant="ghost" size="compact" onClick={onRetry} className="mt-3">다시 시도</Button></div>;
+}
 
 function RecommendationHeading({ nickname }: { nickname: string }) {
   return <h2 className="px-6 text-xl font-bold">{nickname && <>{nickname}님을 위한<br /></>}맞춤형 뉴스레터가 도착했어요.</h2>;
 }
 
 const RecommendationList = memo(function RecommendationList({ items }: { items: NewsletterDetail[] }) {
+  const [visible, setVisible] = useState(24);
   return <div className="flex flex-col gap-3 px-5">
-    {items.map((newsletter) => <NewsletterDetailRow key={newsletter.id} newsletter={newsletter} />)}
+    {items.slice(0, visible).map((newsletter) => <NewsletterDetailRow key={newsletter.id} newsletter={newsletter} />)}
+    {visible < items.length && <Button variant="neutral-outline" size="compact" onClick={() => setVisible((count) => count + 24)}>추천 더 보기 ({visible}/{items.length})</Button>}
   </div>;
 });
 
@@ -124,10 +120,10 @@ const RecommendationSlides = memo(function RecommendationSlides({ items }: { ite
 
 const RecommendedCard = memo(function RecommendedCard({ newsletter }: { newsletter: NewsletterDetail }) {
   return (
-    <Link
+    <CardLink
       href={`/newsletters/${newsletter.id}`}
       prefetch={false}
-      className="block h-[350px] overflow-hidden rounded-[12px] bg-bg ring-1 ring-inset ring-line-neutral transition-shadow hover:ring-primary"
+      className="block h-[350px] overflow-hidden bg-bg transition-shadow "
     >
       <NewsletterImage name={newsletter.brandName} imageUrl={newsletter.imageUrl} variant="recommendation" />
       <div className="border-t border-line-neutral p-4">
@@ -143,16 +139,16 @@ const RecommendedCard = memo(function RecommendedCard({ newsletter }: { newslett
           ))}
         </div>
       </div>
-    </Link>
+    </CardLink>
   );
 });
 
 const NewsletterDetailRow = memo(function NewsletterDetailRow({ newsletter }: { newsletter: NewsletterDetail }) {
   return (
-    <Link
+    <CardLink
       href={`/newsletters/${newsletter.id}`}
       prefetch={false}
-      className="block bg-bg rounded-[8px] border border-line-neutral px-5 pt-4 transition-colors hover:bg-neutral-50"
+      className="block bg-bg px-5 pt-4 transition-colors hover:bg-neutral-50"
     >
       <div className="flex items-start gap-2 pb-[18px]">
         <NewsletterImage name={newsletter.brandName} imageUrl={newsletter.imageUrl} variant="thumbnail" />
@@ -172,6 +168,6 @@ const NewsletterDetailRow = memo(function NewsletterDetailRow({ newsletter }: { 
           ))}
         </div>
       )}
-    </Link>
+    </CardLink>
   );
 });

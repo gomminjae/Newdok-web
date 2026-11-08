@@ -1,6 +1,6 @@
 'use client';
 
-import { AppImage, Button, ButtonLink, Chip, Icon, SubscriptionBadge, Toast } from '@/shared/ui';
+import { LoadingState, AppImage, Button, ButtonLink, Chip, Icon, SubscriptionBadge, Toast } from '@/shared/ui';
 
 import Link from 'next/link';
 import { useEffect, useId, useRef, useState } from 'react';
@@ -33,7 +33,7 @@ export function BrandDetailClient({ id, initialBrand }: { id: number; initialBra
   }, [notice]);
 
   if (isPending) {
-    return <p role="status" className="py-24 text-center text-primary">뉴스레터를 불러오는 중이에요.</p>;
+    return <LoadingState label="뉴스레터를 불러오는 중이에요." />;
   }
   if (!brand || isError) {
     return (
@@ -71,7 +71,7 @@ export function BrandDetailClient({ id, initialBrand }: { id: number; initialBra
     <div className="-mx-4 min-h-[calc(100dvh-var(--header-height))] bg-bg-system px-4 pb-8 md:-mx-6 md:px-6 xl:pt-5 xl:-mx-10 xl:px-8">
       <div className="relative grid min-w-0 xl:grid-cols-2 xl:grid-rows-[auto_1fr] xl:gap-x-3 xl:gap-y-2">
         <div className="relative -mx-4 h-[260px] overflow-hidden rounded-b-xl bg-bg shadow-brand-cover md:-mx-6 xl:mx-0 xl:row-span-2 xl:h-full xl:min-h-64 xl:rounded-xl [&>span]:h-full [&>span]:aspect-auto">
-          <NewsletterImage name={brand.brandName} imageUrl={brand.imageUrl} cover />
+          <NewsletterImage name={brand.brandName} imageUrl={brand.imageUrl} cover priority />
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-linear-to-b from-transparent to-black/[0.06]" />
           {isChecking && <div className="absolute inset-0 flex items-center justify-center bg-bg-popup-dim/60 text-base font-medium text-white">구독 확인 중</div>}
         </div>

@@ -1,9 +1,11 @@
 import type { NextConfig } from "next";
 import { TEST_API_BASE_URL } from "./src/shared/config/api";
+import { newsletterImagePattern } from './src/shared/config/images';
 
 const BACKEND_URL = process.env.API_INTERNAL_URL ?? TEST_API_BASE_URL;
 
 const nextConfig: NextConfig = {
+  images: { remotePatterns: [newsletterImagePattern] },
   async rewrites() {
     return [
       {

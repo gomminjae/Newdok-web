@@ -1,8 +1,7 @@
 'use client';
 
-import { Chip } from '@/shared/ui';
+import { CardLink, Chip } from '@/shared/ui';
 
-import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { newsletterQueries, type NewsletterBrand } from '@/entities/newsletter';
@@ -50,10 +49,10 @@ export function TodayNewsletters({ initialTomorrow, initialNewest, initialTomorr
           <ul className="grid grid-cols-1 gap-3 md:grid-cols-3">
             {tomorrow.data?.map((newsletter) => (
               <li key={newsletter.brandId}>
-                <Link
+                <CardLink
                   href={`/newsletters/${newsletter.brandId}`}
                   prefetch={false}
-                  className="block h-full overflow-hidden rounded-xl border border-line-neutral bg-bg transition-shadow hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  className="block h-full overflow-hidden bg-bg transition-shadow hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 >
                   <NewsletterImage name={newsletter.brandName} imageUrl={newsletter.imageUrl} cover />
                   <span className="block p-3">
@@ -65,7 +64,7 @@ export function TodayNewsletters({ initialTomorrow, initialNewest, initialTomorr
                       ))}
                     </span>
                   </span>
-                </Link>
+                </CardLink>
               </li>
             ))}
           </ul>
@@ -84,17 +83,17 @@ export function TodayNewsletters({ initialTomorrow, initialNewest, initialTomorr
           <ul className="grid gap-3 md:grid-cols-2">
             {newest.data?.map((newsletter) => (
               <li key={newsletter.brandId}>
-                <Link
+                <CardLink
                   href={`/newsletters/${newsletter.brandId}`}
                   prefetch={false}
-                  className="flex items-center gap-3 rounded-xl border border-line-neutral bg-bg p-3 transition-shadow hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  className="flex items-center gap-3 bg-bg p-3 transition-shadow hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 >
                   <NewsletterImage name={newsletter.brandName} imageUrl={newsletter.imageUrl} />
                   <span className="min-w-0 flex-1">
                     <strong className="block text-sm font-bold text-caption-heavy">{newsletter.brandName}</strong>
                     <span className="mt-0.5 block truncate text-xs text-caption-alternative">{newsletter.shortDescription}</span>
                   </span>
-                </Link>
+                </CardLink>
               </li>
             ))}
           </ul>

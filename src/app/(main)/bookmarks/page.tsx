@@ -1,6 +1,6 @@
 'use client';
 
-import { AppImage, Button, Chip, Dialog, EmptyState, Icon } from '@/shared/ui';
+import { AppImage, Button, Chip, Dialog, EmptyState, Icon, LoadingState } from '@/shared/ui';
 
 import Link from 'next/link';
 import { memo, useRef, useState } from 'react';
@@ -75,9 +75,7 @@ export default function BookmarksPage() {
       {!isLoggedIn ? (
         <BookmarkEmpty guest />
       ) : isLoading ? (
-        <div className="flex-1 bg-bg-system flex items-center justify-center text-caption-neutral">
-          로딩 중...
-        </div>
+        <LoadingState label="북마크를 불러오는 중이에요." className="flex-1" />
       ) : isError ? (
         <div role="alert"><EmptyState title="북마크를 불러오지 못했어요." cta={<Button onClick={() => void refetch()}>다시 시도</Button>} /></div>
       ) : !bookmarkData || bookmarkData.totalAmount === 0 ? (

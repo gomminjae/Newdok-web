@@ -10,7 +10,7 @@ import {
   type SubscribedNewsletter,
 } from '@/entities/newsletter';
 import { useAuth, useToast } from '@/shared/hooks';
-import { AppImage, Button, Dialog, EmptyState, Icon, SegmentPicker, Toast } from '@/shared/ui';
+import { AppImage, Button, Dialog, EmptyState, Icon, LoadingState, SegmentPicker, Toast } from '@/shared/ui';
 import { getErrorMessage } from '@/shared/api/client';
 import { NewsletterImage } from '@/widgets/landing/NewsletterImage';
 
@@ -76,9 +76,7 @@ export default function ExplorePage() {
       {!isLoggedIn ? (
         <SubscriptionEmpty tab={tab} guest />
       ) : isLoading ? (
-        <div className="flex items-center justify-center flex-1 bg-bg-system text-primary">
-          로딩 중...
-        </div>
+        <LoadingState label="구독 목록을 불러오는 중이에요." className="flex-1" />
       ) : currentQuery.isError ? (
         <div role="alert"><EmptyState title="구독 목록을 불러오지 못했어요." cta={<Button onClick={() => void currentQuery.refetch()}>다시 시도</Button>} /></div>
       ) : currentList.length === 0 ? (

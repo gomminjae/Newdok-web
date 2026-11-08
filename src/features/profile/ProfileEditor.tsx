@@ -6,7 +6,7 @@ import { userApi, userKeys, SocialSignupRequestSchema, type UserProfile } from '
 import { newsletterApi, newsletterKeys } from '@/entities/newsletter';
 import { getErrorMessage } from '@/shared/api/client';
 import { useToast } from '@/shared/hooks';
-import { Button, Chip, Dialog, Icon, Input, Dropdown, Toast } from '@/shared/ui';
+import { LoadingState, Button, Chip, Dialog, Icon, Input, Dropdown, Toast } from '@/shared/ui';
 
 type Field = 'nickname' | 'industry' | 'interests';
 const TITLES: Record<Field, string> = { nickname: '닉네임 변경', industry: '종사 산업 변경', interests: '관심사 변경' };
@@ -26,7 +26,7 @@ export function ProfileEditor({ profile, onClose }: { profile: UserProfile; onCl
     showToast(message);
   }
   return <Dialog title={field ? TITLES[field] : '프로필 편집'} presentation="page" busy={busy} onClose={onClose} onBack={() => field ? setField(null) : onClose()}>
-    {options.isPending ? <p role="status">프로필 항목을 불러오는 중이에요.</p> : options.isError ? <div role="alert"><p>선택 항목을 불러오지 못했어요.</p><Button variant="ghost" onClick={() => void options.refetch()}>다시 시도</Button></div> : field ? <ProfileField key={field} field={field} profile={profile} options={options.data} onBusy={setBusy} onSaved={saved} /> : <div className="space-y-6">
+    {options.isPending ? <LoadingState label="프로필 항목을 불러오는 중이에요." /> : options.isError ? <div role="alert"><p>선택 항목을 불러오지 못했어요.</p><Button variant="ghost" onClick={() => void options.refetch()}>다시 시도</Button></div> : field ? <ProfileField key={field} field={field} profile={profile} options={options.data} onBusy={setBusy} onSaved={saved} /> : <div className="space-y-6">
       <h3 className="mb-10 text-lg font-bold leading-6">등록하신 정보에 맞춰<br />뉴스레터를 추천해드려요</h3>
       <ProfileValue label="닉네임" value={profile.nickname} onClick={() => setField('nickname')} />
       <ProfileValue label="종사산업" value={industry ?? '산업군을 선택해주세요.'} onClick={() => setField('industry')} />

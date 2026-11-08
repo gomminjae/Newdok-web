@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@/shared/ui';
+import { Button, LoadingState } from '@/shared/ui';
 
 export function NewsletterListState({ isPending, isError, isEmpty, retry,
   emptyMessage = '등록된 뉴스레터가 아직 없어요.',
@@ -13,9 +13,7 @@ export function NewsletterListState({ isPending, isError, isEmpty, retry,
 }) {
   if (isPending) {
     return (
-      <div role="status" className="flex min-h-28 items-center justify-center rounded-xl bg-bg-system text-sm text-caption-neutral">
-        뉴스레터를 불러오는 중이에요.
-      </div>
+      <LoadingState label="뉴스레터를 불러오는 중이에요." />
     );
   }
   if (isError) {

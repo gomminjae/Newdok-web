@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Chip, Dialog, Icon } from '@/shared/ui';
+import { LoadingState, Button, Chip, Dialog, Icon } from '@/shared/ui';
 
 import { useState, type ReactNode } from 'react';
 import type { OptionList, OptionItem } from '@/entities/newsletter';
@@ -29,7 +29,7 @@ export function NewsletterFilters({ options, industries, days, onClose, onApply,
   return <ExplorerDialog title="필터" onClose={onClose}>
     {isError ? <div role="alert" className="py-8 text-center text-sm">
       <p>필터를 불러오지 못했어요.</p><Button variant="ghost" size="compact" onClick={retry} className="mt-3">다시 시도</Button>
-    </div> : !options ? <p role="status" className="py-8 text-sm">필터를 불러오는 중이에요.</p> : <>
+    </div> : !options ? <LoadingState label="필터를 불러오는 중이에요." /> : <>
       <FilterGroup title="산업 카테고리" items={options.industries} selected={draftIndustries} onToggle={(id) => setDraftIndustries((values) => toggle(values, id))} />
       <FilterGroup title="발행요일" items={options.days} selected={draftDays} onToggle={(id) => setDraftDays((values) => toggle(values, id))} />
     </>}

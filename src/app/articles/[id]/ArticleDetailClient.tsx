@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { articleQueries, useToggleBookmark } from '@/entities/article';
 import { useAuth, useToast } from '@/shared/hooks';
-import { AppImage, Button, ButtonLink, Icon, Toast } from '@/shared/ui';
+import { AppImage, Button, ButtonLink, Icon, Toast, LoadingState } from '@/shared/ui';
 import { ArticleReader } from '@/features/reader/ArticleReader';
 import { userQueries } from '@/entities/user';
 import { ApiError, getErrorMessage } from '@/shared/api/client';
@@ -44,9 +44,7 @@ export function ArticleDetailClient({ id, archive = false }: { id: number; archi
 
   if (isLoading) {
     return (
-      <main className="flex min-h-dvh items-center justify-center text-base text-primary">
-        로딩 중...
-      </main>
+      <main><LoadingState label="아티클을 불러오는 중이에요." layout="page" /></main>
     );
   }
 
@@ -82,7 +80,7 @@ export function ArticleDetailClient({ id, archive = false }: { id: number; archi
         </div>
       </header>}>
         <header className="relative h-[260px] overflow-hidden bg-neutral-150 [&>span]:h-full [&>span]:aspect-auto">
-          <NewsletterImage name={article.brandName} imageUrl={article.brandImageUrl || null} cover />
+          <NewsletterImage name={article.brandName} imageUrl={article.brandImageUrl || null} cover priority />
           <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-[120px] bg-linear-to-b from-transparent to-black/40" />
           <div className="absolute right-4 bottom-4 left-4">
             <h1 className="line-clamp-2 text-base font-bold leading-[22px] text-white">{article.articleTitle}</h1>

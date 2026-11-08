@@ -7,7 +7,7 @@ import { clsx } from 'clsx';
 import { articleApi, articleKeys, articleQueries, type Article } from '@/entities/article';
 import { subscriptionQueries } from '@/entities/newsletter';
 import { useAuth } from '@/shared/hooks';
-import { AppImage, Button, ButtonLink, Icon } from '@/shared/ui';
+import { AppImage, Button, ButtonLink, Icon, LoadingState } from '@/shared/ui';
 import { CalendarPopup } from '@/widgets/calendar';
 import { NewsletterImage } from '@/widgets/landing/NewsletterImage';
 
@@ -89,7 +89,7 @@ function HomeContent({ isLoggedIn }: { isLoggedIn: boolean }) {
     );
   }, [queryClient, year, month, day]);
 
-  const isLoading = !isHydrated || (isLoggedIn && (dayQuery.isPending || subscriptions.isPending));
+  const isLoading = !isHydrated || (isLoggedIn && (dayQuery.isPending || (articles.length === 0 && subscriptions.isPending)));
   const isError = isLoggedIn && (dayQuery.isError || (subscriptions.isError && articles.length === 0));
   const refreshButton = <Button variant="ghost" size="compact" disabledTone="preserve" disabled={refresh.isPending}
     aria-busy={refresh.isPending} onClick={() => refresh.mutate()}>
@@ -102,10 +102,7 @@ function HomeContent({ isLoggedIn }: { isLoggedIn: boolean }) {
   return (
     <section aria-label="홈" className="home-page -mx-4 -mb-[calc(var(--tabbar-height)+env(safe-area-inset-bottom)+16px)] flex min-h-[calc(100dvh-var(--header-height))] flex-col bg-bg-system pb-[calc(var(--tabbar-height)+env(safe-area-inset-bottom)+16px)] md:-mx-6 md:-mb-8 md:pb-8 xl:-mx-10">
       {isLoading ? (
-        <div role="status" className="flex flex-1 items-center justify-center py-20 text-primary">
-          <span aria-hidden="true" className="h-6 w-6 animate-spin rounded-full border-2 border-primary/20 border-t-primary" />
-          <span className="sr-only">홈을 불러오는 중이에요.</span>
-        </div>
+        <LoadingState label="홈을 불러오는 중이에요." className="flex-1" />
       ) : <>
         <div className="mx-2 mb-2 flex h-[52px] shrink-0 items-center justify-between rounded-lg bg-bg px-6">
           <span className="text-base font-bold text-caption-strong">

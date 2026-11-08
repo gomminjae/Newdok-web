@@ -1,8 +1,7 @@
 'use client';
 
-import { Chip } from '@/shared/ui';
+import { CardLink, Chip } from '@/shared/ui';
 
-import Link from 'next/link';
 import { useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { newsletterQueries, type NewsletterBrand } from '@/entities/newsletter';
@@ -37,10 +36,10 @@ export function PopularNewsletters({ initialNewsletters }: { initialNewsletters:
                 key={newsletter.brandId}
                 className="w-[86%] flex-none snap-start md:w-[calc(50%-6px)] lg:w-[calc(33.333%-8px)]"
               >
-                <Link
+                <CardLink
                   href={`/newsletters/${newsletter.brandId}`}
                   prefetch={false}
-                  className="flex h-full min-h-28 gap-3 rounded-xl border border-line-neutral bg-bg p-3 transition-shadow hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  className="flex h-full min-h-28 gap-3 bg-bg p-3 transition-shadow hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 >
                   <NewsletterImage name={newsletter.brandName} imageUrl={newsletter.imageUrl} />
                   <span className="min-w-0 flex-1">
@@ -56,7 +55,7 @@ export function PopularNewsletters({ initialNewsletters }: { initialNewsletters:
                       ))}
                     </span>
                   </span>
-                </Link>
+                </CardLink>
               </li>
             ))}
           </ul>

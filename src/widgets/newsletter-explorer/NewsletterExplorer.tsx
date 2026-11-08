@@ -1,13 +1,12 @@
 'use client';
 
-import Link from 'next/link';
 import { memo, Suspense, useState, type ReactNode } from 'react';
 import { redirect, usePathname, useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { clsx } from 'clsx';
 import { newsletterApi, newsletterQueries, type NewsletterBrand } from '@/entities/newsletter';
 import { useAuth } from '@/shared/hooks';
-import { Button, Chip, GuestNotice, Icon, SubscriptionBadge, Tabs } from '@/shared/ui';
+import { CardLink, LoadingState, Button, Chip, GuestNotice, Icon, SubscriptionBadge, Tabs } from '@/shared/ui';
 import { NewsletterImage } from '@/widgets/landing/NewsletterImage';
 import { ExplorerDialog, NewsletterFilters } from './NewsletterFilters';
 import { NewsletterRecommendations } from './NewsletterRecommendations';
@@ -30,7 +29,7 @@ function ExplorerRoute({ initialBrands }: { initialBrands?: NewsletterBrand[] })
 }
 
 function ExplorerLoading() {
-  return <p role="status" className="py-16 text-center text-caption-neutral">뉴스레터를 불러오는 중이에요.</p>;
+  return <LoadingState label="뉴스레터를 불러오는 중이에요." />;
 }
 
 function readIds(params: URLSearchParams, key: string) {
@@ -152,11 +151,11 @@ const BrandList = memo(function BrandList({ brands, isMember }: { brands: Newsle
 });
 
 const BrandCard = memo(function BrandCard({ brand, isMember }: { brand: NewsletterBrand; isMember: boolean }) {
-  return <li><Link href={`/newsletters/${brand.brandId}`} prefetch={false} className="flex items-start gap-2 rounded-xl border border-line-neutral bg-bg p-4 transition-colors hover:border-primary">
+  return <li><CardLink href={`/newsletters/${brand.brandId}`} prefetch={false} className="flex items-start gap-2 bg-bg p-4 transition-colors ">
     <NewsletterImage name={brand.brandName} imageUrl={brand.imageUrl} variant="thumbnail" />
     <div className="min-w-0 flex-1 xl:flex xl:items-center xl:justify-between xl:gap-5">
       <div className="min-w-0"><div className="flex flex-wrap items-center gap-1.5"><h2 className="text-base font-bold text-caption-heavy">{brand.brandName}</h2>{isMember && (brand.isSubscribed === 'CONFIRMED' || brand.isSubscribed === 'PAUSED') && <SubscriptionBadge status={brand.isSubscribed} />}</div><p className="mt-2 line-clamp-2 text-[13px] font-medium leading-[18px] text-caption-neutral">{brand.shortDescription}</p></div>
       {brand.interests.length > 0 && <div className="mt-3 flex flex-wrap gap-1.5 xl:mt-0 xl:max-w-80 xl:justify-end">{brand.interests.slice(0, 3).map((interest) => <Chip key={interest.id}>{interest.name}</Chip>)}</div>}
     </div>
-  </Link></li>;
+  </CardLink></li>;
 });

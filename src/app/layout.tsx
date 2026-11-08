@@ -64,7 +64,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" data-scroll-behavior="smooth" className={spoqa.variable}>
-      <body>
+      <body className={spoqa.className}>
         <QueryProvider>{children}</QueryProvider>
       </body>
     </html>

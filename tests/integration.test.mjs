@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
 import test from 'node:test';
 import ts from 'typescript';
+import { QueryClient } from '@tanstack/react-query';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const runtimeRequire = createRequire(import.meta.url);
@@ -155,7 +156,7 @@ test('corrupt or overlapping local highlights cannot crash the article reader', 
   assert.deepEqual(plain(parseHighlights(JSON.stringify([overlap, first, { ...first, start: -1 }, {}]))), [first]);
 });
 
-function componentHarness(filename, exported, { loggedIn = true, profile = { id: 5, nickname: '뉴독5', industryId: 10, interests: [], subscribeEmail: 'reader@example.com' }, options, queryError = false } = {}) {
+function componentHarness(filename, exported, { loggedIn = true, profile = { id: 5, nickname: '뉴독5', industryId: 10, interests: [], subscribeEmail: 'reader@example.com' }, options, queryError = false, queryStates = {} } = {}) {
   const slots = [];
   let cursor = 0;
   const queries = [];
@@ -164,6 +165,9 @@ function componentHarness(filename, exported, { loggedIn = true, profile = { id:
   const ui = Object.fromEntries(['Button', 'ButtonLink', 'Chip', 'Dialog', 'EmptyState', 'GuestNotice', 'Icon', 'Toast', 'SegmentPicker'].map((name) => [name, name]));
   ui.Checkbox = 'input';
   ui.Dropdown = 'Dropdown';
+  ui.LoadingState = 'LoadingState';
+  ui.CardLink = 'CardLink';
+  ui.MediaFrame = 'MediaFrame';
   const app = harness(({ url }) => ({ body: url.pathname.endsWith('/preInvestigate') ? { data: [] } : {} }), {
     react: {
       memo: (fn) => fn, useCallback: (fn) => fn, useMemo: (fn) => fn(), useEffect: () => {}, useRef: (value) => ({ current: value }), useId: () => 'test-id',
@@ -179,7 +183,7 @@ function componentHarness(filename, exported, { loggedIn = true, profile = { id:
         queries.push(query);
         const key = query.queryKey;
         const data = key[0] === 'user' ? profile : key.includes('options') ? options : key.includes('list') && key[0] === 'bookmark' ? { totalAmount: 0, bookmarkForMonth: [] } : [];
-        return { data, isPending: false, isLoading: false, isError: queryError, refetch() {} };
+        return { data, isPending: false, isLoading: false, isError: queryError, refetch() {}, ...(queryStates[key.at(-1)] ?? {}) };
       },
       useQueryClient: () => ({ invalidateQueries: async ({ queryKey }) => { invalidations.push(plain(queryKey)); } }),
     },
@@ -406,4 +410,63 @@ test('dropdown Escape closes the list without selecting or cancelling its parent
   tree = app.render(props);
   assert.equal(nodes(tree).find((node) => node.props.role === 'combobox').props['aria-expanded'], false);
   assert.deepEqual(prevented, ['default', 'propagation']);
+});
+
+test('a slow secondary recommendation does not hide the ready primary recommendation', () => {
+  const app = componentHarness('src/widgets/newsletter-explorer/NewsletterRecommendations.tsx', 'NewsletterRecommendations', {
+    profile: { nickname: '뉴독', industryId: 10, interests: [{ interestId: 1 }] },
+    queryStates: { intersection: { data: [{ id: 42 }] }, union: { data: undefined, isPending: true } },
+  });
+  const tree = app.render();
+  assert.ok(nodes(tree).some((node) => node.props.items?.[0]?.id === 42));
+  assert.ok(nodes(tree).some((node) => node.type === 'LoadingState' && node.props.label === '다른 추천을 불러오는 중이에요.'));
+});
+
+test('recommendation lists render 24 entries initially and reveal the next batch on demand', () => {
+  const app = componentHarness('src/widgets/newsletter-explorer/NewsletterRecommendations.tsx', 'NewsletterRecommendations', {
+    profile: { nickname: '뉴독', industryId: 10, interests: [{ interestId: 1 }] },
+    queryStates: { union: { data: Array.from({ length: 60 }, (_, id) => ({ id })) } },
+  });
+  function renderList() { const root = app.render(); const list = nodes(root).find((node) => node.type?.name === 'RecommendationList'); return list.type(list.props); }
+  let tree = renderList();
+  assert.equal(nodes(tree).filter((node) => node.props.newsletter).length, 24);
+  control(tree, '추천 더 보기 (24/60)').props.onClick();
+  tree = renderList();
+  assert.equal(nodes(tree).filter((node) => node.props.newsletter).length, 48);
+});
+
+test('public artwork uses optimization and falls back to the original before showing an empty frame', () => {
+  const app = componentHarness('src/widgets/landing/NewsletterImage.tsx', 'NewsletterImage');
+  const props = { name: '뉴스레터', imageUrl: 'https://api-dev.newdok.store/public/test.png', variant: 'thumbnail' };
+  let tree = app.render(props);
+  let img = nodes(tree).find((node) => node.props.fill);
+  assert.equal(img.props.unoptimized, false);
+  img.props.onError();
+  tree = app.render(props);
+  img = nodes(tree).find((node) => node.props.fill);
+  assert.equal(img.props.unoptimized, true);
+  img.props.onError();
+  tree = app.render(props);
+  assert.equal(tree.props.empty, true);
+  assert.equal(nodes(tree).some((node) => node.props.fill), false);
+});
+
+test('image optimization only accepts development public artwork and preserves SVG/GIF originals', () => {
+  const { canOptimizeNewsletterImage } = harness().load('src/shared/lib/image.ts');
+  assert.equal(canOptimizeNewsletterImage('https://api-dev.newdok.store/public/test.png'), true);
+  assert.equal(canOptimizeNewsletterImage('/api/backend/public/test.png'), true);
+  for (const src of ['https://api.newdok.store/public/test.png', 'https://other.example/image.png', '/api/backend/users/profile', 'https://api-dev.newdok.store/public/test.gif', 'https://api-dev.newdok.store/public/test.svg']) assert.equal(canOptimizeNewsletterImage(src), false, src);
+});
+
+test('query retry policy stops invalid-session requests immediately but retries transient failures once', async () => {
+  const app = harness();
+  const { ApiError } = app.load('src/shared/api/client.ts');
+  const { shouldRetryQuery } = app.load('src/shared/lib/query-policy.ts');
+  for (const [status, expected] of [[401, 1], [403, 1], [404, 1], [503, 2], [429, 2]]) {
+    let attempts = 0;
+    const client = new QueryClient({ defaultOptions: { queries: { retry: shouldRetryQuery, retryDelay: 0, gcTime: 0 } } });
+    await assert.rejects(client.fetchQuery({ queryKey: ['retry-policy', status], queryFn: () => { attempts++; throw new ApiError(status); } }));
+    assert.equal(attempts, expected, String(status));
+    client.clear();
+  }
 });

@@ -9,7 +9,7 @@ import { ProfileEditor } from '@/features/profile/ProfileEditor';
 import { getErrorMessage } from '@/shared/api/client';
 import { TERMS_URL, PRIVACY_URL, FEEDBACK_URL } from '@/shared/config/links';
 import { useAuth, useToast } from '@/shared/hooks';
-import { Button, ButtonLink, Checkbox, Dialog, EmptyState, GuestNotice, Icon, Toast } from '@/shared/ui';
+import { LoadingState, Button, ButtonLink, Checkbox, Dialog, EmptyState, GuestNotice, Icon, Toast } from '@/shared/ui';
 import { version } from '../../../../package.json';
 
 type Panel = 'profile' | 'email' | 'notifications' | 'faq' | 'terms' | 'logout' | 'withdraw' | 'account' | 'version';
@@ -42,7 +42,7 @@ export default function MyPage() {
   if (!isLoggedIn) return <GuestNotice />;
   return <div className="-mx-4 flex min-h-[calc(100dvh-var(--header-height)-var(--tabbar-height))] flex-col bg-bg md:-mx-6 md:min-h-[calc(100dvh-var(--header-height))] xl:-mx-10">
     <div className="px-5 pt-8 pb-6 md:px-7 xl:px-10">
-      {profile.isPending ? <p role="status">프로필을 불러오는 중이에요.</p> : profile.isError ? <div role="alert"><EmptyState title="프로필을 불러오지 못했어요." cta={<Button onClick={() => void profile.refetch()}>다시 시도</Button>} /></div> : <>
+      {profile.isPending ? <LoadingState label="프로필을 불러오는 중이에요." /> : profile.isError ? <div role="alert"><EmptyState title="프로필을 불러오지 못했어요." cta={<Button onClick={() => void profile.refetch()}>다시 시도</Button>} /></div> : <>
         <div className="md:flex md:items-center md:justify-between md:gap-6"><div className="min-w-0"><p className="text-base font-bold text-caption-heavy">{profile.data.nickname}</p>
         <div className="mt-4 space-y-4 md:flex md:items-center md:gap-3 md:space-y-0"><div className="flex items-center gap-1"><span className="text-sm font-medium text-caption-neutral">구독이메일</span><Button variant="ghost-neutral" size="icon" aria-label="구독 이메일 도움말" onClick={() => setPanel('email')}><Icon name="Line Question mark" size={20} /></Button></div>
         <div className="flex min-h-6 items-center gap-1.5"><Button variant="ghost" size="icon" aria-label="구독 이메일 복사" disabled={!subscribeEmail} onClick={() => void copyEmail()}><Icon name="Line Copy" size={24} /></Button><p className="select-all break-all text-sm text-caption-heavy">{subscribeEmail || '구독 이메일을 준비하고 있어요.'}</p></div></div>

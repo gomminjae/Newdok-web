@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { userApi, userKeys, type UserProfile, type RecommendedBrand } from '@/entities/user';
 import { newsletterApi, newsletterKeys } from '@/entities/newsletter';
 import { getErrorMessage } from '@/shared/api/client';
-import { Button, Chip, Icon, Dropdown } from '@/shared/ui';
+import { LoadingState, Button, Chip, Icon, Dropdown } from '@/shared/ui';
 
 export function PreferenceForm({ profile, onSaved, stepwise = false }: { profile: UserProfile; onSaved: (recommendations: RecommendedBrand[]) => void; stepwise?: boolean }) {
   const queryClient = useQueryClient();
@@ -39,7 +39,7 @@ export function PreferenceForm({ profile, onSaved, stepwise = false }: { profile
     }
   }
 
-  if (options.isPending) return <p role="status">선택 항목을 불러오는 중이에요.</p>;
+  if (options.isPending) return <LoadingState label="선택 항목을 불러오는 중이에요." />;
   if (options.isError) return <div role="alert"><p>선택 항목을 불러오지 못했어요.</p><Button variant="ghost" size="compact" onClick={() => void options.refetch()}>다시 시도</Button></div>;
 
   return <form onSubmit={(event) => void save(event)} className="flex flex-1 flex-col gap-6" aria-busy={saving}>

@@ -8,7 +8,7 @@ import { PreferenceForm } from '@/features/profile/PreferenceForm';
 import { SubscribeDialog } from '@/features/subscription/SubscribeDialog';
 import { NewsletterImage } from '@/widgets/landing/NewsletterImage';
 import { useAuth } from '@/shared/hooks';
-import { AppImage, Button, ButtonLink, Chip, GuestNotice, Icon } from '@/shared/ui';
+import { LoadingState, AppImage, Button, ButtonLink, Chip, GuestNotice, Icon } from '@/shared/ui';
 
 export default function OnboardingPage() {
   const { isLoggedIn } = useAuth();
@@ -18,7 +18,7 @@ export default function OnboardingPage() {
   const profile = useQuery({ ...userQueries.profile(), enabled: isLoggedIn });
   const brand = useQuery({ ...newsletterQueries.brand(subscribeId ?? 0, true), enabled: isLoggedIn && subscribeId !== null });
   if (!isLoggedIn) return <GuestNotice />;
-  if (profile.isPending) return <p role="status" className="py-24 text-center">프로필을 불러오는 중이에요.</p>;
+  if (profile.isPending) return <LoadingState label="프로필을 불러오는 중이에요." />;
   if (profile.isError) return <div role="alert" className="py-24 text-center"><p>프로필을 불러오지 못했어요.</p><Button variant="ghost" onClick={() => void profile.refetch()}>다시 시도</Button></div>;
 
   return <main className={`mx-auto flex min-h-dvh w-full flex-col px-6 pb-5 ${step === 'recommendations' ? 'max-w-[1000px]' : 'max-w-[480px]'}`}>
