@@ -22,7 +22,7 @@ function harness(respond = () => ({ body: {} }), overrides = {}, env = {}) {
   const events = [];
   const cache = new Map();
   const context = vm.createContext({
-    URL, URLSearchParams, Request, Response, AbortSignal, Event, crypto: globalThis.crypto, btoa, atob,
+    URL, URLSearchParams, AbortSignal, Event, crypto: globalThis.crypto, btoa, atob,
     process: { env },
     localStorage: {
       getItem: (key) => storage.get(key) ?? null,
@@ -288,116 +288,25 @@ test('missing provider keys stop login before any OAuth navigation or SDK call',
   assert.equal(app.appleInitializations.length, 0);
 });
 
-function socialRouteHarness(environment, respond, extraEnv = {}) {
-  const origin = environment === 'production' ? 'https://newdok.vercel.app' : 'https://newdok-dev.vercel.app';
-  const app = harness(respond, {}, {
-    APP_ENV: environment,
-    API_INTERNAL_URL: environment === 'production' ? 'https://api.newdok.store' : 'https://api-dev.newdok.store',
-    NEXT_PUBLIC_SITE_URL: origin,
-    NEXT_PUBLIC_KAKAO_REST_API_KEY: `${environment}-rest-key`,
-    NEXT_PUBLIC_APPLE_CLIENT_ID: `${environment}.web`,
-    KAKAO_CLIENT_SECRET: 'server-only-secret',
-    ...extraEnv,
-  });
-  const { POST } = app.load('src/app/api/backend/auth/social-login/route.ts');
-  return { ...app, origin, login(credential, requestOrigin = origin) {
-    return POST(new Request(`${origin}/api/backend/auth/social-login`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json', Origin: requestOrigin },
-      body: JSON.stringify({ ...credential, redirectUri: credential.redirectUri ?? `${origin}/login` }),
-    }));
-  } };
-}
-
-const pendingSocialSignup = { isRegistered: false, signupToken: 'newdok-signup-token' };
-
-test('production Kakao exchanges the web code on the server and sends only the API ID-token contract', async () => {
-  const app = socialRouteHarness('production', (request) => request.url.hostname === 'kauth.kakao.com'
-    ? { body: { id_token: 'kakao-id-token', access_token: 'private-provider-token', refresh_token: 'private-refresh-token' } }
-    : { body: pendingSocialSignup });
-  const response = await app.login({ provider: 'KAKAO', platform: 'WEB', authorizationCode: 'one-use-code' });
-  assert.equal(response.status, 200);
-  assert.equal(response.headers.get('cache-control'), 'no-store');
-  assert.deepEqual(await response.json(), pendingSocialSignup);
-  const [exchange, backend] = app.requests;
-  assert.equal(exchange.url.href, 'https://kauth.kakao.com/oauth/token');
-  assert.equal(exchange.method, 'POST');
-  assert.equal(exchange.cache, 'no-store');
-  assert.deepEqual(Object.fromEntries(exchange.body), {
-    grant_type: 'authorization_code', client_id: 'production-rest-key', client_secret: 'server-only-secret',
-    code: 'one-use-code', redirect_uri: 'https://newdok.vercel.app/login',
-  });
-  assert.equal(backend.url.href, 'https://api.newdok.store/auth/social-login');
-  assert.deepEqual(JSON.parse(backend.body), { provider: 'KAKAO', platform: 'WEB', idToken: 'kakao-id-token' });
-  assert.equal(backend.headers.Authorization, undefined);
-  assert.equal(app.requests.length, 2);
-});
-
-test('production Apple removes redirectUri while retaining its ID token and authorization code', async () => {
-  for (const authorizationCode of ['apple-code', undefined]) {
-    const app = socialRouteHarness('production', () => ({ body: pendingSocialSignup }));
-    const credential = { provider: 'APPLE', platform: 'WEB', idToken: 'apple-id-token', ...(authorizationCode ? { authorizationCode } : {}) };
-    const response = await app.login(credential);
-    assert.equal(response.status, 200);
-    assert.equal(app.requests.length, 1);
-    assert.deepEqual(JSON.parse(app.requests[0].body), credential);
+test('development and production send the same new web login contract without converting credentials', async () => {
+  for (const environment of ['development', 'production']) {
+    const origin = environment === 'production' ? 'https://newdok.vercel.app' : 'https://newdok-dev.vercel.app';
+    for (const credential of [
+      { provider: 'KAKAO', platform: 'WEB', authorizationCode: 'kakao-code' },
+      { provider: 'APPLE', platform: 'WEB', idToken: 'apple-id-token', authorizationCode: 'apple-code' },
+    ]) {
+      const app = harness(() => ({ body: { isRegistered: false, signupToken: 'signup-token' } }), {}, {
+        NEXT_PUBLIC_APP_ENV: environment,
+      });
+      app.context.window.location.origin = origin;
+      const input = { ...credential, redirectUri: `${origin}/login` };
+      await app.load('src/entities/user/api/user.api.ts').userApi.socialLogin(input);
+      assert.equal(app.requests.length, 1);
+      assert.equal(app.requests[0].url.href, `${origin}/api/backend/auth/social-login`);
+      assert.deepEqual(JSON.parse(app.requests[0].body), input);
+      assert.equal(app.requests[0].headers.Authorization, undefined);
+    }
   }
-});
-
-test('development preserves its current code-exchange contract for both providers', async () => {
-  for (const credential of [
-    { provider: 'KAKAO', platform: 'WEB', authorizationCode: 'kakao-code' },
-    { provider: 'APPLE', platform: 'WEB', idToken: 'apple-id-token', authorizationCode: 'apple-code' },
-  ]) {
-    const app = socialRouteHarness('development', () => ({ body: pendingSocialSignup }), { KAKAO_CLIENT_SECRET: '' });
-    const response = await app.login(credential);
-    assert.equal(response.status, 200);
-    assert.equal(app.requests.length, 1);
-    assert.equal(app.requests[0].url.href, 'https://api-dev.newdok.store/auth/social-login');
-    assert.deepEqual(JSON.parse(app.requests[0].body), { ...credential, redirectUri: `${app.origin}/login` });
-  }
-});
-
-test('web social login rejects foreign origins, callbacks and missing credentials before any exchange', async () => {
-  const credential = { provider: 'KAKAO', platform: 'WEB', authorizationCode: 'code' };
-  for (const [input, requestOrigin, status] of [
-    [credential, 'https://foreign.test', 403],
-    [{ ...credential, redirectUri: 'https://newdok-dev.vercel.app/login' }, undefined, 400],
-    [{ ...credential, redirectUri: 'https://newdok.vercel.app/wrong' }, undefined, 400],
-    [{ provider: 'KAKAO', platform: 'WEB' }, undefined, 400],
-    [{ provider: 'APPLE', platform: 'WEB', idToken: '' }, undefined, 400],
-  ]) {
-    const app = socialRouteHarness('production', () => ({ body: pendingSocialSignup }));
-    assert.equal((await app.login(input, requestOrigin)).status, status);
-    assert.equal(app.requests.length, 0);
-  }
-});
-
-test('failed Kakao exchanges never call the API or expose provider tokens and secrets', async () => {
-  for (const result of [
-    { status: 400, body: { error_description: 'private-provider-error server-only-secret' } },
-    { status: 401, body: { error_code: 'KOE010', error_description: 'private-provider-error' } },
-    { status: 400, body: { error_code: 'private-provider-error' } },
-    { body: { access_token: 'private-provider-token' } },
-    { body: { id_token: '' } },
-  ]) {
-    const app = socialRouteHarness('production', () => result);
-    const response = await app.login({ provider: 'KAKAO', platform: 'WEB', authorizationCode: 'code' });
-    assert.equal(response.status, result.status ? 401 : 502);
-    const message = await response.text();
-    assert.doesNotMatch(message, /private-|server-only-secret/);
-    if (result.body.error_code === 'KOE010') assert.match(message, /KOE010/);
-    assert.equal(app.requests.length, 1);
-  }
-  const missing = socialRouteHarness('production', () => ({ body: {} }), { KAKAO_CLIENT_SECRET: '' });
-  assert.equal((await missing.login({ provider: 'KAKAO', platform: 'WEB', authorizationCode: 'code' })).status, 503);
-  assert.equal(missing.requests.length, 0);
-});
-
-test('web social login preserves backend errors and does not forward arbitrary error data', async () => {
-  const app = socialRouteHarness('production', () => ({ status: 401, body: { message: 'ID 토큰이 만료됐습니다.', token: 'private-token' } }));
-  const response = await app.login({ provider: 'APPLE', platform: 'WEB', idToken: 'expired-token' });
-  assert.equal(response.status, 401);
-  assert.deepEqual(await response.json(), { message: 'ID 토큰이 만료됐습니다.' });
 });
 
 test('nonempty day/today article responses normalize to the home card contract', async () => {
