@@ -5,7 +5,7 @@ import { memo, Suspense, useCallback, useRef, useState, type FormEvent } from 'r
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { newsletterQueries, type NewsletterSearchResult } from '@/entities/newsletter';
-import { LoadingState, Button, ButtonLink, Input, Icon } from '@/shared/ui';
+import { LoadingState, StatusMessage, Button, ButtonLink, Input, Icon } from '@/shared/ui';
 import { NewsletterImage } from '@/widgets/landing/NewsletterImage';
 
 // The same registration request form used by the app's FeedbackView.
@@ -72,7 +72,7 @@ function SearchResults({ keyword }: { keyword: string }) {
       {results.isPending ? <SearchLoading /> : results.isError ? <SearchError onRetry={() => void results.refetch()} />
         : results.data.length ? <>
           <h2 className="mb-3 text-base font-medium">뉴스레터</h2>
-          <LoadingState label="{keyword} 검색 결과 {results.data.length}개" />
+          <StatusMessage className="mb-4">{keyword} 검색 결과 {results.data.length}개</StatusMessage>
           <SearchResultList results={results.data} />
         </> : <div role="status" className="flex flex-col items-center gap-4 pt-2 text-center">
           <h2 className="text-base font-bold">검색 결과가 없어요.</h2>

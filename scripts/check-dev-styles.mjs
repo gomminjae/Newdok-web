@@ -15,7 +15,7 @@ const css = (await Promise.all(stylesheets.map(async (href) => {
   for (const [, , src] of sheet.matchAll(/url\((['"]?)([^'"\s)]+\.woff2(?:\?[^'"\s)]*)?)\1\)/g)) fontURLs.add(new URL(src, new URL(href.replaceAll('&amp;', '&'), origin)).href);
   return sheet;
 }))).join('\n');
-for (const selector of ['.nd-button', '.nd-chip', '.nd-segment', '.nd-tabs', '.nd-dropdown-trigger', '.nd-dropdown-list', '.nd-loading', '.nd-card-link', '.nd-media-frame']) {
+for (const selector of ['.nd-button', '.nd-chip', '.nd-segment', '.nd-tabs', '.nd-dropdown-trigger', '.nd-dropdown-list', '.nd-loading', '.nd-skeleton', '.nd-card-link', '.nd-media-frame']) {
   assert.ok(css.includes(`${selector} {`) || css.includes(`${selector}{`), `Missing delivered component style: ${selector}`);
 }
 for (const variable of ['--ds-segment-height:', '--color-primary-normal:', '--color-bg-normal:']) assert.ok(css.includes(variable), `Missing delivered design token: ${variable}`);

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { applyHighlights, getTextSelection, type Highlight, type TextSelection } from '@/shared/lib/reader-highlights';
+import { observeSelectionChanges } from '@/shared/lib/selection-observer';
 import { colors } from '@/design-system/tokens';
 
 const CONTENT_STYLES = `
@@ -74,10 +75,7 @@ export function NewsletterContent({ html, title, fontScale, highlights, onSelect
     resizeContent();
     const document = frame.current?.contentDocument;
     if (!document || !onSelection) return;
-    const update = () => onSelection(getTextSelection(document));
-    document.addEventListener('mouseup', update);
-    document.addEventListener('keyup', update);
-    selectionCleanup.current = () => { document.removeEventListener('mouseup', update); document.removeEventListener('keyup', update); };
+    selectionCleanup.current = observeSelectionChanges(document, () => onSelection(getTextSelection(document)));
   };
 
   return (

@@ -7,5 +7,7 @@ export const spoqa = localFont({
     { path: '../../../public/fonts/SpoqaHanSansNeo-Bold.woff2', weight: '700', style: 'normal' },
   ],
   display: 'swap',
+  // Let CSS request the weights a screen actually uses instead of eagerly fetching all three.
+  preload: false,
   variable: '--font-spoqa',
 });

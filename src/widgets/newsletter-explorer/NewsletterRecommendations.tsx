@@ -1,6 +1,6 @@
 'use client';
 
-import { CardLink, LoadingState, AppImage, Button, ButtonLink, Chip, Icon } from '@/shared/ui';
+import { CardLink, AppImage, Button, ButtonLink, Chip, Icon } from '@/shared/ui';
 
 import { memo, useState, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -8,6 +8,7 @@ import { clsx } from 'clsx';
 import { newsletterQueries, type NewsletterDetail } from '@/entities/newsletter';
 import { userQueries } from '@/entities/user';
 import { NewsletterImage } from '@/widgets/landing/NewsletterImage';
+import { NewsletterListSkeleton, RecommendationCardSkeleton, RecommendationsSkeleton } from './NewsletterSkeleton';
 
 export const NewsletterRecommendations = memo(function NewsletterRecommendations({ active = true }: { active?: boolean }) {
   const profile = useQuery({ ...userQueries.profile(), enabled: active });
@@ -15,20 +16,20 @@ export const NewsletterRecommendations = memo(function NewsletterRecommendations
   const intersection = useQuery({ ...newsletterQueries.recommendIntersection(), enabled: active && hasPreferences });
   const union = useQuery({ ...newsletterQueries.recommendUnion(), enabled: active && hasPreferences });
 
-  if (profile.isPending) return <LoadingState label="프로필을 불러오는 중이에요." />;
+  if (profile.isPending) return <RecommendationsSkeleton />;
   if (profile.isError) return <div role="alert" className="py-16 text-center"><p>프로필을 불러오지 못했어요.</p><Button variant="ghost" size="compact" onClick={() => void profile.refetch()}>다시 시도</Button></div>;
   if (!hasPreferences) return <div className="px-6 pt-5 pb-10 text-center"><AppImage name="noprofile" alt="" width={280} height={280} className="mx-auto mb-6 h-[280px] w-[280px] max-w-full object-contain" /><h2 className="text-xl font-bold">관심사를 알려주세요</h2><p className="mt-3 text-sm text-caption-neutral">산업과 관심사를 설정하면 맞춤 뉴스레터를 추천해드려요.</p><ButtonLink href="/onboarding" fullWidth className="mt-6">프로필 등록하기</ButtonLink></div>;
 
   return <div className="pt-5">
     <RecommendationHeading nickname={profile.data.nickname} />
-    {intersection.isPending ? <LoadingState label="맞춤 추천을 불러오는 중이에요." /> : intersection.isError ? <RecommendationError onRetry={() => void intersection.refetch()} /> : intersection.data.length > 0 && <RecommendationCarousel key={intersection.data.map((item) => item.id).join(",")} items={intersection.data} />}
+    {intersection.isPending ? <RecommendationCardSkeleton /> : intersection.isError ? <RecommendationError onRetry={() => void intersection.refetch()} /> : intersection.data.length > 0 && <RecommendationCarousel key={intersection.data.map((item) => item.id).join(",")} items={intersection.data} />}
     <div className="flex items-center justify-between px-6 pt-5 pb-4">
       <h3 className="text-base font-bold">이런 뉴스레터는 어때요?</h3>
       <Button variant="ghost" size="compact" disabled={union.isFetching} onClick={() => void union.refetch()} aria-label={union.isFetching ? '추천 새로고침 중' : '추천 새로고침'}>
         <span className={clsx('flex', union.isFetching && 'animate-spin motion-reduce:animate-none')}><Icon name="Line Reload" size={20} /></span>새로고침
       </Button>
     </div>
-    {union.isPending ? <LoadingState label="다른 추천을 불러오는 중이에요." /> : union.isError ? <RecommendationError onRetry={() => void union.refetch()} /> : <RecommendationList key={union.data.map((item) => item.id).join(',')} items={union.data} />}
+    {union.isPending ? <div className="px-5"><NewsletterListSkeleton label="다른 추천을 불러오는 중이에요." count={3} variant="recommendation" /></div> : union.isError ? <RecommendationError onRetry={() => void union.refetch()} /> : <RecommendationList key={union.data.map((item) => item.id).join(',')} items={union.data} />}
     <div className="px-5 pb-20">
       {!intersection.isPending && !intersection.isError && !union.isPending && !union.isError && !union.data.length && !intersection.data.length && <p className="py-8 text-center text-caption-neutral">아직 추천할 뉴스레터가 없어요. 모든 뉴스레터를 둘러보세요.</p>}
     </div>

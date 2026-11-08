@@ -3,6 +3,11 @@
   .nd-loading[data-layout='section'] { min-height: 112px; padding: 32px 24px; }
   .nd-loading[data-layout='page'] { min-height: 100dvh; padding: 32px 24px; }
   .nd-loading-spinner { @apply h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-primary/20 border-t-primary; }
+  .nd-status-message { @apply text-sm font-medium leading-5 text-caption-neutral; }
+  .nd-skeleton { @apply block shrink-0 bg-line-neutral; border-radius: var(--radius-sm); }
+
+  .nd-filter-toolbar { @apply flex flex-wrap items-center gap-x-1 gap-y-2; }
+  .nd-filter-toolbar-actions { @apply ml-auto flex items-center pl-2; }
 
   .nd-card-link { @apply relative isolate block bg-bg; border-radius: var(--radius-lg); }
   .nd-card-link[data-radius='md'] { border-radius: var(--radius-md); }
@@ -91,7 +96,7 @@
   .nd-tab[aria-selected='true'] { color: var(--ds-tab-active); }
   .nd-tab-indicator { @apply pointer-events-none absolute bottom-0 left-0 h-0.5; background: var(--ds-tab-indicator); transition: transform 300ms ease-in-out; }
 
-  .nd-input { @apply w-full border border-line-alternative bg-bg px-4 text-sm font-medium text-caption-heavy outline-none transition-colors; height: var(--ds-input-height); border-radius: var(--radius-sm); }
+  .nd-input { @apply w-full border border-line-alternative bg-bg px-4 text-base font-medium text-caption-heavy outline-none transition-colors md:text-sm; height: var(--ds-input-height); border-radius: var(--radius-sm); }
   .nd-input::placeholder { color: var(--color-caption-assistive); }
   .nd-input:focus { border-color: var(--color-primary-normal); }
   .nd-input[aria-invalid='true'] { border-color: var(--color-error-normal); background: var(--color-error-bg); }
@@ -117,4 +122,8 @@
   .nd-dropdown-option[data-active='true'] { background: var(--color-bg-system); }
   .nd-dropdown-option[aria-selected='true'] { background: var(--color-primary-bg-light); color: var(--color-primary-normal); }
   .nd-dropdown-option[aria-disabled='true'] { cursor: default; color: var(--color-caption-disabled); }
+
+  @media (max-width: 767px) {
+    .nd-button[data-size^='icon'] { min-width: var(--ds-touch-target); min-height: var(--ds-touch-target); }
+  }
 }

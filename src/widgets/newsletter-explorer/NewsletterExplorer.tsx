@@ -6,15 +6,16 @@ import { useQuery } from '@tanstack/react-query';
 import { clsx } from 'clsx';
 import { newsletterApi, newsletterQueries, type NewsletterBrand } from '@/entities/newsletter';
 import { useAuth } from '@/shared/hooks';
-import { CardLink, LoadingState, Button, Chip, GuestNotice, Icon, SubscriptionBadge, Tabs } from '@/shared/ui';
+import { CardLink, FilterToolbar, Button, Chip, GuestNotice, Icon, SubscriptionBadge, Tabs } from '@/shared/ui';
 import { NewsletterImage } from '@/widgets/landing/NewsletterImage';
 import { ExplorerDialog, NewsletterFilters } from './NewsletterFilters';
 import { NewsletterRecommendations } from './NewsletterRecommendations';
+import { NewsletterListSkeleton } from './NewsletterSkeleton';
 
 export function NewsletterExplorer({ initialBrands }: { initialBrands?: NewsletterBrand[] }) {
   return <Suspense fallback={initialBrands ? <div className="-mx-4 bg-bg-system px-5 py-5 md:-mx-6 md:px-6 xl:-mx-10">
     <BrandList brands={initialBrands} isMember={false} />
-  </div> : <ExplorerLoading />}><ExplorerRoute initialBrands={initialBrands} /></Suspense>;
+  </div> : <div className="-mx-4 bg-bg-system px-4 py-5 md:-mx-6 md:px-6 xl:-mx-10"><NewsletterListSkeleton /></div>}><ExplorerRoute initialBrands={initialBrands} /></Suspense>;
 }
 
 function ExplorerRoute({ initialBrands }: { initialBrands?: NewsletterBrand[] }) {
@@ -26,10 +27,6 @@ function ExplorerRoute({ initialBrands }: { initialBrands?: NewsletterBrand[] })
     redirect(`/search/newsletters${keyword ? `?${query}` : ''}`);
   }
   return <ExplorerContent initialBrands={initialBrands} />;
-}
-
-function ExplorerLoading() {
-  return <LoadingState label="뉴스레터를 불러오는 중이에요." />;
 }
 
 function readIds(params: URLSearchParams, key: string) {
@@ -82,8 +79,8 @@ function ExplorerContent({ initialBrands }: { initialBrands?: NewsletterBrand[] 
           {isLoggedIn ? <NewsletterRecommendations active={tab === 'recommend'} /> : <GuestNotice />}
         </div>
         <div hidden={tab !== 'all'} role="tabpanel" id="newsletter-panel-all" aria-labelledby="newsletter-tab-all" className={clsx('flex-1 pb-20', tab === 'all' && 'page-enter')}>
-          <div className="flex items-center gap-3 bg-bg-system px-4 py-4 md:px-6 min-[1024px]:px-8">
-            <div className="landing-scrollbar-none flex min-w-0 flex-1 items-center gap-1 overflow-x-auto">
+          <FilterToolbar label="뉴스레터 필터" className="px-4 py-4 md:px-6 min-[1024px]:px-8"
+            actions={<Button variant="ghost" size="xs" onClick={resetFilters} aria-label="필터 초기화"><Icon name="Line Reload" size={16} />초기화</Button>}>
             <FilterButton onClick={() => setDialog('sort')} active={false} label={`${orderOpt === '최신순' ? '최신등록순' : '인기순'} 정렬`}>
               {orderOpt === '최신순' ? '최신등록순' : '인기순'} <Icon name="Line Arrow Transfer" size={16} />
             </FilterButton>
@@ -94,12 +91,10 @@ function ExplorerContent({ initialBrands }: { initialBrands?: NewsletterBrand[] 
             <FilterButton onClick={() => setDialog('filters')} active={days.length > 0} muted={!days.length} label={`발행 요일 필터${days.length ? ` ${days.length}개 선택` : ''}`}>
               발행 요일{days.length > 0 && ` ${days.length}`} <Chevron />
             </FilterButton>
-            </div>
-            <Button variant="ghost" size="xs" onClick={resetFilters} aria-label="필터 초기화"><Icon name="Line Reload" size={16} />초기화</Button>
-          </div>
+          </FilterToolbar>
 
           <div className="px-4 md:px-6 min-[1024px]:px-8">
-          {brands.isPending ? <ExplorerLoading /> : brands.isError ? (
+          {brands.isPending ? <NewsletterListSkeleton /> : brands.isError ? (
             <div role="alert" className="py-16 text-center">
               <p>뉴스레터를 불러오지 못했어요.</p>
               <Button variant="ghost" size="compact" onClick={() => void brands.refetch()} className="mt-4">다시 시도</Button>

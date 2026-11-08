@@ -53,6 +53,7 @@
   --ds-button-height: 48px;
   --ds-button-radius: var(--radius-sm);
   --ds-input-height: 50px;
+  --ds-touch-target: 44px;
   --ds-segment-height: 40px;
   --ds-segment-radius: 6px;
   --ds-segment-track: var(--color-bg-system);

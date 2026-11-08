@@ -7,6 +7,8 @@ import vm from 'node:vm';
 import test from 'node:test';
 import ts from 'typescript';
 import { QueryClient } from '@tanstack/react-query';
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const runtimeRequire = createRequire(import.meta.url);
@@ -408,6 +410,63 @@ test('corrupt or overlapping local highlights cannot crash the article reader', 
   assert.deepEqual(plain(parseHighlights(JSON.stringify([overlap, first, { ...first, start: -1 }, {}]))), [first]);
 });
 
+test('touch selection changes are coalesced and pending updates are cancelled when the reader closes', () => {
+  const { observeSelectionChanges } = harness().load('src/shared/lib/selection-observer.ts');
+  const document = new EventTarget();
+  const frames = new Map();
+  let nextFrame = 0;
+  document.defaultView = {
+    requestAnimationFrame: (callback) => { frames.set(++nextFrame, callback); return nextFrame; },
+    cancelAnimationFrame: (id) => frames.delete(id),
+  };
+  let updates = 0;
+  const stop = observeSelectionChanges(document, () => { updates++; });
+  document.dispatchEvent(new Event('selectionchange'));
+  document.dispatchEvent(new Event('selectionchange'));
+  document.dispatchEvent(new Event('pointerup'));
+  assert.equal(frames.size, 1);
+  const [id, publish] = [...frames][0];
+  frames.delete(id);
+  publish();
+  assert.equal(updates, 1);
+  document.dispatchEvent(new Event('selectionchange'));
+  stop();
+  assert.equal(frames.size, 0);
+  document.dispatchEvent(new Event('selectionchange'));
+  document.dispatchEvent(new Event('keyup'));
+  assert.equal(frames.size, 0);
+  assert.equal(updates, 1);
+});
+
+test('completed newsletter searches announce real counts without retaining pending UI', () => {
+  for (const pending of [true, false]) {
+    const app = harness(undefined, {
+      'next/link': (props) => { const attributes = { ...props }; delete attributes.prefetch; return createElement('a', attributes); },
+      'next/navigation': {
+        useSearchParams: () => new URLSearchParams('q=NEWNEEK'),
+        useRouter: () => ({ back() {}, replace() {} }),
+      },
+      '@tanstack/react-query': {
+        queryOptions: (options) => options,
+        useQueryClient: () => ({}),
+        useQuery: () => ({ isPending: pending, isFetching: pending, isError: false,
+          data: pending ? undefined : [{ id: 321, brandName: 'NEWNEEK', firstDescription: '세상 돌아가는 소식', imageUrl: null }] }),
+      },
+      '@/widgets/landing/NewsletterImage': { NewsletterImage: () => null },
+    });
+    const html = renderToStaticMarkup(createElement(app.load('src/widgets/newsletter-search/NewsletterSearch.tsx').NewsletterSearch));
+    if (pending) {
+      assert.match(html, /aria-busy="true"/);
+      assert.match(html, /nd-loading-spinner/);
+      assert.doesNotMatch(html, /NEWNEEK 검색 결과/);
+    } else {
+      assert.match(html, /NEWNEEK 검색 결과 1개/);
+      assert.doesNotMatch(html, /nd-loading-spinner|aria-busy="true"|\{keyword\}|\{results/);
+      assert.match(html, /href="\/newsletters\/321"/);
+    }
+  }
+});
+
 function componentHarness(filename, exported, { loggedIn = true, profile = { id: 5, nickname: '뉴독5', industryId: 10, interests: [], subscribeEmail: 'reader@example.com' }, options, queryError = false, queryStates = {} } = {}) {
   const slots = [];
   let cursor = 0;
@@ -505,6 +564,21 @@ test('subscription flow gates guests and guides members back to the confirmation
   assert.equal(nodes(tree).some((node) => node.props.href === '/home'), true);
   control(tree, '구독 신청 다시 하기').props.onClick();
   assert.equal(nodes(member.render(props)).some((node) => node.props.href === props.brand.subscribeUrl), true);
+});
+
+test('copying a subscription email reports success without adding a loading section', async () => {
+  const app = componentHarness('src/features/subscription/SubscribeDialog.tsx', 'SubscribeDialog');
+  const copied = [];
+  app.context.navigator = { clipboard: { writeText: async (value) => { copied.push(value); } } };
+  const props = { brand: { brandId: 321, brandName: '뉴닉', subscribeUrl: 'https://example.com/subscribe' }, onClose() {} };
+  control(app.render(props), '구독 이메일 복사').props.onClick();
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.deepEqual(copied, ['reader@example.com']);
+  assert.deepEqual(app.saved, ['구독 이메일을 복사했어요.']);
+  const tree = app.render(props);
+  assert.ok(control(tree, '이메일 다시 복사'));
+  assert.equal(nodes(tree).some((node) => node.type === 'LoadingState'), false);
+  assert.ok(control(tree, '발행처에서 신청하기 ↗'));
 });
 
 test('a bookmark request failure renders retry rather than the empty state', () => {
@@ -671,7 +745,7 @@ test('a slow secondary recommendation does not hide the ready primary recommenda
   });
   const tree = app.render();
   assert.ok(nodes(tree).some((node) => node.props.items?.[0]?.id === 42));
-  assert.ok(nodes(tree).some((node) => node.type === 'LoadingState' && node.props.label === '다른 추천을 불러오는 중이에요.'));
+  assert.ok(nodes(tree).some((node) => node.type?.name === 'NewsletterListSkeleton' && node.props.label === '다른 추천을 불러오는 중이에요.'));
 });
 
 test('recommendation lists render 24 entries initially and reveal the next batch on demand', () => {
