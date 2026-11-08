@@ -31,12 +31,13 @@ Vercel Git 연동으로 배포하며 Vercel CLI는 사용하지 않습니다.
 | `NEXT_PUBLIC_SITE_URL` | 고정 테스트 주소 | 기존 공개 웹 주소 |
 | `NEXT_PUBLIC_KAKAO_REST_API_KEY` | 개발 Kakao 앱의 웹 REST 키 | 운영 Kakao 앱의 웹 REST 키 |
 | `NEXT_PUBLIC_KAKAO_REDIRECT_URI` | 테스트 주소 + `/login` | 공개 웹 주소 + `/login` |
-| `NEXT_PUBLIC_APPLE_CLIENT_ID` | `com.newdok.dev.web` | 운영 API와 동일한 웹 Services ID |
+| `NEXT_PUBLIC_APPLE_CLIENT_ID` | `com.newdok.dev.web` | `com.newdok.web` (기존 Production 설정) |
 | `NEXT_PUBLIC_APPLE_REDIRECT_URI` | 테스트 주소 + `/login` | 공개 웹 주소 + `/login` |
 
-실제 Vercel 설정을 바꾸기 전까지 기존 배포의 API 연결은 유지됩니다.
-이 변경은 `develop`에만 적용하며, Production 설정을 완료한 뒤 `main`에 병합해야 합니다.
-운영 웹용 Kakao REST 키와 Apple Services ID는 아직 확인되지 않았으므로 운영 예시에 임의의 값을 넣지 않았습니다.
+Vercel Preview와 Production에 해당 환경의 API·로그인 값을 각각 설정합니다.
+환경변수 변경은 새 배포부터 적용됩니다. 변경은 `develop`에서 검증한 뒤 `main`에 병합합니다.
+운영 Kakao 앱(`1549268`)과 개발 앱(`1468488`)의 웹 REST 키는 서로 다릅니다.
+실제 키는 Vercel 환경변수에만 설정하며 예시에 커밋하지 않습니다.
 
 설정 예시:
 
@@ -69,8 +70,9 @@ Production의 로그인 주소를 Preview에 그대로 사용하지 않습니다
 Apple 로그인은 localhost 대신 등록한 HTTPS 테스트 웹에서 확인합니다.
 Preview는 `ALLOW_INDEXING` 값과 관계없이 검색 수집을 차단합니다.
 
-테스트 배포는 GitHub에서 Preview 성공을 확인했습니다. 현재 고정 테스트 주소는 Vercel 로그인 보호에 응답합니다.
-Preview 환경변수와 소셜 서비스의 테스트 콜백 등록 여부는 아직 검증하지 않았습니다.
+`develop` 전용 Preview 변수 8개를 대시보드에 등록했고, 환경 분리 코드의 테스트 배포도 성공했습니다.
+고정 테스트 주소는 Vercel 로그인 보호를 사용합니다.
+소셜 서비스의 테스트 콜백 등록과 실제 로그인 완료는 별도로 확인해야 합니다.
 
 ## 검증
 
