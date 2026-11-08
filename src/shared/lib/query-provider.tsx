@@ -3,6 +3,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useEffect, useState, type ReactNode } from 'react';
 import { shouldRetryQuery } from './query-policy';
+import { ACCESS_TOKEN_STORAGE_KEY } from '@/shared/config/session';
 
 export function QueryProvider({ children }: { children: ReactNode }) {
   const [queryClient] = useState(
@@ -20,7 +21,7 @@ export function QueryProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const clearSessionQueries = () => queryClient.clear();
     const onStorage = (event: StorageEvent) => {
-      if (event.key === 'accessToken' || event.key === null) clearSessionQueries();
+      if (event.key === ACCESS_TOKEN_STORAGE_KEY || event.key === null) clearSessionQueries();
     };
     window.addEventListener('auth-change', clearSessionQueries);
     window.addEventListener('storage', onStorage);

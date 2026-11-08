@@ -2,11 +2,11 @@
 
 import { useSyncExternalStore, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { clearAccessToken } from '@/shared/api/client';
+import { clearAccessToken, getAccessToken } from '@/shared/api/client';
 
 function getIsLoggedIn() {
   if (typeof window === 'undefined') return false;
-  const token = localStorage.getItem('accessToken');
+  const token = getAccessToken();
   return !!token && token.length > 0;
 }
 

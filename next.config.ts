@@ -1,10 +1,12 @@
 import type { NextConfig } from "next";
 import { getApiBaseUrl } from "./src/shared/config/api";
 import { newsletterImagePatterns } from './src/shared/config/images';
+import { getAppEnvironment } from './src/shared/config/environment';
 
 const BACKEND_URL = getApiBaseUrl();
 
 const nextConfig: NextConfig = {
+  env: { NEXT_PUBLIC_APP_ENV: getAppEnvironment() },
   images: { remotePatterns: newsletterImagePatterns },
   async rewrites() {
     return [

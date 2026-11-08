@@ -1,5 +1,6 @@
 import type { ZodType, z } from 'zod';
 import { getApiBaseUrl } from '@/shared/config/api';
+import { ACCESS_TOKEN_STORAGE_KEY } from '@/shared/config/session';
 
 const BROWSER_API_PATH = '/api/backend';
 
@@ -35,17 +36,24 @@ export function getErrorMessage(error: unknown, fallback = '요청을 완료하�
   return error instanceof ApiError && error.serverMessage ? error.serverMessage : fallback;
 }
 
-function getAccessToken(): string | null {
+export function getAccessToken(): string | null {
   if (typeof window === 'undefined') return null;
-  return localStorage.getItem('accessToken');
+  // The old unscoped session may belong to the development API. Never migrate it.
+  if (localStorage.getItem('accessToken')) {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('user');
+  }
+  return localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY);
 }
 
 export function setAccessToken(token: string) {
-  localStorage.setItem('accessToken', token);
+  getAccessToken();
+  localStorage.setItem(ACCESS_TOKEN_STORAGE_KEY, token);
 }
 
 export function clearAccessToken() {
   if (typeof window === 'undefined') return;
+  localStorage.removeItem(ACCESS_TOKEN_STORAGE_KEY);
   localStorage.removeItem('accessToken');
 }
 

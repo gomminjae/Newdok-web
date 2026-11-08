@@ -12,11 +12,12 @@ import {
 } from '@/features/auth/social';
 import { ApiError } from '@/shared/api/client';
 import type { SocialLoginConfig } from '@/shared/config/auth';
+import { AUTH_STORAGE_PREFIX } from '@/shared/config/session';
 import { enterAsGuest } from '@/shared/hooks';
 import { AppImage, Button, ButtonLink } from '@/shared/ui';
 
-const KAKAO_STATE_KEY = 'newdok.kakaoOAuthState';
-const KAKAO_REDIRECT_KEY = 'newdok.kakaoOAuthRedirectUri';
+const KAKAO_STATE_KEY = `${AUTH_STORAGE_PREFIX}.kakaoOAuthState`;
+const KAKAO_REDIRECT_KEY = `${AUTH_STORAGE_PREFIX}.kakaoOAuthRedirectUri`;
 
 type LoginProvider = 'kakao' | 'apple';
 

@@ -15,7 +15,7 @@ npm run dev
 
 | 브랜치 | Vercel 환경 | 용도 |
 | --- | --- | --- |
-| `develop` | Preview | [테스트 웹](https://newdok-web-git-develop-gommj0611-2968s-projects.vercel.app) |
+| `develop` | Preview | [테스트 웹](https://newdok-dev.vercel.app) |
 | `main` | Production | 검증된 버전을 제공하는 기존 웹 (`https://newdok.vercel.app`) |
 
 변경은 `develop`에서 먼저 확인하고, 배포할 변경만 `main`으로 병합합니다.
@@ -58,6 +58,9 @@ API 프록시와 서버 렌더링은 `getApiBaseUrl()`을 공통으로 사용합
 Apple Services ID를 코드에 고정하지 않습니다. 클라이언트 시크릿은 백엔드에만 둡니다.
 현재 웹과 다른 주소의 로그인 콜백은 인증 시작 전에 차단합니다.
 Kakao 인가 코드 요청에 사용한 콜백을 세션에 저장하고, 코드 교환 요청에도 같은 값을 전달합니다.
+로그인 토큰·가입 진행·OAuth 상태도 환경별 저장 키를 사용합니다.
+기존 주소의 구분 없는 로그인 토큰은 개발 API에서 발급됐을 수 있어 이전하지 않고 다시 로그인합니다.
+브라우저용 환경 식별자는 `APP_ENV`에서 빌드 시 생성되므로 별도 Vercel 변수를 추가하지 않습니다.
 
 ## 테스트 웹 설정
 

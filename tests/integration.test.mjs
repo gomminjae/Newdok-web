@@ -11,11 +11,13 @@ import { QueryClient } from '@tanstack/react-query';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const runtimeRequire = createRequire(import.meta.url);
 const plain = (value) => JSON.parse(JSON.stringify(value));
+const DEV_TOKEN_KEY = 'newdok.development.accessToken';
 
 // Execute the actual TypeScript API boundary with a deterministic transport.
 function harness(respond = () => ({ body: {} }), overrides = {}, env = {}) {
   const requests = [];
-  const storage = new Map([['accessToken', 'test-token']]);
+  const authTokenKey = `newdok.${env.NEXT_PUBLIC_APP_ENV ?? 'development'}.accessToken`;
+  const storage = new Map([[authTokenKey, 'test-token']]);
   const session = new Map();
   const events = [];
   const cache = new Map();
@@ -58,7 +60,7 @@ function harness(respond = () => ({ body: {} }), overrides = {}, env = {}) {
     vm.runInContext(`(function(require, module, exports) {${js}\n})`, context, { filename })(localRequire, loaded, loaded.exports);
     return loaded.exports;
   }
-  return { load, requests, storage, session, events, context };
+  return { load, requests, storage, session, events, context, authTokenKey };
 }
 
 const nestedArticle = { id: 42, title: '오늘의 뉴스', status: 'Unread', publishDate: 7, newsletter: { brandName: '뉴독', imageUrl: null } };
@@ -78,6 +80,7 @@ test('Preview and Production use their own API for both rewrites and server requ
   ]) {
     const app = harness(undefined, {}, { VERCEL_ENV: vercelEnv, APP_ENV: appEnv, API_INTERNAL_URL: `${origin}/` });
     const config = app.load('next.config.ts').default;
+    assert.equal(config.env.NEXT_PUBLIC_APP_ENV, appEnv);
     assert.equal((await config.rewrites())[0].destination, `${origin}/:path*`);
     app.context.window = undefined;
     await app.load('src/shared/api/client.ts').apiClient('/newsletters/non-member', { authenticated: false });
@@ -106,6 +109,32 @@ test('browser API requests stay on the current web origin instead of exposing th
   const app = harness(undefined, {}, { APP_ENV: 'production', API_INTERNAL_URL: 'https://api.newdok.store' });
   await app.load('src/shared/api/client.ts').apiClient('/auth/social-login', { authenticated: false });
   assert.equal(app.requests[0].url.href, 'https://newdok.test/api/backend/auth/social-login');
+});
+
+test('production never sends legacy or development tokens and logout preserves the other environment', async () => {
+  const app = harness(undefined, {}, { NEXT_PUBLIC_APP_ENV: 'production' });
+  app.storage.delete(app.authTokenKey);
+  app.storage.set('accessToken', 'legacy-development-token');
+  app.storage.set(DEV_TOKEN_KEY, 'development-token');
+  app.storage.set('user', '{"nickname":"개발 사용자"}');
+  const { apiClient, setAccessToken, clearAccessToken } = app.load('src/shared/api/client.ts');
+  await apiClient('/users/profile');
+  assert.equal(app.requests[0].headers.Authorization, undefined);
+  assert.equal(app.storage.has('accessToken'), false);
+  assert.equal(app.storage.has('user'), false);
+  setAccessToken('production-token');
+  await apiClient('/users/profile');
+  assert.equal(app.requests[1].headers.Authorization, 'Bearer production-token');
+  clearAccessToken();
+  assert.equal(app.storage.has(app.authTokenKey), false);
+  assert.equal(app.storage.get(DEV_TOKEN_KEY), 'development-token');
+});
+
+test('signup and OAuth state use environment-specific storage keys', () => {
+  const development = harness(undefined, {}, { NEXT_PUBLIC_APP_ENV: 'development' });
+  const production = harness(undefined, {}, { NEXT_PUBLIC_APP_ENV: 'production' });
+  assert.notEqual(development.load('src/features/auth/social/index.ts').SOCIAL_SIGNUP_STORAGE_KEY,
+    production.load('src/features/auth/social/index.ts').SOCIAL_SIGNUP_STORAGE_KEY);
 });
 
 test('OAuth config uses each environment’s web keys, Services ID and callbacks without a dev ID fallback', () => {
@@ -207,7 +236,7 @@ test('Kakao sends the environment REST key and reuses the requested callback for
   await new Promise(setImmediate);
   assert.deepEqual(app.credentials, [{ provider: 'KAKAO', platform: 'WEB', authorizationCode: 'kakao-code', redirectUri: config.kakao.redirectUri }]);
   assert.deepEqual(app.routes, ['/home']);
-  assert.equal(app.session.has('newdok.kakaoOAuthRedirectUri'), false);
+  assert.equal(app.session.has('newdok.development.kakaoOAuthRedirectUri'), false);
 });
 
 test('Apple SDK and backend receive the matching environment Services ID and callback', async () => {
@@ -314,7 +343,7 @@ test('failed mutations preserve the session and expose the server error', async 
   const { userApi } = app.load('src/entities/user/api/user.api.ts');
   const { getErrorMessage } = app.load('src/shared/api/client.ts');
   await assert.rejects(userApi.withdraw(), (error) => getErrorMessage(error) === '일시적인 오류');
-  assert.equal(app.storage.get('accessToken'), 'test-token');
+  assert.equal(app.storage.get(DEV_TOKEN_KEY), 'test-token');
   assert.deepEqual(app.events, []);
 });
 
@@ -322,12 +351,12 @@ test('a 401 clears only the token which made the failed request', async () => {
   const app = harness(() => ({ status: 401, body: { message: '만료' } }));
   const { userApi } = app.load('src/entities/user/api/user.api.ts');
   await assert.rejects(userApi.getProfile());
-  assert.equal(app.storage.has('accessToken'), false);
+  assert.equal(app.storage.has(DEV_TOKEN_KEY), false);
   assert.deepEqual(app.events, ['auth-change']);
   let rotated;
-  rotated = harness(() => { rotated.storage.set('accessToken', 'new-session'); return { status: 401, body: {} }; });
+  rotated = harness(() => { rotated.storage.set(DEV_TOKEN_KEY, 'new-session'); return { status: 401, body: {} }; });
   await assert.rejects(rotated.load('src/entities/user/api/user.api.ts').userApi.getProfile());
-  assert.equal(rotated.storage.get('accessToken'), 'new-session');
+  assert.equal(rotated.storage.get(DEV_TOKEN_KEY), 'new-session');
   assert.deepEqual(rotated.events, []);
 });
 
