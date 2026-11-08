@@ -15,7 +15,7 @@ npm run dev
 
 | 브랜치 | Vercel 환경 | 용도 |
 | --- | --- | --- |
-| `develop` | Preview | 기능·디자인·로그인 검증용 테스트 웹 |
+| `develop` | Preview | [테스트 웹](https://newdok-web-git-develop-gommj0611-2968s-projects.vercel.app) |
 | `main` | Production | 검증된 버전을 제공하는 기존 웹 (`https://newdok.vercel.app`) |
 
 변경은 `develop`에서 먼저 확인하고, 배포할 변경만 `main`으로 병합합니다.
@@ -36,15 +36,18 @@ Preview 환경변수는 Production과 별도로 확인해야 합니다.
 | 환경변수 | `develop` Preview 값 |
 | --- | --- |
 | `API_INTERNAL_URL` | `https://api-dev.newdok.store` |
-| `NEXT_PUBLIC_SITE_URL` | 고정 테스트 주소 |
+| `NEXT_PUBLIC_SITE_URL` | `https://newdok-web-git-develop-gommj0611-2968s-projects.vercel.app` |
 | `ALLOW_INDEXING` | `false` (코드에서도 Preview 검색 수집 차단) |
 | `NEXT_PUBLIC_KAKAO_REST_API_KEY` | 개발용 Kakao REST API 키 |
-| `NEXT_PUBLIC_APPLE_REDIRECT_URI` | 고정 테스트 주소 + `/login` |
+| `NEXT_PUBLIC_APPLE_REDIRECT_URI` | `https://newdok-web-git-develop-gommj0611-2968s-projects.vercel.app/login` |
 
 환경변수를 바꾸면 새 배포가 필요합니다.
 Kakao Developers의 Redirect URI와 Apple Developer의 웹 도메인·Return URL에도 테스트 주소를 등록해야 합니다.
 Apple Services ID는 개발 백엔드와 동일한 `com.newdok.dev.web`을 사용합니다.
 Production의 로그인 주소를 Preview에 그대로 사용하지 않습니다.
+
+테스트 배포는 GitHub에서 Preview 성공을 확인했습니다. 현재 고정 테스트 주소는 Vercel 로그인 보호에 응답합니다.
+Preview 환경변수와 소셜 서비스의 테스트 콜백 등록 여부는 아직 검증하지 않았습니다.
 
 ## 검증
 
