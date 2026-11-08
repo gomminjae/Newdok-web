@@ -13,14 +13,14 @@ const runtimeRequire = createRequire(import.meta.url);
 const plain = (value) => JSON.parse(JSON.stringify(value));
 
 // Execute the actual TypeScript API boundary with a deterministic transport.
-function harness(respond = () => ({ body: {} }), overrides = {}) {
+function harness(respond = () => ({ body: {} }), overrides = {}, env = {}) {
   const requests = [];
   const storage = new Map([['accessToken', 'test-token']]);
   const events = [];
   const cache = new Map();
   const context = vm.createContext({
     URL, URLSearchParams, AbortSignal, Event,
-    process: { env: {} },
+    process: { env },
     localStorage: {
       getItem: (key) => storage.get(key) ?? null,
       setItem: (key, value) => storage.set(key, value),
@@ -56,6 +56,14 @@ function harness(respond = () => ({ body: {} }), overrides = {}) {
 }
 
 const nestedArticle = { id: 42, title: '오늘의 뉴스', status: 'Unread', publishDate: 7, newsletter: { brandName: '뉴독', imageUrl: null } };
+
+test('Vercel previews block indexing even when production indexing is enabled', () => {
+  const indexingEnv = { NODE_ENV: 'production', ALLOW_INDEXING: 'true' };
+  const preview = harness(undefined, {}, { ...indexingEnv, VERCEL_ENV: 'preview' }).load('src/app/robots.ts').default();
+  assert.deepEqual(plain(preview), { rules: [{ userAgent: '*', disallow: ['/'] }] });
+  const production = harness(undefined, {}, { ...indexingEnv, VERCEL_ENV: 'production' }).load('src/app/robots.ts').default();
+  assert.equal(production.rules[0].allow.includes('/newsletters'), true);
+});
 
 test('nonempty day/today article responses normalize to the home card contract', async () => {
   const app = harness(() => ({ body: [nestedArticle] }));

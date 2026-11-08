@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Newdok Web
 
-## Getting Started
+Next.js 16 기반 뉴독 웹입니다.
 
-First, run the development server:
+## 로컬 실행
+
+`.env.example`을 참고해 `.env.local`에 환경변수를 설정하고 실행합니다.
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 배포 흐름
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| 브랜치 | Vercel 환경 | 용도 |
+| --- | --- | --- |
+| `develop` | Preview | 기능·디자인·로그인 검증용 테스트 웹 |
+| `main` | Production | 검증된 버전을 제공하는 기존 웹 (`https://newdok.vercel.app`) |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+변경은 `develop`에서 먼저 확인하고, 배포할 변경만 `main`으로 병합합니다.
+`main` push는 기존 공개 주소를 바로 갱신합니다.
+Vercel Git 연동으로 배포하며 Vercel CLI는 사용하지 않습니다.
 
-## Learn More
+**현재 두 웹 모두 `https://api-dev.newdok.store` 개발 API를 사용합니다.**
+웹 주소·배포를 나눠도 백엔드와 데이터는 분리되지 않습니다.
+운영 API로 전환하는 작업은 별도로 진행해야 합니다.
 
-To learn more about Next.js, take a look at the following resources:
+## 테스트 웹 설정
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Vercel은 `develop` push마다 Preview를 만들고, 브랜치 고정 주소는 해당 브랜치의 최신 배포를 가리킵니다.
+로그인은 매번 달라지는 개별 배포 주소 대신 고정 브랜치 주소에서 검증합니다.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Preview 환경변수는 Production과 별도로 확인해야 합니다.
 
-## Deploy on Vercel
+| 환경변수 | `develop` Preview 값 |
+| --- | --- |
+| `API_INTERNAL_URL` | `https://api-dev.newdok.store` |
+| `NEXT_PUBLIC_SITE_URL` | 고정 테스트 주소 |
+| `ALLOW_INDEXING` | `false` (코드에서도 Preview 검색 수집 차단) |
+| `NEXT_PUBLIC_KAKAO_REST_API_KEY` | 개발용 Kakao REST API 키 |
+| `NEXT_PUBLIC_APPLE_REDIRECT_URI` | 고정 테스트 주소 + `/login` |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+환경변수를 바꾸면 새 배포가 필요합니다.
+Kakao Developers의 Redirect URI와 Apple Developer의 웹 도메인·Return URL에도 테스트 주소를 등록해야 합니다.
+Apple Services ID는 개발 백엔드와 동일한 `com.newdok.dev.web`을 사용합니다.
+Production의 로그인 주소를 Preview에 그대로 사용하지 않습니다.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 검증
+
+```bash
+npm test
+npm run lint
+npm run build
+npm run design:check -- https://테스트-주소
+```
+
+Vercel 참고: [배포 환경](https://vercel.com/docs/deployments/environments), [고정 브랜치 주소](https://vercel.com/docs/deployments/generated-urls), [환경변수 범위](https://vercel.com/docs/environment-variables).
