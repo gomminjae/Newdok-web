@@ -375,13 +375,17 @@ test('web social login rejects foreign origins, callbacks and missing credential
 test('failed Kakao exchanges never call the API or expose provider tokens and secrets', async () => {
   for (const result of [
     { status: 400, body: { error_description: 'private-provider-error server-only-secret' } },
+    { status: 401, body: { error_code: 'KOE010', error_description: 'private-provider-error' } },
+    { status: 400, body: { error_code: 'private-provider-error' } },
     { body: { access_token: 'private-provider-token' } },
     { body: { id_token: '' } },
   ]) {
     const app = socialRouteHarness('production', () => result);
     const response = await app.login({ provider: 'KAKAO', platform: 'WEB', authorizationCode: 'code' });
     assert.equal(response.status, result.status ? 401 : 502);
-    assert.doesNotMatch(await response.text(), /private-|server-only-secret/);
+    const message = await response.text();
+    assert.doesNotMatch(message, /private-|server-only-secret/);
+    if (result.body.error_code === 'KOE010') assert.match(message, /KOE010/);
     assert.equal(app.requests.length, 1);
   }
   const missing = socialRouteHarness('production', () => ({ body: {} }), { KAKAO_CLIENT_SECRET: '' });

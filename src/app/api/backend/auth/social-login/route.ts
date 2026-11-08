@@ -59,7 +59,13 @@ export async function POST(request: Request) {
           }),
         });
         if (!tokenResponse.ok) {
-          return json({ message: '카카오 인증을 완료하지 못했습니다. 다시 로그인해주세요.' }, 401);
+          const failure = await tokenResponse.json().catch(() => null);
+          const code = typeof failure?.error_code === 'string' && /^KOE\d{3}$/.test(failure.error_code)
+            ? failure.error_code : '';
+          const message = code === 'KOE010' || code === 'KOE101' || code === 'KOE114'
+            ? '카카오 로그인 서버 설정이 일치하지 않습니다. 관리자에게 문의해주세요.'
+            : '카카오 인증을 완료하지 못했습니다. 다시 로그인해주세요.';
+          return json({ message: `${message}${code ? ` (${code})` : ''}` }, 401);
         }
         const token = await tokenResponse.json();
         if (typeof token.id_token !== 'string' || !token.id_token.trim()) {
