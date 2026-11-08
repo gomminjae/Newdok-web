@@ -1,12 +1,11 @@
 import type { ZodType, z } from 'zod';
-import { TEST_API_BASE_URL } from '@/shared/config/api';
+import { getApiBaseUrl } from '@/shared/config/api';
 
 const BROWSER_API_PATH = '/api/backend';
-const SERVER_API_URL = process.env.API_INTERNAL_URL ?? TEST_API_BASE_URL;
 
 function buildUrl(endpoint: string): URL {
   if (typeof window === 'undefined') {
-    return new URL(`${SERVER_API_URL}${endpoint}`);
+    return new URL(`${getApiBaseUrl()}${endpoint}`);
   }
   return new URL(`${BROWSER_API_PATH}${endpoint}`, window.location.origin);
 }

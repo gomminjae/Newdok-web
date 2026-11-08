@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { LoginForm } from './LoginForm';
+import { getSocialLoginConfig } from '@/shared/config/auth';
 
 export const metadata: Metadata = {
   title: '로그인 | Newdok',
@@ -7,5 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function LoginPage() {
-  return <LoginForm />;
+  return <LoginForm config={getSocialLoginConfig()} />;
 }

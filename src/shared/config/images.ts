@@ -1,2 +1,8 @@
-/** Newsletter artwork is public; authenticated API responses never enter the image optimizer. */
-export const newsletterImagePattern = { protocol: 'https', hostname: 'api-dev.newdok.store', pathname: '/public/**' } as const;
+import { API_BASE_URLS } from './api';
+
+/** Only the two app APIs' public artwork may enter the image optimizer. */
+export const newsletterImagePatterns = Object.values(API_BASE_URLS).map((origin) => ({
+  protocol: 'https' as const,
+  hostname: new URL(origin).hostname,
+  pathname: '/public/**',
+}));

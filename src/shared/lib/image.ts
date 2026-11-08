@@ -1,4 +1,4 @@
-import { newsletterImagePattern } from '@/shared/config/images';
+import { newsletterImagePatterns } from '@/shared/config/images';
 
 export function proxyImage(url?: string | null): string | undefined {
   if (!url) return undefined;
@@ -20,6 +20,7 @@ export function canOptimizeNewsletterImage(src: string): boolean {
   if (src.startsWith('/api/backend/public/')) return true;
   try {
     const url = new URL(src);
-    return url.protocol === `${newsletterImagePattern.protocol}:` && url.hostname === newsletterImagePattern.hostname && url.pathname.startsWith('/public/');
+    return !url.username && !url.password && !url.port && newsletterImagePatterns.some((pattern) =>
+      url.protocol === `${pattern.protocol}:` && url.hostname === pattern.hostname && url.pathname.startsWith('/public/'));
   } catch { return false; }
 }

@@ -8,17 +8,19 @@ import {
   createRandomUrlSafeString,
   readJwtPayload,
   SOCIAL_SIGNUP_STORAGE_KEY,
+  validateOAuthConfig,
 } from '@/features/auth/social';
 import { ApiError } from '@/shared/api/client';
-import { APPLE_WEB_CLIENT_ID } from '@/shared/config/auth';
+import type { SocialLoginConfig } from '@/shared/config/auth';
 import { enterAsGuest } from '@/shared/hooks';
 import { AppImage, Button, ButtonLink } from '@/shared/ui';
 
 const KAKAO_STATE_KEY = 'newdok.kakaoOAuthState';
+const KAKAO_REDIRECT_KEY = 'newdok.kakaoOAuthRedirectUri';
 
 type LoginProvider = 'kakao' | 'apple';
 
-export function LoginForm() {
+export function LoginForm({ config }: { config: SocialLoginConfig }) {
   const router = useRouter();
   const handledKakaoCallback = useRef(false);
   const [loadingProvider, setLoadingProvider] = useState<LoginProvider | null>(null);
@@ -68,18 +70,21 @@ export function LoginForm() {
       const code = query.get('code');
       const returnedState = query.get('state');
       const expectedState = sessionStorage.getItem(KAKAO_STATE_KEY);
-      const redirectUri = `${window.location.origin}/login`;
+      const requestedRedirectUri = sessionStorage.getItem(KAKAO_REDIRECT_KEY);
 
       window.history.replaceState(null, '', '/login');
       clearKakaoSession();
 
-      if (!code || !returnedState || returnedState !== expectedState) {
+      if (!code || !returnedState || returnedState !== expectedState || !requestedRedirectUri) {
         setErrorMessage('카카오 로그인 요청을 확인할 수 없습니다. 다시 시도해주세요.');
         setLoadingProvider(null);
         return;
       }
 
       try {
+        const { redirectUri } = validateOAuthConfig('kakao', {
+          ...config.kakao, redirectUri: requestedRedirectUri,
+        }, window.location.origin);
         await authenticate({
           provider: 'KAKAO',
           platform: 'WEB',
@@ -93,24 +98,19 @@ export function LoginForm() {
     };
 
     void finishKakaoLogin();
-  }, [authenticate]);
+  }, [authenticate, config.kakao]);
 
   async function startKakaoLogin() {
     if (loadingProvider) return;
-    const clientId = process.env.NEXT_PUBLIC_KAKAO_REST_API_KEY;
-    if (!clientId) {
-      setErrorMessage('카카오 로그인을 위한 REST API 키가 필요합니다.');
-      return;
-    }
-
-    setLoadingProvider('kakao');
     setErrorMessage(null);
 
     try {
+      const { clientId, redirectUri } = validateOAuthConfig('kakao', config.kakao, window.location.origin);
+      setLoadingProvider('kakao');
       const state = createRandomUrlSafeString();
-      const redirectUri = `${window.location.origin}/login`;
 
       sessionStorage.setItem(KAKAO_STATE_KEY, state);
+      sessionStorage.setItem(KAKAO_REDIRECT_KEY, redirectUri);
 
       const authorizationUrl = new URL('https://kauth.kakao.com/oauth/authorize');
       authorizationUrl.search = new URLSearchParams({
@@ -123,6 +123,7 @@ export function LoginForm() {
 
       window.location.assign(authorizationUrl);
     } catch (loginError) {
+      clearKakaoSession();
       setErrorMessage(getLoginErrorMessage(loginError));
       setLoadingProvider(null);
     }
@@ -130,10 +131,12 @@ export function LoginForm() {
 
   async function startAppleLogin() {
     if (loadingProvider) return;
-    const redirectUri = process.env.NEXT_PUBLIC_APPLE_REDIRECT_URI;
-
-    if (!redirectUri) {
-      setErrorMessage('Apple 로그인을 위한 Return URL이 필요합니다.');
+    setErrorMessage(null);
+    let appleConfig;
+    try {
+      appleConfig = validateOAuthConfig('apple', config.apple, window.location.origin);
+    } catch (loginError) {
+      setErrorMessage(getLoginErrorMessage(loginError));
       return;
     }
     if (!isAppleScriptReady || !window.AppleID) {
@@ -145,10 +148,11 @@ export function LoginForm() {
     setErrorMessage(null);
 
     try {
+      const { clientId, redirectUri } = appleConfig;
       const state = createRandomUrlSafeString();
       const nonce = createRandomUrlSafeString();
       window.AppleID.auth.init({
-        clientId: APPLE_WEB_CLIENT_ID,
+        clientId,
         scope: 'name email',
         redirectURI: redirectUri,
         state,
@@ -281,6 +285,7 @@ function isAppleCancellation(error: unknown) {
 
 function clearKakaoSession() {
   sessionStorage.removeItem(KAKAO_STATE_KEY);
+  sessionStorage.removeItem(KAKAO_REDIRECT_KEY);
 }
 
 function getLoginErrorMessage(error: unknown) {

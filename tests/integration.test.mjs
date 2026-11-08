@@ -16,15 +16,21 @@ const plain = (value) => JSON.parse(JSON.stringify(value));
 function harness(respond = () => ({ body: {} }), overrides = {}, env = {}) {
   const requests = [];
   const storage = new Map([['accessToken', 'test-token']]);
+  const session = new Map();
   const events = [];
   const cache = new Map();
   const context = vm.createContext({
-    URL, URLSearchParams, AbortSignal, Event,
+    URL, URLSearchParams, AbortSignal, Event, crypto: globalThis.crypto, btoa, atob,
     process: { env },
     localStorage: {
       getItem: (key) => storage.get(key) ?? null,
       setItem: (key, value) => storage.set(key, value),
       removeItem: (key) => storage.delete(key),
+    },
+    sessionStorage: {
+      getItem: (key) => session.get(key) ?? null,
+      setItem: (key, value) => session.set(key, value),
+      removeItem: (key) => session.delete(key),
     },
     window: { location: { origin: 'https://newdok.test' }, innerHeight: 640, dispatchEvent: (event) => events.push(event.type), scrollTo() {} },
     fetch: async (url, options) => {
@@ -52,17 +58,186 @@ function harness(respond = () => ({ body: {} }), overrides = {}, env = {}) {
     vm.runInContext(`(function(require, module, exports) {${js}\n})`, context, { filename })(localRequire, loaded, loaded.exports);
     return loaded.exports;
   }
-  return { load, requests, storage, events };
+  return { load, requests, storage, session, events, context };
 }
 
 const nestedArticle = { id: 42, title: '오늘의 뉴스', status: 'Unread', publishDate: 7, newsletter: { brandName: '뉴독', imageUrl: null } };
 
 test('Vercel previews block indexing even when production indexing is enabled', () => {
-  const indexingEnv = { NODE_ENV: 'production', ALLOW_INDEXING: 'true' };
+  const indexingEnv = { NODE_ENV: 'production', ALLOW_INDEXING: 'true', NEXT_PUBLIC_SITE_URL: 'https://newdok.test' };
   const preview = harness(undefined, {}, { ...indexingEnv, VERCEL_ENV: 'preview' }).load('src/app/robots.ts').default();
   assert.deepEqual(plain(preview), { rules: [{ userAgent: '*', disallow: ['/'] }] });
   const production = harness(undefined, {}, { ...indexingEnv, VERCEL_ENV: 'production' }).load('src/app/robots.ts').default();
   assert.equal(production.rules[0].allow.includes('/newsletters'), true);
+});
+
+test('Preview and Production use their own API for both rewrites and server requests', async () => {
+  for (const [vercelEnv, appEnv, origin] of [
+    ['preview', 'development', 'https://api-dev.newdok.store'],
+    ['production', 'production', 'https://api.newdok.store'],
+  ]) {
+    const app = harness(undefined, {}, { VERCEL_ENV: vercelEnv, APP_ENV: appEnv, API_INTERNAL_URL: `${origin}/` });
+    const config = app.load('next.config.ts').default;
+    assert.equal((await config.rewrites())[0].destination, `${origin}/:path*`);
+    app.context.window = undefined;
+    await app.load('src/shared/api/client.ts').apiClient('/newsletters/non-member', { authenticated: false });
+    assert.equal(app.requests[0].url.origin, origin);
+    assert.equal(app.requests[0].url.pathname, '/newsletters/non-member');
+  }
+});
+
+test('deployment API configuration refuses missing values and mixed environments', () => {
+  for (const env of [
+    { VERCEL_ENV: 'preview' },
+    { VERCEL_ENV: 'production' },
+    { APP_ENV: 'production' },
+    { VERCEL_ENV: 'preview', APP_ENV: 'production', API_INTERNAL_URL: 'https://api.newdok.store' },
+    { VERCEL_ENV: 'production', APP_ENV: 'development', API_INTERNAL_URL: 'https://api-dev.newdok.store' },
+    { VERCEL_ENV: 'production', API_INTERNAL_URL: 'https://api-dev.newdok.store' },
+    { VERCEL_ENV: 'preview', API_INTERNAL_URL: 'https://api.newdok.store' },
+    { APP_ENV: 'staging' },
+    ...['https://api-dev.newdok.store/private', 'https://api-dev.newdok.store?key=value', 'https://user:pass@api-dev.newdok.store', 'http://api-dev.newdok.store'].map((API_INTERNAL_URL) => ({ API_INTERNAL_URL })),
+  ]) {
+    assert.throws(() => harness(undefined, {}, env).load('next.config.ts'));
+  }
+});
+
+test('browser API requests stay on the current web origin instead of exposing the backend', async () => {
+  const app = harness(undefined, {}, { APP_ENV: 'production', API_INTERNAL_URL: 'https://api.newdok.store' });
+  await app.load('src/shared/api/client.ts').apiClient('/auth/social-login', { authenticated: false });
+  assert.equal(app.requests[0].url.href, 'https://newdok.test/api/backend/auth/social-login');
+});
+
+test('OAuth config uses each environment’s web keys, Services ID and callbacks without a dev ID fallback', () => {
+  for (const name of ['development', 'production']) {
+    const site = `https://${name}.newdok.test`;
+    const env = {
+      NEXT_PUBLIC_SITE_URL: site,
+      NEXT_PUBLIC_KAKAO_REST_API_KEY: `${name}-rest-key`,
+      NEXT_PUBLIC_KAKAO_REDIRECT_URI: `${site}/login`,
+      NEXT_PUBLIC_APPLE_CLIENT_ID: `${name}.web`,
+      NEXT_PUBLIC_APPLE_REDIRECT_URI: `${site}/login`,
+    };
+    const config = harness(undefined, {}, env).load('src/shared/config/auth.ts').getSocialLoginConfig();
+    assert.deepEqual(plain(config), {
+      kakao: { clientId: `${name}-rest-key`, redirectUri: `${site}/login` },
+      apple: { clientId: `${name}.web`, redirectUri: `${site}/login` },
+    });
+  }
+  const { getSocialLoginConfig } = harness().load('src/shared/config/auth.ts');
+  assert.equal(getSocialLoginConfig().apple.clientId, '');
+});
+
+test('OAuth rejects another environment’s callback and Apple HTTP before starting authentication', () => {
+  const { validateOAuthConfig } = harness().load('src/features/auth/social/lib/config.ts');
+  const config = { clientId: 'web-client', redirectUri: 'https://dev.newdok.test/login' };
+  for (const provider of ['kakao', 'apple']) {
+    assert.equal(validateOAuthConfig(provider, config, 'https://dev.newdok.test').redirectUri, config.redirectUri);
+    assert.throws(() => validateOAuthConfig(provider, config, 'https://newdok.test'));
+    assert.throws(() => validateOAuthConfig(provider, { ...config, clientId: '' }, 'https://dev.newdok.test'));
+  }
+  const local = { ...config, redirectUri: 'http://localhost:3000/login' };
+  assert.doesNotThrow(() => validateOAuthConfig('kakao', local, 'http://localhost:3000'));
+  assert.throws(() => validateOAuthConfig('apple', local, 'http://localhost:3000'));
+});
+
+test('preview metadata falls back to its stable branch URL, never the production URL', () => {
+  const app = harness(undefined, {}, { VERCEL_ENV: 'preview', VERCEL_BRANCH_URL: 'develop.newdok.test' });
+  assert.equal(app.load('src/shared/config/site.ts').SITE_URL, 'https://develop.newdok.test');
+});
+
+function loginHarness(config) {
+  const slots = [];
+  let cursor = 0;
+  const effects = [];
+  const credentials = [];
+  const redirects = [];
+  const routes = [];
+  const appleInitializations = [];
+  const app = harness(undefined, {
+    react: {
+      useCallback: (fn) => fn, useRef: (value) => ({ current: value }), useEffect: (fn) => effects.push(fn),
+      useState(initial) {
+        const index = cursor++;
+        if (!(index in slots)) slots[index] = initial;
+        return [slots[index], (value) => { slots[index] = value; }];
+      },
+    },
+    'next/script': 'script',
+    'next/navigation': { useRouter: () => ({ replace: (path) => routes.push(path), push() {} }) },
+    '@/entities/user': { userApi: { socialLogin: async (credential) => {
+      credentials.push(plain(credential));
+      return { isRegistered: true, user: { nickname: '뉴독' } };
+    } } },
+    '@/shared/hooks': { enterAsGuest() {} },
+    '@/shared/ui': { AppImage: 'img', Button: 'button', ButtonLink: 'a' },
+  });
+  app.context.window.location.search = '';
+  app.context.window.location.assign = (url) => redirects.push(new URL(url));
+  app.context.window.history = { replaceState() {} };
+  app.context.window.AppleID = { auth: {
+    init: (value) => appleInitializations.push(plain(value)),
+    signIn: async () => {
+      const { state, nonce } = appleInitializations.at(-1);
+      return { authorization: { code: 'apple-code', state, id_token: `header.${btoa(JSON.stringify({ nonce }))}.signature` } };
+    },
+  } };
+  const { LoginForm } = app.load('src/app/(auth)/login/LoginForm.tsx');
+  return { ...app, effects, credentials, redirects, routes, appleInitializations, render() {
+    cursor = 0;
+    effects.length = 0;
+    return LoginForm({ config });
+  } };
+}
+
+test('Kakao sends the environment REST key and reuses the requested callback for backend code exchange', async () => {
+  const config = {
+    kakao: { clientId: 'development-rest-key', redirectUri: 'https://newdok.test/login' },
+    apple: { clientId: '', redirectUri: 'https://newdok.test/login' },
+  };
+  const app = loginHarness(config);
+  control(app.render(), '카카오로 계속하기').props.onClick();
+  const authorize = app.redirects[0];
+  assert.equal(authorize.origin, 'https://kauth.kakao.com');
+  assert.equal(authorize.searchParams.get('client_id'), 'development-rest-key');
+  assert.equal(authorize.searchParams.get('redirect_uri'), config.kakao.redirectUri);
+  app.context.window.location.search = `?code=kakao-code&state=${authorize.searchParams.get('state')}`;
+  app.render();
+  app.effects[0]();
+  await new Promise(setImmediate);
+  assert.deepEqual(app.credentials, [{ provider: 'KAKAO', platform: 'WEB', authorizationCode: 'kakao-code', redirectUri: config.kakao.redirectUri }]);
+  assert.deepEqual(app.routes, ['/home']);
+  assert.equal(app.session.has('newdok.kakaoOAuthRedirectUri'), false);
+});
+
+test('Apple SDK and backend receive the matching environment Services ID and callback', async () => {
+  for (const clientId of ['com.newdok.dev.web', 'configured.production.web']) {
+    const app = loginHarness({
+      kakao: { clientId: '', redirectUri: 'https://newdok.test/login' },
+      apple: { clientId, redirectUri: 'https://newdok.test/login' },
+    });
+    nodes(app.render()).find((node) => node.type === 'script').props.onReady();
+    control(app.render(), 'Apple로 계속하기').props.onClick();
+    await new Promise(setImmediate);
+    assert.equal(app.appleInitializations[0].clientId, clientId);
+    assert.equal(app.appleInitializations[0].redirectURI, 'https://newdok.test/login');
+    assert.equal(app.credentials[0].redirectUri, 'https://newdok.test/login');
+    assert.equal(app.credentials[0].authorizationCode, 'apple-code');
+    assert.deepEqual(app.routes, ['/home']);
+  }
+});
+
+test('login UI refuses cross-environment callbacks before opening either provider', async () => {
+  const wrongCallback = { clientId: 'configured-key', redirectUri: 'https://other-environment.test/login' };
+  const app = loginHarness({ kakao: wrongCallback, apple: wrongCallback });
+  nodes(app.render()).find((node) => node.type === 'script').props.onReady();
+  control(app.render(), '카카오로 계속하기').props.onClick();
+  assert.match(text(app.render()), /현재 사이트와 다릅니다/);
+  control(app.render(), 'Apple로 계속하기').props.onClick();
+  await new Promise(setImmediate);
+  assert.equal(app.redirects.length, 0);
+  assert.equal(app.appleInitializations.length, 0);
+  assert.equal(app.credentials.length, 0);
 });
 
 test('nonempty day/today article responses normalize to the home card contract', async () => {
@@ -459,11 +634,12 @@ test('public artwork uses optimization and falls back to the original before sho
   assert.equal(nodes(tree).some((node) => node.props.fill), false);
 });
 
-test('image optimization only accepts development public artwork and preserves SVG/GIF originals', () => {
+test('image optimization accepts both app APIs’ public artwork and preserves SVG/GIF originals', () => {
   const { canOptimizeNewsletterImage } = harness().load('src/shared/lib/image.ts');
   assert.equal(canOptimizeNewsletterImage('https://api-dev.newdok.store/public/test.png'), true);
+  assert.equal(canOptimizeNewsletterImage('https://api.newdok.store/public/test.png'), true);
   assert.equal(canOptimizeNewsletterImage('/api/backend/public/test.png'), true);
-  for (const src of ['https://api.newdok.store/public/test.png', 'https://other.example/image.png', '/api/backend/users/profile', 'https://api-dev.newdok.store/public/test.gif', 'https://api-dev.newdok.store/public/test.svg']) assert.equal(canOptimizeNewsletterImage(src), false, src);
+  for (const src of ['https://api.newdok.store/users/profile', 'https://api.newdok.store:8443/public/test.png', 'https://other.example/image.png', '/api/backend/users/profile', 'https://api-dev.newdok.store/public/test.gif', 'https://api-dev.newdok.store/public/test.svg']) assert.equal(canOptimizeNewsletterImage(src), false, src);
 });
 
 test('query retry policy stops invalid-session requests immediately but retries transient failures once', async () => {
