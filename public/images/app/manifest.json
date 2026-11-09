@@ -27,6 +27,15 @@
     "height": 20.0
   },
   {
+    "asset": "emptyCase",
+    "source": "Modules/DesignSystem/Resources/Assets.xcassets/emptyCase.imageset/emptyCase.png",
+    "sourceSha256": "1b3d79eada1a833e4e5306b04919c28d15b7d32684174c11654512945ede7376",
+    "output": "images/app/emptyCase.png",
+    "outputSha256": "1b3d79eada1a833e4e5306b04919c28d15b7d32684174c11654512945ede7376",
+    "width": 640,
+    "height": 300
+  },
+  {
     "asset": "emptybookmark",
     "source": "Modules/DesignSystem/Resources/Assets.xcassets/emptybookmark.imageset/emptybookmark.pdf",
     "sourceSha256": "1de2da2c09d2b517bf69a843f1e83b46a1ad29190be7cf803fa7681964c87b33",

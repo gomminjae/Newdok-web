@@ -62,6 +62,11 @@ export const imageAssets = {
     "height": 20.0,
     "src": "/images/app/darklogo.svg"
   },
+  "emptyCase": {
+    "width": 640,
+    "height": 300,
+    "src": "/images/app/emptyCase.png"
+  },
   "emptybookmark": {
     "width": 520,
     "height": 520,

@@ -18,7 +18,7 @@ WEB = Path(__file__).resolve().parents[1]
 APP = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else WEB.parent / "Newdok"
 ASSETS = APP / "Modules/DesignSystem/Resources/Assets.xcassets"
 ICONS = {"font", "highlight", "pen", "trashbin", "bookmarked", "kakaoBubble", "darklogo", "check", "uncheck"}
-ILLUSTRATIONS = {"letter", "calendar", "post", "signup", "nologin", "nodata", "nosubscribe", "emptybookmark", "noprofile", "nohighlight", "warning"}
+ILLUSTRATIONS = {"letter", "calendar", "post", "signup", "nologin", "nodata", "nosubscribe", "emptyCase", "emptybookmark", "noprofile", "nohighlight", "warning"}
 manifest = []
 
 for imageset in sorted(ASSETS.rglob("*.imageset")):

@@ -473,7 +473,7 @@ function componentHarness(filename, exported, { loggedIn = true, profile = { id:
   const queries = [];
   const invalidations = [];
   const saved = [];
-  const ui = Object.fromEntries(['Button', 'ButtonLink', 'Chip', 'Dialog', 'EmptyState', 'GuestNotice', 'Icon', 'Toast', 'SegmentPicker'].map((name) => [name, name]));
+  const ui = Object.fromEntries(['AppImage', 'Button', 'ButtonLink', 'Chip', 'Dialog', 'EmptyState', 'GuestNotice', 'Icon', 'Toast', 'SegmentPicker'].map((name) => [name, name]));
   ui.Checkbox = 'input';
   ui.Dropdown = 'Dropdown';
   ui.LoadingState = 'LoadingState';
@@ -761,9 +761,14 @@ test('recommendation lists render 24 entries initially and reveal the next batch
   assert.equal(nodes(tree).filter((node) => node.props.newsletter).length, 48);
 });
 
-test('public artwork uses optimization and falls back to the original before showing an empty frame', () => {
+test('public artwork retries the original and shows the app placeholder for missing or failed images', () => {
   const app = componentHarness('src/widgets/landing/NewsletterImage.tsx', 'NewsletterImage');
   const props = { name: '뉴스레터', imageUrl: 'https://api-dev.newdok.store/public/test.png', variant: 'thumbnail' };
+  for (const imageUrl of [null, '', '  \n ']) {
+    const empty = app.render({ ...props, imageUrl });
+    assert.equal(empty.props.empty, true);
+    assert.equal(nodes(empty).find((node) => node.props.fill).props.name, 'emptyCase');
+  }
   let tree = app.render(props);
   let img = nodes(tree).find((node) => node.props.fill);
   assert.equal(img.props.unoptimized, false);
@@ -774,7 +779,10 @@ test('public artwork uses optimization and falls back to the original before sho
   img.props.onError();
   tree = app.render(props);
   assert.equal(tree.props.empty, true);
-  assert.equal(nodes(tree).some((node) => node.props.fill), false);
+  assert.equal(nodes(tree).find((node) => node.props.fill).props.name, 'emptyCase');
+  tree = app.render({ ...props, imageUrl: 'https://api-dev.newdok.store/public/replacement.png' });
+  assert.equal(tree.props.empty, false);
+  assert.equal(nodes(tree).find((node) => node.props.fill).props.src, 'https://api-dev.newdok.store/public/replacement.png');
 });
 
 test('image optimization accepts both app APIs’ public artwork and preserves SVG/GIF originals', () => {

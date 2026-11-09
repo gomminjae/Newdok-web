@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { useState } from 'react';
 import { canOptimizeNewsletterImage, proxyImage } from '@/shared/lib/image';
-import { MediaFrame } from '@/shared/ui';
+import { AppImage, MediaFrame } from '@/shared/ui';
 
 const explorerImageStyles = {
   thumbnail: { sizes: '56px' },
@@ -22,7 +22,7 @@ export function NewsletterImage({ imageUrl, cover = false, fit = 'cover', varian
 }) {
   const [failedUrl, setFailedUrl] = useState<string | null>(null);
   const [originalUrl, setOriginalUrl] = useState<string | null>(null);
-  const src = proxyImage(imageUrl);
+  const src = proxyImage(imageUrl?.trim());
   const imageStyle = variant ? explorerImageStyles[variant] : {
     sizes: cover ? '(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 576px' : '44px',
   };
@@ -33,7 +33,9 @@ export function NewsletterImage({ imageUrl, cover = false, fit = 'cover', varian
       {src && failedUrl !== src ? (
         <Image src={src} alt="" fill preload={priority} unoptimized={!optimized} sizes={imageStyle.sizes}
           className={fit === 'contain' ? 'object-contain' : 'object-cover'} onError={() => optimized ? setOriginalUrl(src) : setFailedUrl(src)} />
-      ) : null}
+      ) : (
+        <AppImage name="emptyCase" alt="" fill preload={priority} sizes={imageStyle.sizes} className="object-cover" />
+      )}
     </MediaFrame>
   );
 }
