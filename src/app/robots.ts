@@ -27,6 +27,7 @@ export default function robots(): MetadataRoute.Robots {
           '/bookmarks',
           '/search',
           '/explore',
+          '/subscribe',
           '/articles',
           '/login',
           '/signup',

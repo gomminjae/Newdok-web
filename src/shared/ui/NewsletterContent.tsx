@@ -30,6 +30,8 @@ export function NewsletterContent({ html, title, fontScale, highlights, onSelect
 }) {
   const frame = useRef<HTMLIFrameElement>(null);
   const observer = useRef<ResizeObserver | null>(null);
+  const observedDocument = useRef<Document | null>(null);
+  const loadedDocument = useRef<Document | null>(null);
   const [height, setHeight] = useState(640);
   const fontSizes = useRef(new WeakMap<HTMLElement, { font: number; line: number }>());
   const selectionCleanup = useRef<(() => void) | null>(null);
@@ -65,17 +67,50 @@ export function NewsletterContent({ html, title, fontScale, highlights, onSelect
     observer.current.observe(body);
   }, []);
 
-  useEffect(() => { applyReaderOptions(); }, [applyReaderOptions]);
-  useEffect(() => () => { observer.current?.disconnect(); selectionCleanup.current?.(); }, []);
+  const observeContent = useCallback(() => {
+    const document = frame.current?.contentDocument;
+    if (!document?.body?.hasAttribute('data-newdok-reader')) return false;
+    if (observedDocument.current !== document) {
+      observedDocument.current = document;
+      loadedDocument.current = null;
+      fontSizes.current = new WeakMap();
+      selectionCleanup.current?.();
+      selectionCleanup.current = onSelection
+        ? observeSelectionChanges(document, () => onSelection(getTextSelection(document))) : null;
+      resizeContent();
+    }
+    return true;
+  }, [resizeContent, onSelection]);
+
+  useEffect(() => {
+    if (loadedDocument.current === frame.current?.contentDocument) applyReaderOptions();
+  }, [applyReaderOptions]);
+  useEffect(() => {
+    const poll = window.setInterval(() => { if (observeContent()) window.clearInterval(poll); }, 100);
+    if (observeContent()) window.clearInterval(poll);
+    return () => window.clearInterval(poll);
+  }, [html, observeContent]);
+  useEffect(() => {
+    selectionCleanup.current?.();
+    const document = observedDocument.current;
+    selectionCleanup.current = document && onSelection
+      ? observeSelectionChanges(document, () => onSelection(getTextSelection(document))) : null;
+    return () => { selectionCleanup.current?.(); selectionCleanup.current = null; };
+  }, [onSelection]);
+  useEffect(() => () => {
+    observer.current?.disconnect();
+    selectionCleanup.current?.();
+    observedDocument.current = null;
+    loadedDocument.current = null;
+  }, []);
 
   const handleLoad = () => {
-    fontSizes.current = new WeakMap();
-    selectionCleanup.current?.();
+    if (!observeContent()) return;
+    const document = observedDocument.current;
+    if (loadedDocument.current === document) return;
+    loadedDocument.current = document;
     applyReaderOptions();
     resizeContent();
-    const document = frame.current?.contentDocument;
-    if (!document || !onSelection) return;
-    selectionCleanup.current = observeSelectionChanges(document, () => onSelection(getTextSelection(document)));
   };
 
   return (
@@ -84,7 +119,7 @@ export function NewsletterContent({ html, title, fontScale, highlights, onSelect
       title={`${title} 본문`}
       sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"
       referrerPolicy="no-referrer"
-      srcDoc={`<!doctype html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><base target="_blank"></head><body>${html}<style>${CONTENT_STYLES}</style></body></html>`}
+      srcDoc={`<!doctype html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><base target="_blank"></head><body data-newdok-reader>${html}<style>${CONTENT_STYLES}</style></body></html>`}
       onLoad={handleLoad}
       style={{ height }}
       className="block w-full border-0 bg-white"

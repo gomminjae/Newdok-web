@@ -14,17 +14,19 @@ import { NewsletterImage } from '@/widgets/landing/NewsletterImage';
 type Notice = { message: string; isError: boolean };
 
 export function BrandDetailClient({ id, initialBrand }: { id: number; initialBrand?: BrandDetail }) {
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, isHydrated } = useAuth();
   const [visibleCount, setVisibleCount] = useState(12);
   const [notice, setNotice] = useState<Notice | null>(null);
   const [showPauseDialog, setShowPauseDialog] = useState(false);
   const [showSubscribeDialog, setShowSubscribeDialog] = useState(false);
   const pause = usePauseSubscription();
   const resume = useResumeSubscription();
-  const { data: brand, isPending, isError, refetch } = useQuery({
+  const { data: loadedBrand, isPending, isError, isPlaceholderData, refetch } = useQuery({
     ...newsletterQueries.brand(id, isLoggedIn),
     initialData: isLoggedIn ? undefined : initialBrand,
+    placeholderData: isLoggedIn ? initialBrand : undefined,
   });
+  const brand = loadedBrand ?? initialBrand;
 
   useEffect(() => {
     if (!notice) return;
@@ -32,20 +34,21 @@ export function BrandDetailClient({ id, initialBrand }: { id: number; initialBra
     return () => window.clearTimeout(timeout);
   }, [notice]);
 
-  if (isPending) {
+  if (!brand && isPending) {
     return <LoadingState label="뉴스레터를 불러오는 중이에요." />;
   }
-  if (!brand || isError) {
+  if (!brand || (!isLoggedIn && isError)) {
     return (
       <div role="alert" className="py-24 text-center">
         <h1 className="text-xl font-bold">뉴스레터를 불러오지 못했어요.</h1>
         <Button variant="ghost" size="compact" onClick={() => void refetch()} className="mt-5">다시 시도</Button>
-        <div className="mt-3"><ButtonLink href="/search" variant="neutral-outline" size="compact">뉴스레터 둘러보기</ButtonLink></div>
+        <div className="mt-3"><ButtonLink href="/explore" variant="neutral-outline" size="compact">뉴스레터 둘러보기</ButtonLink></div>
       </div>
     );
   }
 
-  const status = isLoggedIn ? brand.isSubscribed : undefined;
+  const subscriptionReady = isHydrated && (!isLoggedIn || (!isPlaceholderData && !isError));
+  const status = isLoggedIn && subscriptionReady ? brand.isSubscribed : undefined;
   const isActive = status === 'CONFIRMED';
   const isPaused = status === 'PAUSED';
   const isChecking = status === 'CHECK';
@@ -53,7 +56,7 @@ export function BrandDetailClient({ id, initialBrand }: { id: number; initialBra
   const subscribeUrl = /^https?:\/\//i.test(brand.subscribeUrl) ? brand.subscribeUrl : null;
 
   async function changeSubscription() {
-    if (isUpdating || !isLoggedIn || (!isActive && !isPaused)) return;
+    if (isUpdating || !isLoggedIn || !subscriptionReady || (!isActive && !isPaused)) return;
     setNotice(null);
     try {
       if (isActive) await pause.mutateAsync(id);
@@ -84,7 +87,10 @@ export function BrandDetailClient({ id, initialBrand }: { id: number; initialBra
               {brand.publicationCycle || '발행 일정은 발행처에서 확인해주세요.'}
             </p>
           </div>
-          {isActive || isPaused ? (
+          {!subscriptionReady ? (
+            isError ? <Button size="short" variant="neutral-outline" onClick={() => void refetch()} className="w-[95px] shrink-0">다시 시도</Button>
+              : <span role="status" aria-label="구독 상태 확인 중" className="h-12 w-[95px] shrink-0" />
+          ) : isActive || isPaused ? (
             <Button size="short" variant={isActive ? 'neutral-outline' : 'outline'} disabled={isUpdating} aria-haspopup={isActive ? 'dialog' : undefined} onClick={() => isActive ? setShowPauseDialog(true) : void changeSubscription()} className="w-[95px] shrink-0">
               {isUpdating ? '변경 중…' : isActive ? '구독중지' : '구독재개'}
             </Button>
@@ -98,6 +104,7 @@ export function BrandDetailClient({ id, initialBrand }: { id: number; initialBra
         <section aria-label="뉴스레터 소개" className="flex min-w-0 flex-col py-6 xl:col-start-2 xl:rounded-xl xl:bg-bg xl:p-5 xl:shadow-brand-section">
           <p className="whitespace-pre-line break-words text-sm leading-6 text-caption-body">{brand.detailDescription || '뉴스레터의 지난 아티클을 읽어보세요.'}</p>
           {!isActive && !isPaused && !isChecking && subscribeUrl && <p className="mt-2 text-xs leading-5 text-caption-alternative">구독 신청은 발행처 페이지에서 진행돼요.</p>}
+          {isLoggedIn && isError && <p role="alert" className="mt-2 text-xs text-error">구독 상태를 불러오지 못했어요.</p>}
           <div className="absolute inset-x-0 top-3 flex items-start justify-between gap-3 xl:static xl:mt-auto xl:pt-6">
             <ul aria-label="관심사" className="flex flex-wrap gap-1.5">
               {brand.interests.slice(0, 3).map((interest) => <li key={interest.id}><Chip tone="overlay">{interest.name}</Chip></li>)}

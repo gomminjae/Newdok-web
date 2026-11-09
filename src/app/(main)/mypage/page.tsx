@@ -26,7 +26,7 @@ const FAQS = [
 ];
 
 export default function MyPage() {
-  const { isLoggedIn, logout } = useAuth();
+  const { isLoggedIn, isHydrated, logout } = useAuth();
   const { message, showToast } = useToast();
   const [panel, setPanel] = useState<Panel | null>(null);
   const [copyError, setCopyError] = useState('');
@@ -39,6 +39,7 @@ export default function MyPage() {
     catch { setCopyError('복사하지 못했어요. 이메일 주소를 선택해 직접 복사해주세요.'); }
   }
 
+  if (!isHydrated) return <div className="-mx-4 flex min-h-[calc(100dvh-var(--header-height)-var(--tabbar-height))] flex-col bg-bg md:-mx-6 xl:-mx-10"><LoadingState label="마이페이지를 준비하는 중이에요." className="flex-1" /></div>;
   if (!isLoggedIn) return <GuestNotice />;
   return <div className="-mx-4 flex min-h-[calc(100dvh-var(--header-height)-var(--tabbar-height))] flex-col bg-bg md:-mx-6 md:min-h-[calc(100dvh-var(--header-height))] xl:-mx-10">
     <div className="px-5 pt-8 pb-6 md:px-7 xl:px-10">

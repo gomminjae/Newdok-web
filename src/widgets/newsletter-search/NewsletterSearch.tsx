@@ -36,7 +36,7 @@ function SearchContent() {
     }
     const params = new URLSearchParams();
     if (next) params.set('q', next);
-    window.history.replaceState(null, '', `/search/newsletters${next ? `?${params}` : ''}`);
+    window.history.replaceState(null, '', `/search${next ? `?${params}` : ''}`);
   }, [keyword, queryClient]);
 
   return <section aria-label="뉴스레터 검색" className="-mx-4 min-h-[calc(100dvh-var(--header-height)-var(--tabbar-height))] bg-bg-system md:-mx-6 xl:-mx-10">
@@ -121,7 +121,7 @@ const SearchForm = memo(function SearchForm({ keyword, onSearch }: { keyword: st
       onChange={(event) => { setValue(event.target.value); if (!event.target.value) onSearch(''); }} placeholder="검색어를 입력하세요."
       onKeyDown={(event) => { if (event.key === 'Enter' && (event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229)) event.preventDefault(); }}
       className="min-w-0 flex-1" />
-    <Button variant="ghost-neutral" size="compact" aria-label={value ? '검색어 지우기' : '검색 닫기'} onClick={() => { if (value) { setValue(''); onSearch(''); inputRef.current?.focus(); } else if (window.history.length > 1) router.back(); else router.replace('/search'); }}><Icon name="Line Close" /></Button>
+    <Button variant="ghost-neutral" size="compact" aria-label={value ? '검색어 지우기' : '검색 닫기'} onClick={() => { if (value) { setValue(''); onSearch(''); inputRef.current?.focus(); } else if (window.history.length > 1) router.back(); else router.replace('/explore'); }}><Icon name="Line Close" /></Button>
   </form>;
 });
 

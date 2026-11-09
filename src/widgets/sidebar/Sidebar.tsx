@@ -7,9 +7,9 @@ import { Icon } from '@/shared/ui';
 
 const NAV_ITEMS = [
   { href: '/home', label: '홈', lineIcon: 'Line Home' },
-  { href: '/explore', label: '구독관리', lineIcon: 'Line Mailbox' },
+  { href: '/subscribe', label: '구독관리', lineIcon: 'Line Mailbox' },
   { href: '/bookmarks', label: '북마크함', lineIcon: 'Line Bookmark' },
-  { href: '/search', label: '둘러보기', lineIcon: 'Line Newsletter' },
+  { href: '/explore', label: '둘러보기', lineIcon: 'Line Newsletter' },
   { href: '/mypage', label: '마이페이지', lineIcon: 'Line User' },
 ] as const;
 
@@ -19,7 +19,7 @@ export function Sidebar() {
   const mobileItems = [NAV_ITEMS[3], NAV_ITEMS[1], NAV_ITEMS[0], NAV_ITEMS[2], NAV_ITEMS[4]];
   const isItemActive = (href: string) => pathname === href ||
     (href === '/home' && (pathname === '/' || isNewsletterDetail)) ||
-    (href === '/search' && (pathname === '/newsletters' || pathname.startsWith('/search/')));
+    (href === '/explore' && pathname === '/newsletters');
 
   return (
     <>

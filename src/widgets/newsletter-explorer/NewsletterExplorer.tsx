@@ -24,7 +24,7 @@ function ExplorerRoute({ initialBrands }: { initialBrands?: NewsletterBrand[] })
     const query = new URLSearchParams();
     const keyword = (params.get('q') ?? '').slice(0, 100);
     if (keyword) query.set('q', keyword);
-    redirect(`/search/newsletters${keyword ? `?${query}` : ''}`);
+    redirect(`/search${keyword ? `?${query}` : ''}`);
   }
   return <ExplorerContent initialBrands={initialBrands} />;
 }
@@ -35,7 +35,7 @@ function readIds(params: URLSearchParams, key: string) {
 
 function ExplorerContent({ initialBrands }: { initialBrands?: NewsletterBrand[] }) {
   const { isLoggedIn } = useAuth();
-  const pathname = usePathname() ?? '/search';
+  const pathname = usePathname() ?? '/explore';
   const searchParams = useSearchParams() ?? new URLSearchParams();
   const tabs = isLoggedIn
     ? (['recommend', 'all'] as const)

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { memo, useCallback, useMemo, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { memo, useCallback, useMemo, useState, type ReactNode } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { clsx } from 'clsx';
 import { articleApi, articleKeys, articleQueries, type Article } from '@/entities/article';
@@ -13,9 +13,6 @@ import { NewsletterImage } from '@/widgets/landing/NewsletterImage';
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 const EMPTY_ARTICLES: Article[] = [];
-const subscribeToHydration = () => () => {};
-const clientSnapshot = () => true;
-const serverSnapshot = () => false;
 
 function today() {
   const date = new Date();
@@ -24,13 +21,12 @@ function today() {
 }
 
 export default function HomePage() {
-  const { isLoggedIn } = useAuth();
-  return <HomeContent key={isLoggedIn ? 'member' : 'guest'} isLoggedIn={isLoggedIn} />;
+  const { isLoggedIn, isHydrated } = useAuth();
+  return <HomeContent key={isLoggedIn ? 'member' : 'guest'} isLoggedIn={isLoggedIn} isHydrated={isHydrated} />;
 }
 
-function HomeContent({ isLoggedIn }: { isLoggedIn: boolean }) {
+function HomeContent({ isLoggedIn, isHydrated }: { isLoggedIn: boolean; isHydrated: boolean }) {
   // 정적 HTML에 빌드 시점의 날짜가 남지 않도록 브라우저 날짜가 준비되면 표시한다.
-  const isHydrated = useSyncExternalStore(subscribeToHydration, clientSnapshot, serverSnapshot);
   const [selectedDate, setSelectedDate] = useState(today);
   const [displayedMonth, setDisplayedMonth] = useState(today);
   const [showCalendar, setShowCalendar] = useState(false);
@@ -154,8 +150,8 @@ function HomeEmptyState({ type, selectedDate, refreshButton }: {
   const dayId = selectedDate.getDay() || 7;
   const content = {
     guest: { image: 'nologin' as const, title: '회원이 되면 뉴스레터를\n간편하게 모아볼 수 있어요!', subtitle: '', button: '회원가입', href: '/intro' },
-    noSubscriptions: { image: 'nosubscribe' as const, title: '구독 중인 뉴스레터가 없어요.', subtitle: '뉴스레터를 구독하면\n발행일에 맞춰 여기에 배달해드려요.', button: '내게 필요한 뉴스레터 추천받기', href: '/search?tab=recommend' },
-    noArticles: { image: 'nodata' as const, title: '오늘 도착한 아티클이 없어요.', subtitle: '구독 신청 이후 수신된 아티클만 볼 수 있어요.', button: `${weekday}에 발행되는 뉴스레터 보기`, href: `/search?tab=all&day=${dayId}` },
+    noSubscriptions: { image: 'nosubscribe' as const, title: '구독 중인 뉴스레터가 없어요.', subtitle: '뉴스레터를 구독하면\n발행일에 맞춰 여기에 배달해드려요.', button: '내게 필요한 뉴스레터 추천받기', href: '/explore?tab=recommend' },
+    noArticles: { image: 'nodata' as const, title: '오늘 도착한 아티클이 없어요.', subtitle: '구독 신청 이후 수신된 아티클만 볼 수 있어요.', button: `${weekday}에 발행되는 뉴스레터 보기`, href: `/explore?tab=all&day=${dayId}` },
   }[type];
 
   return <div className="flex flex-col items-center pb-8 text-center">

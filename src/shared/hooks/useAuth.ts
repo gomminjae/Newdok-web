@@ -23,9 +23,13 @@ function getServerSnapshot() {
   return false;
 }
 
+const subscribeToHydration = () => () => {};
+const clientHydrated = () => true;
+
 export function useAuth() {
   const router = useRouter();
   const isLoggedIn = useSyncExternalStore(subscribe, getIsLoggedIn, getServerSnapshot);
+  const isHydrated = useSyncExternalStore(subscribeToHydration, clientHydrated, getServerSnapshot);
 
   const logout = useCallback(() => {
     clearAccessToken();
@@ -34,7 +38,7 @@ export function useAuth() {
     router.push('/login');
   }, [router]);
 
-  return { isLoggedIn, logout };
+  return { isLoggedIn, isHydrated, logout };
 }
 
 /** 비회원 → 홈으로 진입 (로그인 없이 앱 이용) */

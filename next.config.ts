@@ -8,6 +8,18 @@ const BACKEND_URL = getApiBaseUrl();
 const nextConfig: NextConfig = {
   env: { NEXT_PUBLIC_APP_ENV: getAppEnvironment() },
   images: { remotePatterns: newsletterImagePatterns },
+  async redirects() {
+    return [
+      { source: '/search/newsletters', destination: '/search', permanent: false },
+      ...['tab', 'industry', 'day', 'orderOpt'].map((key) => ({
+        source: '/search',
+        has: [{ type: 'query' as const, key }],
+        missing: [{ type: 'query' as const, key: 'q' }],
+        destination: '/explore',
+        permanent: false,
+      })),
+    ];
+  },
   async rewrites() {
     return [
       {

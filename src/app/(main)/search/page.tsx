@@ -1,5 +1,5 @@
-import { NewsletterExplorer } from '@/widgets/newsletter-explorer/NewsletterExplorer';
+import { NewsletterSearch } from '@/widgets/newsletter-search/NewsletterSearch';
 
 export default function SearchPage() {
-  return <NewsletterExplorer />;
+  return <NewsletterSearch />;
 }

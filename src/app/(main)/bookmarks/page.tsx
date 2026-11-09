@@ -17,7 +17,7 @@ const SORT_BY_MAP: Record<string, BookmarkSort> = {
 };
 
 export default function BookmarksPage() {
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, isHydrated } = useAuth();
   const categoryTrack = useRef<HTMLDivElement>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('전체');
   const [selectedInterestId, setSelectedInterestId] = useState<number | undefined>();
@@ -29,7 +29,7 @@ export default function BookmarksPage() {
     enabled: isLoggedIn,
   });
 
-  const { data: bookmarkData, isLoading, isError, refetch } = useQuery({
+  const { data: bookmarkData, isPending, isError, refetch } = useQuery({
     ...bookmarkQueries.list(selectedInterestId, SORT_BY_MAP[sortOrder]),
     enabled: isLoggedIn,
   });
@@ -42,8 +42,8 @@ export default function BookmarksPage() {
   return (
     <div className="-mx-4 flex min-h-[calc(100dvh-var(--header-height)-var(--tabbar-height))] flex-col bg-bg-system md:-mx-6 md:min-h-[calc(100dvh-var(--header-height))] xl:-mx-10">
       {/* 카테고리 필터 */}
-      <div className="flex items-center gap-1 px-4 py-4">{categories.length > 3 && <Button variant="outline" size="icon" radius="xl" aria-label="이전 관심사" onClick={() => categoryTrack.current?.scrollBy({ left: -160, behavior: 'smooth' })}><Icon name="Back" size={16} /></Button>}<div ref={categoryTrack} className="landing-scrollbar-none flex flex-1 gap-1 overflow-x-auto">
-        {(isLoggedIn ? categories : [{ id: undefined, name: '전체' }]).map((cat) => (
+      <div className="flex min-h-[66px] items-center gap-1 px-4 py-4">{isHydrated && categories.length > 3 && <Button variant="outline" size="icon" radius="xl" aria-label="이전 관심사" onClick={() => categoryTrack.current?.scrollBy({ left: -160, behavior: 'smooth' })}><Icon name="Back" size={16} /></Button>}<div ref={categoryTrack} className="landing-scrollbar-none flex flex-1 gap-1 overflow-x-auto">
+        {(isHydrated ? categories : []).map((cat) => (
           <Chip
             key={cat.id ?? 'all'}
             as="button"
@@ -56,25 +56,27 @@ export default function BookmarksPage() {
           >
             {cat.name}
           </Chip>
-        ))}</div>{categories.length > 3 && <Button variant="outline" size="icon" radius="xl" aria-label="다음 관심사" onClick={() => categoryTrack.current?.scrollBy({ left: 160, behavior: 'smooth' })}><Icon name="Line right" size={16} /></Button>}
+        ))}</div>{isHydrated && categories.length > 3 && <Button variant="outline" size="icon" radius="xl" aria-label="다음 관심사" onClick={() => categoryTrack.current?.scrollBy({ left: 160, behavior: 'smooth' })}><Icon name="Line right" size={16} /></Button>}
       </div>
 
       {interestsError && <div role="alert" className="px-6 text-sm"><p>관심사 필터를 불러오지 못했어요.</p><Button variant="ghost" size="compact" onClick={() => void refetchInterests()}>다시 시도</Button></div>}
       {showSort && <Dialog title="북마크 정렬" onClose={() => setShowSort(false)}><div>{Object.keys(SORT_BY_MAP).map((order) => <Button key={order} variant="menu" size="lg" fullWidth aria-pressed={sortOrder === order} onClick={() => { setSortOrder(order); setShowSort(false); }}>{order}{sortOrder === order && <Icon name="Line Checkmark" size={20} />}</Button>)}</div></Dialog>}
       {/* 정렬 정보 */}
-      <div className="flex items-center justify-between bg-bg-system px-4 pb-3">
+      <div className="flex min-h-[50px] items-center justify-between bg-bg-system px-4 pb-3">
         <span className="text-sm font-bold text-caption-strong">
-          총 {isLoggedIn ? bookmarkData?.totalAmount ?? 0 : 0}개
+          {isHydrated ? `총 ${isLoggedIn ? bookmarkData?.totalAmount ?? 0 : 0}개` : '\u00a0'}
         </span>
-        <Chip as="button" aria-label={`정렬: ${sortOrder}`} aria-haspopup="dialog" onClick={() => setShowSort(true)}>
+        {isHydrated && <Chip as="button" aria-label={`정렬: ${sortOrder}`} aria-haspopup="dialog" onClick={() => setShowSort(true)}>
           {sortOrder}
           <Icon name="Line Arrow Transfer" size={16} />
-        </Chip>
+        </Chip>}
       </div>
 
-      {!isLoggedIn ? (
+      {!isHydrated ? (
+        <LoadingState label="북마크를 준비하는 중이에요." className="flex-1" />
+      ) : !isLoggedIn ? (
         <BookmarkEmpty guest />
-      ) : isLoading ? (
+      ) : isPending ? (
         <LoadingState label="북마크를 불러오는 중이에요." className="flex-1" />
       ) : isError ? (
         <div role="alert"><EmptyState title="북마크를 불러오지 못했어요." cta={<Button onClick={() => void refetch()}>다시 시도</Button>} /></div>

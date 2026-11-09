@@ -73,6 +73,53 @@ test('Vercel previews block indexing even when production indexing is enabled', 
   assert.deepEqual(plain(preview), { rules: [{ userAgent: '*', disallow: ['/'] }] });
   const production = harness(undefined, {}, { ...indexingEnv, VERCEL_ENV: 'production' }).load('src/app/robots.ts').default();
   assert.equal(production.rules[0].allow.includes('/newsletters'), true);
+  assert.equal(production.rules[0].disallow.includes('/subscribe'), true);
+});
+
+test('web routes serve search and explore on their named pages and preserve the public directory', async () => {
+  const app = harness(undefined, {
+    '@/widgets/newsletter-search/NewsletterSearch': { NewsletterSearch: 'SearchView' },
+    '@/widgets/newsletter-explorer/NewsletterExplorer': { NewsletterExplorer: 'ExplorerView' },
+    '@/entities/newsletter/api/public-newsletter.server': { getPublicNewsletters: async () => [] },
+  });
+  assert.equal(app.load('src/app/(main)/search/page.tsx').default().type, 'SearchView');
+  assert.equal(app.load('src/app/(main)/explore/page.tsx').default().type, 'ExplorerView');
+  assert.equal(existsSync(path.join(root, 'src/app/(main)/subscribe/page.tsx')), true);
+  assert.equal(existsSync(path.join(root, 'src/app/(main)/search/newsletters/page.tsx')), false);
+  const directory = app.load('src/app/newsletters/page.tsx');
+  assert.equal(directory.metadata.alternates.canonical, '/newsletters');
+  assert.equal((await directory.default()).type, 'ExplorerView');
+});
+
+test('old keyword and filter links redirect to the appropriate new route without redirecting searches', async () => {
+  const config = harness(undefined, {}, { APP_ENV: 'development', API_INTERNAL_URL: 'https://api-dev.newdok.store' }).load('next.config.ts').default;
+  const redirects = await config.redirects();
+  const match = (url) => {
+    const { pathname, searchParams } = new URL(url, 'https://newdok.test');
+    return redirects.find((rule) => rule.source === pathname
+      && (rule.has ?? []).every(({ key }) => searchParams.has(key))
+      && (rule.missing ?? []).every(({ key }) => !searchParams.has(key)));
+  };
+  assert.equal(match('/search/newsletters?q=%EB%89%B4%EB%8B%89').destination, '/search');
+  for (const query of ['tab=recommend', 'industry=2', 'day=3', 'orderOpt=%EC%B5%9C%EC%8B%A0%EC%88%9C']) {
+    assert.equal(match(`/search?${query}`).destination, '/explore');
+  }
+  for (const url of ['/search', '/search?q=%EB%89%B4%EB%8B%89', '/search?q=hello&tab=all', '/explore?tab=all', '/newsletters']) {
+    assert.equal(match(url), undefined, url);
+  }
+  assert.ok(redirects.every(({ permanent }) => permanent === false));
+});
+
+test('only the matching navigation item is active for search, explore, subscribe, and the directory', () => {
+  for (const [pathname, selected] of [['/search', null], ['/explore', '/explore'], ['/subscribe', '/subscribe'], ['/newsletters', '/explore']]) {
+    const app = harness(undefined, {
+      'next/link': 'a',
+      'next/navigation': { usePathname: () => pathname },
+      '@/shared/ui': { Icon: 'Icon' },
+    });
+    const links = nodes(app.load('src/widgets/sidebar/Sidebar.tsx').Sidebar()).filter((node) => node.type === 'a');
+    assert.deepEqual(links.filter((node) => node.props['aria-current'] === 'page').map((node) => node.props.href), selected ? [selected, selected] : [], pathname);
+  }
 });
 
 test('Preview and Production use their own API for both rewrites and server requests', async () => {
@@ -467,7 +514,7 @@ test('completed newsletter searches announce real counts without retaining pendi
   }
 });
 
-function componentHarness(filename, exported, { loggedIn = true, profile = { id: 5, nickname: '뉴독5', industryId: 10, interests: [], subscribeEmail: 'reader@example.com' }, options, queryError = false, queryStates = {} } = {}) {
+function componentHarness(filename, exported, { loggedIn = true, hydrated = true, profile = { id: 5, nickname: '뉴독5', industryId: 10, interests: [], subscribeEmail: 'reader@example.com' }, options, queryError = false, queryStates = {}, moduleOverrides = {} } = {}) {
   const slots = [];
   let cursor = 0;
   const queries = [];
@@ -498,8 +545,9 @@ function componentHarness(filename, exported, { loggedIn = true, profile = { id:
       },
       useQueryClient: () => ({ invalidateQueries: async ({ queryKey }) => { invalidations.push(plain(queryKey)); } }),
     },
-    '@/shared/hooks': { useAuth: () => ({ isLoggedIn: loggedIn, logout() {} }), useToast: () => ({ message: null, showToast: (value) => saved.push(value) }) },
+    '@/shared/hooks': { useAuth: () => ({ isLoggedIn: loggedIn, isHydrated: hydrated, logout() {} }), useToast: () => ({ message: null, showToast: (value) => saved.push(value) }) },
     '@/shared/ui': ui,
+    ...moduleOverrides,
   });
   const component = app.load(filename)[exported];
   return { ...app, queries, invalidations, saved, render(props = {}) { cursor = 0; queries.length = 0; return component(props); } };
@@ -585,6 +633,37 @@ test('a bookmark request failure renders retry rather than the empty state', () 
   const app = componentHarness('src/app/(main)/bookmarks/page.tsx', 'default', { queryError: true });
   const tree = app.render();
   assert.equal(nodes(tree).some((node) => node.type === 'EmptyState' && node.props.title === '북마크를 불러오지 못했어요.'), true);
+});
+
+test('private pages do not show a guest state before auth hydration', () => {
+  for (const filename of ['src/app/(main)/bookmarks/page.tsx', 'src/app/(main)/mypage/page.tsx']) {
+    const app = componentHarness(filename, 'default', { loggedIn: false, hydrated: false });
+    const tree = app.render();
+    assert.equal(nodes(tree).some((node) => node.type === 'GuestNotice' || node.type === 'BookmarkEmpty'), false);
+    assert.equal(nodes(tree).some((node) => node.type === 'LoadingState'), true);
+  }
+});
+
+test('public newsletter content stays visible while member subscription state loads', () => {
+  const brand = { brandName: '뉴독', imageUrl: null, publicationCycle: '', detailDescription: '소개', subscribeUrl: 'https://newdok.test', brandArticleList: [], interests: [] };
+  const moduleOverrides = {
+    '@/entities/newsletter': {
+      newsletterQueries: { brand: (id, member) => ({ queryKey: ['newsletter', 'brand', id, member] }) },
+      usePauseSubscription: () => ({ isPending: false }),
+      useResumeSubscription: () => ({ isPending: false }),
+    },
+    '@/features/subscription/SubscribeDialog': { SubscribeDialog: 'SubscribeDialog' },
+    '@/widgets/landing/NewsletterImage': { NewsletterImage: 'NewsletterImage' },
+  };
+  const app = componentHarness('src/app/newsletters/[id]/BrandDetailClient.tsx', 'BrandDetailClient', {
+    loggedIn: true, hydrated: true, moduleOverrides,
+    queryStates: { true: { data: brand, isPending: false, isPlaceholderData: true } },
+  });
+  const tree = app.render({ id: 5, initialBrand: brand });
+  assert.equal(app.queries[0].placeholderData, brand);
+  assert.match(text(tree), /뉴독/);
+  assert.equal(nodes(tree).some((node) => node.type === 'LoadingState'), false);
+  assert.equal(control(tree, '구독하기'), undefined);
 });
 
 function profileField(app, props) {

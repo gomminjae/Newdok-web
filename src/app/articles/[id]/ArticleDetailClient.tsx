@@ -12,6 +12,8 @@ import { userQueries } from '@/entities/user';
 import { ApiError, getErrorMessage } from '@/shared/api/client';
 import { NewsletterImage } from '@/widgets/landing/NewsletterImage';
 
+const SCROLL_TOP_THRESHOLD = 400;
+
 export function ArticleDetailClient({ id, archive = false }: { id: number; archive?: boolean }) {
   const { isLoggedIn } = useAuth();
   const { message, showToast } = useToast();
@@ -31,11 +33,29 @@ export function ArticleDetailClient({ id, archive = false }: { id: number; archi
   };
 
   useEffect(() => {
-    const handleScroll = () => {
-      setShowScrollTop(window.scrollY > 400);
+    let frame = 0;
+    let last = false;
+
+    const update = () => {
+      frame = 0;
+      const next = window.scrollY > SCROLL_TOP_THRESHOLD;
+      if (next !== last) {
+        last = next;
+        setShowScrollTop(next);
+      }
     };
+
+    const handleScroll = () => {
+      if (frame) return;
+      frame = requestAnimationFrame(update);
+    };
+
+    update();
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (frame) cancelAnimationFrame(frame);
+    };
   }, []);
 
   const scrollToTop = () => {
@@ -53,7 +73,7 @@ export function ArticleDetailClient({ id, archive = false }: { id: number; archi
       <main className="flex min-h-dvh flex-col items-center justify-center px-5 text-center text-base text-caption-neutral">
         <h1 className="font-bold text-caption-heavy">{error instanceof ApiError && error.status === 404 ? '아티클을 찾을 수 없어요.' : '아티클을 불러오지 못했어요.'}</h1>
         <Button variant="ghost" size="compact" onClick={() => void refetch()} className="mt-5">다시 시도</Button>
-        <ButtonLink href="/search" variant="neutral-outline" size="compact" className="mt-3">뉴스레터 둘러보기</ButtonLink>
+        <ButtonLink href="/explore" variant="neutral-outline" size="compact" className="mt-3">뉴스레터 둘러보기</ButtonLink>
       </main>
     );
   }
@@ -61,7 +81,7 @@ export function ArticleDetailClient({ id, archive = false }: { id: number; archi
   return (
     <main className="min-h-dvh bg-bg">
       <article className="mx-auto w-full max-w-3xl">
-        <ArticleReader key={`${id}-${profile.data?.id ?? 'guest'}-${archive}`} html={article.articleHTML} title={article.articleTitle} articleId={id} userId={isLoggedIn ? profile.data?.id : undefined} archive={archive} renderHeader={(controls) => <header className="sticky top-0 z-10 bg-bg">
+        <ArticleReader key={`${id}-${isLoggedIn ? 'member' : 'guest'}-${archive}`} html={article.articleHTML} title={article.articleTitle} articleId={id} userId={isLoggedIn ? profile.data?.id : undefined} archive={archive} renderHeader={(controls) => <header className="sticky top-0 z-10 bg-bg">
         <div className="flex h-11 w-full items-center gap-2 px-5">
           <Button variant="ghost-neutral" size="icon" aria-label="뒤로 가기" onClick={() => window.history.length > 1 ? router.back() : router.replace(`/newsletters/${article.brandId}`)}><Icon name="Back" size={28} /></Button>
           <Link

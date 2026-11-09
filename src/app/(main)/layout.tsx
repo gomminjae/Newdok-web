@@ -12,7 +12,7 @@ export default function MainLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="contents has-[.home-page]:[--header-height:66px] md:has-[.home-page]:[--header-height:56px]">
+    <div className="app-main-shell contents">
       <Header />
       <div className="min-h-[calc(100dvh-var(--header-height))]">
         <Sidebar />

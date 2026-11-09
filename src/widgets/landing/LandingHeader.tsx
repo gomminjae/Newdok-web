@@ -26,7 +26,7 @@ export function LandingHeader() {
           {isLoggedIn ? '내 뉴스레터' : '로그인'}
         </Link>
         <Link
-          href="/search/newsletters"
+          href="/search"
           aria-label="뉴스레터 검색"
           className="flex h-11 w-11 items-center justify-center rounded-full transition-colors hover:bg-bg-system"
         >
