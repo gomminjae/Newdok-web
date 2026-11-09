@@ -8,13 +8,13 @@ export function LandingHeader() {
   const { isLoggedIn } = useAuth();
   return (
     <header className="sticky top-0 z-50 flex h-[var(--header-height)] items-center justify-between border-b border-line-neutral bg-bg px-4 md:px-6 xl:px-8">
-      <Link href="/" aria-label="Newdok 홈">
+      <Link href="/" aria-label="Newdok 홈" className="flex h-11 shrink-0 items-center">
         <AppImage
-          name="darklogo"
+          name="logo"
           alt="Newdok"
-          width={90}
-          height={16}
-          className="h-4 w-auto"
+          width={140}
+          height={32}
+          className="h-7 w-auto sm:h-8"
         />
       </Link>
       <nav aria-label="랜딩 페이지 바로가기" className="flex items-center gap-3">

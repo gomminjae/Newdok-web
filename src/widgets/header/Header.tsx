@@ -23,10 +23,7 @@ export function Header() {
   return (
     <header className={clsx('flex md:grid', 'sticky top-0 z-40 h-[var(--header-height)] items-center justify-between px-5 md:grid-cols-[var(--sidebar-width)_minmax(0,1fr)_auto] md:px-0', isHome ? 'bg-bg-system md:bg-bg' : 'bg-bg')}>
       <Link href="/" aria-label="Newdok 홈" className={clsx(isHome || isSearch ? 'flex' : 'hidden md:flex', 'h-11 items-center justify-center')}>
-        <span className={clsx('block', isHome ? 'w-[140px] md:w-[90px]' : 'w-[90px]')}>
-          {isHome && <AppImage name="logo" alt="Newdok" width={140} height={32} className="h-8 w-[140px] md:hidden" />}
-          <AppImage name="darklogo" alt="Newdok" width={90} height={16} className={clsx('h-4 w-[90px] max-w-none', isHome && 'hidden md:block')} />
-        </span>
+        <AppImage name="logo" alt="Newdok" width={140} height={32} className="h-8 w-auto md:h-6 xl:h-8" />
       </Link>
       {!isHome && !isSearch && !isNewsletterDetail && <Link href="/home" aria-label="홈으로 이동" className="-ml-3 flex h-11 w-11 items-center justify-center text-caption-heavy md:ml-0 md:hidden"><Icon name="Line Home" /></Link>}
       {isNewsletterDetail && <button type="button" aria-label="뒤로 가기" onClick={() => window.history.length > 1 ? router.back() : router.replace('/search')} className="flex h-11 w-11 items-center justify-center md:hidden">
