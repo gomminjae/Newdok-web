@@ -2,6 +2,8 @@
 
 Next.js 16 기반 뉴독 웹입니다.
 
+GitHub 저장소: [newdok-dev/Newdok-web](https://github.com/newdok-dev/Newdok-web)
+
 ## 로컬 실행
 
 `.env.example`을 참고해 `.env.local`에 환경변수를 설정하고 실행합니다.
