@@ -1,4 +1,6 @@
 @layer components {
+  /* Compute Figma's -2.5% tracking at each element's own font size. */
+  .nd-dialog[data-variant='notice'] :where(h2, p, .nd-button) { letter-spacing: -0.025em; }
   .nd-loading { @apply flex items-center justify-center gap-2 text-sm font-medium leading-5 text-caption-neutral; font-family: var(--font-spoqa), var(--font-sans), sans-serif; }
   .nd-loading[data-layout='section'] { min-height: 112px; padding: 32px 24px; }
   .nd-loading[data-layout='page'] { min-height: 100dvh; padding: 32px 24px; }

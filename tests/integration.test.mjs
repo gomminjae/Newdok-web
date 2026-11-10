@@ -520,6 +520,7 @@ function componentHarness(filename, exported, { loggedIn = true, hydrated = true
   const queries = [];
   const invalidations = [];
   const saved = [];
+  const effects = [];
   const ui = Object.fromEntries(['AppImage', 'Button', 'ButtonLink', 'Chip', 'Dialog', 'EmptyState', 'GuestNotice', 'Icon', 'Toast', 'SegmentPicker'].map((name) => [name, name]));
   ui.Checkbox = 'input';
   ui.Dropdown = 'Dropdown';
@@ -528,7 +529,12 @@ function componentHarness(filename, exported, { loggedIn = true, hydrated = true
   ui.MediaFrame = 'MediaFrame';
   const app = harness(({ url }) => ({ body: url.pathname.endsWith('/preInvestigate') ? { data: [] } : {} }), {
     react: {
-      memo: (fn) => fn, useCallback: (fn) => fn, useMemo: (fn) => fn(), useEffect: () => {}, useRef: (value) => ({ current: value }), useId: () => 'test-id',
+      memo: (fn) => fn, useCallback: (fn) => fn, useMemo: (fn) => fn(), useEffect: (effect) => { effects.push(effect); }, useId: () => 'test-id',
+      useRef(value) {
+        const index = cursor++;
+        if (!(index in slots)) slots[index] = { current: value };
+        return slots[index];
+      },
       useState(initial) {
         const index = cursor++;
         if (!(index in slots)) slots[index] = typeof initial === 'function' ? initial() : initial;
@@ -550,7 +556,7 @@ function componentHarness(filename, exported, { loggedIn = true, hydrated = true
     ...moduleOverrides,
   });
   const component = app.load(filename)[exported];
-  return { ...app, queries, invalidations, saved, render(props = {}) { cursor = 0; queries.length = 0; return component(props); } };
+  return { ...app, queries, invalidations, saved, effects, render(props = {}) { cursor = 0; queries.length = 0; return component(props); } };
 }
 function nodes(tree) {
   if (tree == null || typeof tree === 'boolean') return [];
@@ -601,32 +607,58 @@ test('preference form requires three interests then saves and refreshes profile/
   assert.equal(completed, true);
 });
 
-test('subscription flow gates guests and guides members back to the confirmation mail', () => {
-  const props = { brand: { brandId: 321, brandName: '뉴닉', subscribeUrl: 'https://example.com/subscribe', subscribeCheck: true }, onClose() {} };
+test('subscription notices follow the Figma state and confirmation designs while guests are sent to login', () => {
+  let closed = 0;
+  let hidden = 0;
+  const props = { onClose() { closed++; }, onHideForToday() { hidden++; } };
   const guest = componentHarness('src/features/subscription/SubscribeDialog.tsx', 'SubscribeDialog', { loggedIn: false });
   assert.deepEqual(nodes(guest.render(props)).filter((node) => node.type === 'ButtonLink').map((node) => node.props.href), ['/login']);
   const member = componentHarness('src/features/subscription/SubscribeDialog.tsx', 'SubscribeDialog');
   let tree = member.render(props);
-  control(tree, '발행처에서 신청하기 ↗').props.onClick();
-  tree = member.render(props);
-  assert.equal(nodes(tree).some((node) => node.props.href === '/home'), true);
-  control(tree, '구독 신청 다시 하기').props.onClick();
-  assert.equal(nodes(member.render(props)).some((node) => node.props.href === props.brand.subscribeUrl), true);
+  assert.equal(tree.props.title, '구독 상태 안내');
+  assert.equal(tree.props.variant, 'notice');
+  assert.equal(nodes(tree).some((node) => node.type === 'iframe'), false);
+  assert.match(text(tree), /첫 아티클 수신 후구독 상태가 자동으로 변경돼요/);
+  control(tree, '확인').props.onClick();
+  control(tree, '오늘 하루 보지 않기').props.onClick();
+  assert.equal(closed, 1);
+  assert.equal(hidden, 1);
+  tree = member.render({ ...props, checking: true });
+  assert.equal(tree.props.title, '구독 확인 필요');
+  assert.ok(nodes(tree).some((node) => node.props.href === '/home' && text(node) === '메일 확인하기'));
+  assert.equal(control(tree, '오늘 하루 보지 않기'), undefined);
 });
 
-test('copying a subscription email reports success without adding a loading section', async () => {
-  const app = componentHarness('src/features/subscription/SubscribeDialog.tsx', 'SubscribeDialog');
+test('subscription copies the email, refreshes on return, and respects hiding the notice for today', async () => {
+  const app = componentHarness('src/features/subscription/useSubscriptionFlow.ts', 'useSubscriptionFlow');
   const copied = [];
+  const listeners = new Map();
+  app.context.window.addEventListener = (name, handler) => listeners.set(name, handler);
+  app.context.window.removeEventListener = (name) => listeners.delete(name);
+  app.context.document = { visibilityState: 'visible', addEventListener() {}, removeEventListener() {} };
   app.context.navigator = { clipboard: { writeText: async (value) => { copied.push(value); } } };
-  const props = { brand: { brandId: 321, brandName: '뉴닉', subscribeUrl: 'https://example.com/subscribe' }, onClose() {} };
-  control(app.render(props), '구독 이메일 복사').props.onClick();
+  const props = { email: 'reader@example.com', userId: 5 };
+  let flow = app.render(props);
+  const cleanup = app.effects[0]();
+  flow.beginSubscription({ preventDefault() { assert.fail('A ready subscription link must open normally'); } });
   await new Promise((resolve) => setImmediate(resolve));
   assert.deepEqual(copied, ['reader@example.com']);
   assert.deepEqual(app.saved, ['구독 이메일을 복사했어요.']);
-  const tree = app.render(props);
-  assert.ok(control(tree, '이메일 다시 복사'));
-  assert.equal(nodes(tree).some((node) => node.type === 'LoadingState'), false);
-  assert.ok(control(tree, '발행처에서 신청하기 ↗'));
+  assert.equal(app.render(props).notice, null);
+  listeners.get('focus')();
+  flow = app.render(props);
+  assert.equal(flow.notice, 'state');
+  assert.deepEqual(app.invalidations, [['newsletter'], ['subscription'], ['article']]);
+  flow.hideForToday();
+  flow = app.render(props);
+  assert.equal(flow.notice, null);
+  flow.beginSubscription({ preventDefault() { assert.fail(); } });
+  listeners.get('focus')();
+  assert.equal(app.render(props).notice, null);
+  app.context.navigator.clipboard.writeText = async () => { throw new Error('Clipboard denied'); };
+  await app.render(props).copyEmail();
+  assert.match(app.render(props).copyError, /복사하지 못했어요/);
+  cleanup();
 });
 
 test('a bookmark request failure renders retry rather than the empty state', () => {
@@ -655,15 +687,25 @@ test('public newsletter content stays visible while member subscription state lo
     '@/features/subscription/SubscribeDialog': { SubscribeDialog: 'SubscribeDialog' },
     '@/widgets/landing/NewsletterImage': { NewsletterImage: 'NewsletterImage' },
   };
+  const queryStates = { true: { data: brand, isPending: false, isPlaceholderData: true } };
   const app = componentHarness('src/app/newsletters/[id]/BrandDetailClient.tsx', 'BrandDetailClient', {
     loggedIn: true, hydrated: true, moduleOverrides,
-    queryStates: { true: { data: brand, isPending: false, isPlaceholderData: true } },
+    queryStates,
   });
   const tree = app.render({ id: 5, initialBrand: brand });
-  assert.equal(app.queries[0].placeholderData, brand);
+  assert.equal(app.queries.find((query) => query.queryKey.includes('brand')).placeholderData, brand);
   assert.match(text(tree), /뉴독/);
   assert.equal(nodes(tree).some((node) => node.type === 'LoadingState'), false);
   assert.equal(control(tree, '구독하기'), undefined);
+  queryStates.true.isPlaceholderData = false;
+  app.context.window.open = () => { assert.fail('Subscription uses a normal new-tab link, not a popup window'); };
+  app.context.navigator = { clipboard: { writeText: async () => {} } };
+  const link = control(app.render({ id: 5, initialBrand: brand }), '구독하기');
+  assert.equal(link.type, 'ButtonLink');
+  assert.equal(link.props.href, brand.subscribeUrl);
+  assert.equal(link.props.target, '_blank');
+  link.props.onClick({ preventDefault() { assert.fail(); } });
+  assert.equal(nodes(app.render({ id: 5, initialBrand: brand })).some((node) => node.type === 'SubscribeDialog'), false);
 });
 
 function profileField(app, props) {

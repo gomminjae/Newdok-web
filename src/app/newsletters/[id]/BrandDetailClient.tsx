@@ -6,9 +6,11 @@ import Link from 'next/link';
 import { useEffect, useId, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { newsletterQueries, usePauseSubscription, useResumeSubscription, type BrandDetail } from '@/entities/newsletter';
+import { userQueries } from '@/entities/user';
 import { useAuth } from '@/shared/hooks';
 import { ApiError } from '@/shared/api/client';
 import { SubscribeDialog } from '@/features/subscription/SubscribeDialog';
+import { useSubscriptionFlow } from '@/features/subscription/useSubscriptionFlow';
 import { NewsletterImage } from '@/widgets/landing/NewsletterImage';
 
 type Notice = { message: string; isError: boolean };
@@ -18,7 +20,8 @@ export function BrandDetailClient({ id, initialBrand }: { id: number; initialBra
   const [visibleCount, setVisibleCount] = useState(12);
   const [notice, setNotice] = useState<Notice | null>(null);
   const [showPauseDialog, setShowPauseDialog] = useState(false);
-  const [showSubscribeDialog, setShowSubscribeDialog] = useState(false);
+  const profile = useQuery({ ...userQueries.profile(), enabled: isLoggedIn });
+  const subscription = useSubscriptionFlow({ email: profile.data?.subscribeEmail, userId: profile.data?.id });
   const pause = usePauseSubscription();
   const resume = useResumeSubscription();
   const { data: loadedBrand, isPending, isError, isPlaceholderData, refetch } = useQuery({
@@ -95,15 +98,19 @@ export function BrandDetailClient({ id, initialBrand }: { id: number; initialBra
               {isUpdating ? '변경 중…' : isActive ? '구독중지' : '구독재개'}
             </Button>
           ) : isChecking ? (
-            <Button size="short" variant="neutral-outline" onClick={() => setShowSubscribeDialog(true)} aria-haspopup="dialog" className="w-[95px] shrink-0">확인하기</Button>
+            <Button size="short" variant="neutral-outline" onClick={() => subscription.setNotice('check')} aria-haspopup="dialog" className="w-[95px] shrink-0">구독 확인</Button>
           ) : subscribeUrl ? (
-            <Button size="short" onClick={() => setShowSubscribeDialog(true)} aria-haspopup="dialog" className="w-[95px] shrink-0">구독하기</Button>
+            !isLoggedIn ? <Button size="short" onClick={() => subscription.setNotice('guest')} aria-haspopup="dialog" className="w-[95px] shrink-0">구독하기</Button>
+              : profile.isError ? <Button size="short" variant="neutral-outline" onClick={() => void profile.refetch()} className="w-[95px] shrink-0">다시 시도</Button>
+              : !profile.data?.subscribeEmail ? <Button size="short" disabled className="w-[95px] shrink-0">구독하기</Button>
+              : <ButtonLink href={subscribeUrl} target="_blank" rel="noopener noreferrer" title="새 탭에서 구독 신청" size="short" onClick={subscription.beginSubscription} className="w-[95px] shrink-0">구독하기</ButtonLink>
           ) : <span className="shrink-0 text-xs text-caption-assistive">구독 준비 중</span>}
         </section>
 
         <section aria-label="뉴스레터 소개" className="flex min-w-0 flex-col py-6 xl:col-start-2 xl:rounded-xl xl:bg-bg xl:p-5 xl:shadow-brand-section">
           <p className="whitespace-pre-line break-words text-sm leading-6 text-caption-body">{brand.detailDescription || '뉴스레터의 지난 아티클을 읽어보세요.'}</p>
           {!isActive && !isPaused && !isChecking && subscribeUrl && <p className="mt-2 text-xs leading-5 text-caption-alternative">구독 신청은 발행처 페이지에서 진행돼요.</p>}
+          {subscription.copyError && <div role="alert" className="mt-2 text-sm leading-6 text-error"><p>{subscription.copyError}</p><p className="select-all break-all">{profile.data?.subscribeEmail}</p><Button variant="ghost" size="compact" onClick={() => void subscription.copyEmail()}>이메일 다시 복사</Button></div>}
           {isLoggedIn && isError && <p role="alert" className="mt-2 text-xs text-error">구독 상태를 불러오지 못했어요.</p>}
           <div className="absolute inset-x-0 top-3 flex items-start justify-between gap-3 xl:static xl:mt-auto xl:pt-6">
             <ul aria-label="관심사" className="flex flex-wrap gap-1.5">
@@ -137,7 +144,8 @@ export function BrandDetailClient({ id, initialBrand }: { id: number; initialBra
         )}
       </section>
 
-      {showSubscribeDialog && <SubscribeDialog brand={brand} checking={isChecking} onClose={() => setShowSubscribeDialog(false)} />}
+      {subscription.notice && <SubscribeDialog checking={subscription.notice === 'check'} onClose={() => subscription.setNotice(null)} onHideForToday={subscription.hideForToday} />}
+      {subscription.message && <Toast message={subscription.message} />}
       {showPauseDialog && <PauseSubscriptionDialog brandName={brand.brandName} onClose={() => setShowPauseDialog(false)} onConfirm={() => { setShowPauseDialog(false); void changeSubscription(); }} />}
       {notice && (notice.isError ? <div role="alert" className="pointer-events-none fixed inset-x-6 bottom-[calc(var(--tabbar-height)+env(safe-area-inset-bottom)+16px)] z-50 mx-auto flex min-h-14 max-w-[600px] items-center justify-center rounded-lg bg-caption-strong px-4 py-3 text-center text-sm font-medium text-white md:bottom-6 md:left-[calc(var(--sidebar-width)+24px)]">{notice.message}</div> : <Toast message={notice.message} />)}
     </div>

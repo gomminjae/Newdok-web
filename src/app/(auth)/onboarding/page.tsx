@@ -3,20 +3,19 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { userQueries, type RecommendedBrand } from '@/entities/user';
-import { newsletterQueries } from '@/entities/newsletter';
 import { PreferenceForm } from '@/features/profile/PreferenceForm';
 import { SubscribeDialog } from '@/features/subscription/SubscribeDialog';
+import { useSubscriptionFlow } from '@/features/subscription/useSubscriptionFlow';
 import { NewsletterImage } from '@/widgets/landing/NewsletterImage';
 import { useAuth } from '@/shared/hooks';
-import { LoadingState, AppImage, Button, ButtonLink, Chip, GuestNotice, Icon } from '@/shared/ui';
+import { LoadingState, AppImage, Button, ButtonLink, Chip, GuestNotice, Icon, Toast } from '@/shared/ui';
 
 export default function OnboardingPage() {
   const { isLoggedIn } = useAuth();
   const [step, setStep] = useState<'welcome' | 'recommend' | 'preferences' | 'recommendations'>('welcome');
   const [recommendations, setRecommendations] = useState<RecommendedBrand[]>([]);
-  const [subscribeId, setSubscribeId] = useState<number | null>(null);
   const profile = useQuery({ ...userQueries.profile(), enabled: isLoggedIn });
-  const brand = useQuery({ ...newsletterQueries.brand(subscribeId ?? 0, true), enabled: isLoggedIn && subscribeId !== null });
+  const subscription = useSubscriptionFlow({ email: profile.data?.subscribeEmail, userId: profile.data?.id });
   if (!isLoggedIn) return <GuestNotice />;
   if (profile.isPending) return <LoadingState label="프로필을 불러오는 중이에요." />;
   if (profile.isError) return <div role="alert" className="py-24 text-center"><p>프로필을 불러오지 못했어요.</p><Button variant="ghost" onClick={() => void profile.refetch()}>다시 시도</Button></div>;
@@ -35,12 +34,13 @@ export default function OnboardingPage() {
       <AppImage name="nologin" alt="" width={280} height={280} loading="eager" className="mx-auto mt-8 h-[280px] w-[280px] max-w-full object-contain" />
       <div className="mt-auto pt-6"><Button fullWidth onClick={() => { setStep('preferences'); window.scrollTo({ top: 0 }); }}>뉴스레터 추천받기</Button></div>
     </> : step === 'preferences' ? <PreferenceForm stepwise profile={profile.data} onSaved={(items) => { setRecommendations(items); setStep('recommendations'); window.scrollTo({ top: 0 }); }} /> : <>
-      <h1 className="text-xl font-bold leading-7">{profile.data.nickname}님을 위한<br />맞춤형 뉴스레터가 도착했어요!</h1><p className="mt-3 mb-6 text-sm leading-6 text-caption-neutral">구독한 뉴스레터는 발행일에 맞춰 홈으로 배달해드려요.<br />구독하기를 누르면 구독 이메일을 확인할 수 있어요.</p>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">{recommendations.map((item) => <section key={item.id} className="overflow-hidden rounded-xl border border-line-neutral bg-bg"><div className="flex items-start gap-3 bg-bg-system p-4"><NewsletterImage name={item.brandName} imageUrl={item.imageUrl} variant="thumbnail" /><div className="min-w-0 flex-1"><h2 className="truncate text-sm font-bold">{item.brandName}</h2><p className="mt-2 flex items-center gap-1 text-xs text-caption-alternative"><Icon name="Line Clock" size={16} />{item.publicationCycle || '발행 일정 확인'}</p></div><Button variant="outline" size="xs" disabled={brand.isFetching} onClick={() => setSubscribeId(item.id)}>구독하기</Button></div><div className="space-y-4 p-4"><p className="text-sm leading-6 text-caption-neutral">{item.firstDescription}</p><div className="flex flex-wrap gap-1">{item.interests.map((interest) => <Chip key={interest.id}>{interest.name}</Chip>)}</div></div></section>)}</div>
+      <h1 className="text-xl font-bold leading-7">{profile.data.nickname}님을 위한<br />맞춤형 뉴스레터가 도착했어요!</h1><p className="mt-3 mb-6 text-sm leading-6 text-caption-neutral">구독한 뉴스레터는 발행일에 맞춰 홈으로 배달해드려요.<br />구독하기를 누르면 발행처의 구독 페이지가 열려요.</p>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">{recommendations.map((item) => <section key={item.id} className="overflow-hidden rounded-xl border border-line-neutral bg-bg"><div className="flex items-start gap-3 bg-bg-system p-4"><NewsletterImage name={item.brandName} imageUrl={item.imageUrl} variant="thumbnail" /><div className="min-w-0 flex-1"><h2 className="truncate text-sm font-bold">{item.brandName}</h2><p className="mt-2 flex items-center gap-1 text-xs text-caption-alternative"><Icon name="Line Clock" size={16} />{item.publicationCycle || '발행 일정 확인'}</p></div>{profile.data.subscribeEmail && /^https?:\/\//i.test(item.subscribeUrl) ? <ButtonLink href={item.subscribeUrl} target="_blank" rel="noopener noreferrer" title="새 탭에서 구독 신청" variant="outline" size="xs" onClick={subscription.beginSubscription}>구독하기</ButtonLink> : <Button variant="outline" size="xs" disabled>구독하기</Button>}</div><div className="space-y-4 p-4"><p className="text-sm leading-6 text-caption-neutral">{item.firstDescription}</p><div className="flex flex-wrap gap-1">{item.interests.map((interest) => <Chip key={interest.id}>{interest.name}</Chip>)}</div></div></section>)}</div>
       {!recommendations.length && <p className="py-8 text-sm text-caption-neutral">추천할 뉴스레터를 준비하고 있어요. 둘러보기에서 더 많은 뉴스레터를 만나보세요.</p>}
-      {subscribeId !== null && brand.isError && <p role="alert" className="mt-4 text-sm text-error">구독 정보를 불러오지 못했어요. <Button variant="ghost" onClick={() => void brand.refetch()}>다시 시도</Button></p>}
-      {subscribeId !== null && brand.data && <SubscribeDialog brand={brand.data} onClose={() => setSubscribeId(null)} />}
+      {subscription.copyError && <div role="alert" className="mt-4 text-sm leading-6 text-error"><p>{subscription.copyError}</p><p className="select-all break-all">{profile.data.subscribeEmail}</p><Button variant="ghost" size="compact" onClick={() => void subscription.copyEmail()}>이메일 다시 복사</Button></div>}
       <div className="sticky bottom-0 mt-6 bg-bg py-4"><ButtonLink href="/home" variant="outline" fullWidth>메인으로</ButtonLink></div>
     </>}
+    {subscription.notice && <SubscribeDialog checking={subscription.notice === 'check'} onClose={() => subscription.setNotice(null)} onHideForToday={subscription.hideForToday} />}
+    {subscription.message && <Toast message={subscription.message} />}
   </main>;
 }
