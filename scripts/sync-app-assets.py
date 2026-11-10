@@ -10,8 +10,28 @@ from pathlib import Path
 import shutil
 import sys
 import struct
+import xml.etree.ElementTree as ET
 
 import fitz
+
+
+def export_svg(page, name):
+    svg = page.get_svg_image()
+    if name == "bookmarked":
+        # The PDF uses a black alpha mask. SVG defaults to a luminance mask,
+        # which hides the icon in browsers. Preserve its path and blue fill directly.
+        ns = {"svg": "http://www.w3.org/2000/svg"}
+        root = ET.fromstring(svg)
+        shape = root.find(".//svg:mask/svg:g/svg:g/svg:path", ns)
+        paint = root.find(".//svg:g[@mask]//svg:path", ns)
+        if shape is not None and paint is not None:
+            ET.register_namespace("", ns["svg"])
+            flat = ET.Element(root.tag, {key: root.attrib[key] for key in ("width", "height", "viewBox")})
+            ET.SubElement(flat, shape.tag, {**shape.attrib, "fill": paint.attrib["fill"]})
+            return ET.tostring(flat, encoding="unicode") + "\n"
+        if root.find(".//svg:mask", ns) is not None:
+            raise ValueError("Cannot export the bookmarked alpha mask as a visible SVG path")
+    return svg
 
 
 WEB = Path(__file__).resolve().parents[1]
@@ -34,7 +54,7 @@ for imageset in sorted(ASSETS.rglob("*.imageset")):
     if source.suffix == ".pdf":
         with fitz.open(source) as document:
             if target.suffix == ".svg":
-                target.write_text(document[0].get_svg_image())
+                target.write_text(export_svg(document[0], name))
             else:
                 document[0].get_pixmap(matrix=fitz.Matrix(2, 2), alpha=True).save(target)
     else:

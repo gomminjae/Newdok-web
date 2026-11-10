@@ -33,29 +33,38 @@ export function NewsletterContent({ html, title, fontScale, highlights, onSelect
   const observedDocument = useRef<Document | null>(null);
   const loadedDocument = useRef<Document | null>(null);
   const [height, setHeight] = useState(640);
-  const fontSizes = useRef(new WeakMap<HTMLElement, { font: number; line: number }>());
+  const preparedFontDocument = useRef<Document | null>(null);
   const selectionCleanup = useRef<(() => void) | null>(null);
 
-  const applyReaderOptions = useCallback(() => {
+  const applyFontScale = useCallback(() => {
     const document = frame.current?.contentDocument;
     if (!document?.body) return;
-    if (fontScale !== undefined) {
+    if (fontScale === undefined) {
+      document.body.style.removeProperty('--newdok-reader-font-scale');
+      return;
+    }
+    if (preparedFontDocument.current !== document) {
       const elements = [document.body, ...Array.from(document.body.querySelectorAll<HTMLElement>('*'))];
       // Measure all inherited sizes before changing a parent font.
-      for (const element of elements) {
-        if (element.matches('style,script,mark[data-newdok-highlight]') || fontSizes.current.has(element)) continue;
+      const sizes = elements.filter((element) => !element.matches('style,script,mark[data-newdok-highlight]')).map((element) => {
         const style = document.defaultView?.getComputedStyle(element);
-        if (style) fontSizes.current.set(element, { font: parseFloat(style.fontSize), line: parseFloat(style.lineHeight) });
+        return { element, font: parseFloat(style?.fontSize ?? ''), line: parseFloat(style?.lineHeight ?? '') };
+      });
+      for (const { element, font, line } of sizes) {
+        if (!Number.isFinite(font)) continue;
+        element.style.setProperty('font-size', `calc(${font}px * var(--newdok-reader-font-scale, 1))`, 'important');
+        if (Number.isFinite(line)) element.style.setProperty('line-height', `calc(${line}px * var(--newdok-reader-font-scale, 1))`, 'important');
       }
-      for (const element of elements) {
-        const original = fontSizes.current.get(element);
-        if (!original || !Number.isFinite(original.font)) continue;
-        element.style.setProperty('font-size', `${original.font * fontScale}px`, 'important');
-        if (Number.isFinite(original.line)) element.style.setProperty('line-height', `${original.line * fontScale}px`, 'important');
-      }
+      preparedFontDocument.current = document;
     }
+    document.body.style.setProperty('--newdok-reader-font-scale', String(fontScale));
+  }, [fontScale]);
+
+  const applyReaderHighlights = useCallback(() => {
+    const document = frame.current?.contentDocument;
+    if (!document?.body) return;
     applyHighlights(document, highlights ?? []);
-  }, [fontScale, highlights]);
+  }, [highlights]);
 
   const resizeContent = useCallback(() => {
     observer.current?.disconnect();
@@ -73,7 +82,6 @@ export function NewsletterContent({ html, title, fontScale, highlights, onSelect
     if (observedDocument.current !== document) {
       observedDocument.current = document;
       loadedDocument.current = null;
-      fontSizes.current = new WeakMap();
       selectionCleanup.current?.();
       selectionCleanup.current = onSelection
         ? observeSelectionChanges(document, () => onSelection(getTextSelection(document))) : null;
@@ -83,8 +91,11 @@ export function NewsletterContent({ html, title, fontScale, highlights, onSelect
   }, [resizeContent, onSelection]);
 
   useEffect(() => {
-    if (loadedDocument.current === frame.current?.contentDocument) applyReaderOptions();
-  }, [applyReaderOptions]);
+    if (loadedDocument.current === frame.current?.contentDocument) applyFontScale();
+  }, [applyFontScale]);
+  useEffect(() => {
+    if (loadedDocument.current === frame.current?.contentDocument) applyReaderHighlights();
+  }, [applyReaderHighlights]);
   useEffect(() => {
     const poll = window.setInterval(() => { if (observeContent()) window.clearInterval(poll); }, 100);
     if (observeContent()) window.clearInterval(poll);
@@ -109,7 +120,8 @@ export function NewsletterContent({ html, title, fontScale, highlights, onSelect
     const document = observedDocument.current;
     if (loadedDocument.current === document) return;
     loadedDocument.current = document;
-    applyReaderOptions();
+    applyFontScale();
+    applyReaderHighlights();
     resizeContent();
   };
 

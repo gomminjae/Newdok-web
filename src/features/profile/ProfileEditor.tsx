@@ -16,7 +16,7 @@ export function ProfileEditor({ profile, onClose }: { profile: UserProfile; onCl
   const [busy, setBusy] = useState(false);
   const { message, showToast } = useToast();
   const queryClient = useQueryClient();
-  const options = useQuery({ queryKey: [...newsletterKeys.all, 'options'], queryFn: newsletterApi.fetchOptionList });
+  const options = useQuery({ queryKey: [...newsletterKeys.all, 'options'], queryFn: ({ signal }) => newsletterApi.fetchOptionList(signal) });
   const industry = options.data?.industries.find((item) => item.id === profile.industryId)?.name;
   const interests = options.data?.interests.filter((item) => profile.interests?.some((selected) => selected.interestId === item.id)) ?? [];
 

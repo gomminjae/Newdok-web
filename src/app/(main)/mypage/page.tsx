@@ -82,8 +82,8 @@ function WithdrawDialog({ nickname, onClose, onWithdrawn }: { nickname: string; 
   const [reasons, setReasons] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const subscriptions = useQuery({ queryKey: ['subscription', 'count'], queryFn: newsletterApi.fetchSubscriptionCount });
-  const articles = useQuery({ queryKey: ['article', 'received', 'count'], queryFn: articleApi.fetchReceivedArticleCount });
+  const subscriptions = useQuery({ queryKey: ['subscription', 'count'], queryFn: ({ signal }) => newsletterApi.fetchSubscriptionCount(signal) });
+  const articles = useQuery({ queryKey: ['article', 'received', 'count'], queryFn: ({ signal }) => articleApi.fetchReceivedArticleCount(signal) });
   async function withdraw() {
     if (!agreed || reasons.length === 0 || stage !== 'reason' || saving) return;
     setSaving(true);

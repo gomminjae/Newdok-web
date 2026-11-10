@@ -48,7 +48,7 @@ function ExplorerContent({ initialBrands }: { initialBrands?: NewsletterBrand[] 
   const industries = readIds(searchParams, 'industry');
   const days = readIds(searchParams, 'day');
   const [dialog, setDialog] = useState<'sort' | 'filters' | null>(null);
-  const options = useQuery({ queryKey: ['newsletter', 'options'], queryFn: newsletterApi.fetchOptionList, staleTime: 3_600_000, enabled: dialog === 'filters' });
+  const options = useQuery({ queryKey: ['newsletter', 'options'], queryFn: ({ signal }) => newsletterApi.fetchOptionList(signal), staleTime: 3_600_000, enabled: dialog === 'filters' });
   const brands = useQuery({
     ...newsletterQueries.list({ orderOpt, industry: industries, day: days }, isLoggedIn),
     enabled: tab === 'all',

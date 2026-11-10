@@ -122,8 +122,8 @@ export const userApi = {
       schema: RecommendedBrandListResponseSchema,
     }),
 
-  getProfile: () =>
-    apiClient('/users/my', { schema: UserProfileSchema }),
+  getProfile: (signal?: AbortSignal) =>
+    apiClient('/users/my', { signal, schema: UserProfileSchema }),
 
   withdraw: () =>
     apiClient<void>('/users/withdraw', {

@@ -12,49 +12,54 @@ import {
 } from '../model/schema';
 
 export const newsletterApi = {
-  fetchActiveNewsletters: () =>
+  fetchActiveNewsletters: (signal?: AbortSignal) =>
     apiClient('/newsletters/subscription/active', {
+      signal,
       schema: SubscribedNewsletterListSchema,
     }),
 
-  fetchPausedNewsletters: () =>
+  fetchPausedNewsletters: (signal?: AbortSignal) =>
     apiClient('/newsletters/subscription/paused', {
+      signal,
       schema: SubscribedNewsletterListSchema,
     }),
 
-  fetchRecommendIntersection: () =>
+  fetchRecommendIntersection: (signal?: AbortSignal) =>
     apiClient('/newsletters/recommend/intersection', {
+      signal,
       schema: NewsletterDetailListSchema,
     }),
 
-  fetchRecommendUnion: () =>
+  fetchRecommendUnion: (signal?: AbortSignal) =>
     apiClient('/newsletters/recommend/union', {
+      signal,
       schema: NewsletterDetailListSchema,
     }),
 
   search: (brandName: string, signal?: AbortSignal) =>
     apiClient('/search/newsletter', {
+      signal,
       params: { brandName },
       authenticated: false,
       schema: NewsletterSearchResultsSchema,
-      ...(signal && { signal: AbortSignal.any([signal, AbortSignal.timeout(15_000)]) }),
     }),
 
-  fetchPopularSearchKeywords: () =>
-    apiClient('/search/popular', { authenticated: false, schema: PopularSearchKeywordsSchema }),
+  fetchPopularSearchKeywords: (signal?: AbortSignal) =>
+    apiClient('/search/popular', { signal, authenticated: false, schema: PopularSearchKeywordsSchema }),
 
   fetchAllNewsletterBrands: (params: {
     orderOpt?: string;
     industry?: string | readonly string[];
     day?: string | readonly string[];
-  }) =>
+  }, signal?: AbortSignal) =>
     apiClient('/newsletters', {
+      signal,
       params,
       schema: NewsletterBrandListSchema,
     }),
 
-  fetchNewsletterBrand: (id: number) =>
-    apiClient(`/newsletters/${id}`, { schema: BrandDetailSchema }),
+  fetchNewsletterBrand: (id: number, signal?: AbortSignal) =>
+    apiClient(`/newsletters/${id}`, { signal, schema: BrandDetailSchema }),
 
   pauseSubscription: (data: SubscriptionRequest) =>
     apiClient<void>('/newsletters/subscription/pause', {
@@ -72,24 +77,27 @@ export const newsletterApi = {
     orderOpt?: string;
     industry?: string | readonly string[];
     day?: string | readonly string[];
-  }) =>
+  }, signal?: AbortSignal) =>
     apiClient('/newsletters/non-member', {
+      signal,
       authenticated: false,
       params,
       schema: NewsletterBrandListSchema,
     }),
 
-  fetchGuestNewsletterBrand: (id: number) =>
+  fetchGuestNewsletterBrand: (id: number, signal?: AbortSignal) =>
     apiClient(`/newsletters/${id}/non-member`, {
+      signal,
       authenticated: false,
       schema: BrandDetailSchema,
     }),
 
-  fetchSubscriptionCount: () =>
+  fetchSubscriptionCount: (signal?: AbortSignal) =>
     apiClient('/newsletters/subscription/count', {
+      signal,
       schema: SubscriptionCountResponseSchema,
     }),
 
-  fetchOptionList: () =>
-    apiClient('/options', { authenticated: false, schema: OptionListSchema }),
+  fetchOptionList: (signal?: AbortSignal) =>
+    apiClient('/options', { signal, authenticated: false, schema: OptionListSchema }),
 };

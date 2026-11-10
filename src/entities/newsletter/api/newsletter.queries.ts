@@ -40,7 +40,7 @@ export const newsletterQueries = {
 
   popularSearchKeywords: () => queryOptions({
     queryKey: [...newsletterKeys.all, 'popular-search-keywords'],
-    queryFn: newsletterApi.fetchPopularSearchKeywords,
+    queryFn: ({ signal }) => newsletterApi.fetchPopularSearchKeywords(signal),
     staleTime: 300_000,
   }),
 
@@ -48,7 +48,7 @@ export const newsletterQueries = {
     queryOptions({
       ...publicQueryOptions,
       queryKey: [...newsletterKeys.all, 'landing', 'popular'],
-      queryFn: () => newsletterApi.fetchGuestAllNewsletterBrands({ orderOpt: '인기순' }),
+      queryFn: ({ signal }) => newsletterApi.fetchGuestAllNewsletterBrands({ orderOpt: '인기순' }, signal),
       select: (brands) => brands.slice(0, 6),
     }),
 
@@ -56,7 +56,7 @@ export const newsletterQueries = {
     queryOptions({
       ...publicQueryOptions,
       queryKey: [...newsletterKeys.all, 'landing', 'newest'],
-      queryFn: () => newsletterApi.fetchGuestAllNewsletterBrands({ orderOpt: '최신순' }),
+      queryFn: ({ signal }) => newsletterApi.fetchGuestAllNewsletterBrands({ orderOpt: '최신순' }, signal),
       select: (brands) => brands.slice(0, 4),
     }),
 
@@ -64,10 +64,10 @@ export const newsletterQueries = {
     queryOptions({
       ...publicQueryOptions,
       queryKey: [...newsletterKeys.all, 'landing', 'tomorrow', day],
-      queryFn: () => newsletterApi.fetchGuestAllNewsletterBrands({
+      queryFn: ({ signal }) => newsletterApi.fetchGuestAllNewsletterBrands({
         orderOpt: '인기순',
         day,
-      }),
+      }, signal),
       select: (brands) => brands.slice(0, 3),
     }),
 
@@ -75,32 +75,32 @@ export const newsletterQueries = {
     queryOptions({
       ...(!isMember && publicQueryOptions),
       queryKey: newsletterKeys.brand(id, isMember),
-      queryFn: () =>
+      queryFn: ({ signal }) =>
         isMember
-          ? newsletterApi.fetchNewsletterBrand(id)
-          : newsletterApi.fetchGuestNewsletterBrand(id),
+          ? newsletterApi.fetchNewsletterBrand(id, signal)
+          : newsletterApi.fetchGuestNewsletterBrand(id, signal),
     }),
 
   list: (params: BrandListParams, isMember: boolean) =>
     queryOptions({
       ...(!isMember && publicQueryOptions),
       queryKey: newsletterKeys.list(params, isMember),
-      queryFn: () =>
+      queryFn: ({ signal }) =>
         isMember
-          ? newsletterApi.fetchAllNewsletterBrands(params)
-          : newsletterApi.fetchGuestAllNewsletterBrands(params),
+          ? newsletterApi.fetchAllNewsletterBrands(params, signal)
+          : newsletterApi.fetchGuestAllNewsletterBrands(params, signal),
     }),
 
   recommendIntersection: () =>
     queryOptions({
       queryKey: newsletterKeys.recommend.intersection(),
-      queryFn: () => newsletterApi.fetchRecommendIntersection(),
+      queryFn: ({ signal }) => newsletterApi.fetchRecommendIntersection(signal),
     }),
 
   recommendUnion: () =>
     queryOptions({
       queryKey: newsletterKeys.recommend.union(),
-      queryFn: () => newsletterApi.fetchRecommendUnion(),
+      queryFn: ({ signal }) => newsletterApi.fetchRecommendUnion(signal),
     }),
 };
 
@@ -108,12 +108,12 @@ export const subscriptionQueries = {
   active: () =>
     queryOptions({
       queryKey: subscriptionKeys.active(),
-      queryFn: () => newsletterApi.fetchActiveNewsletters(),
+      queryFn: ({ signal }) => newsletterApi.fetchActiveNewsletters(signal),
     }),
 
   paused: () =>
     queryOptions({
       queryKey: subscriptionKeys.paused(),
-      queryFn: () => newsletterApi.fetchPausedNewsletters(),
+      queryFn: ({ signal }) => newsletterApi.fetchPausedNewsletters(signal),
     }),
 };

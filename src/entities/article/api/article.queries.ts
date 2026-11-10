@@ -22,20 +22,20 @@ export const articleQueries = {
   day: (year: number, month: number, day: number) =>
     queryOptions({
       queryKey: articleKeys.day(year, month, day),
-      queryFn: () => articleApi.fetchDayArticle(year, month, day),
+      queryFn: ({ signal }) => articleApi.fetchDayArticle(year, month, day, signal),
     }),
 
   monthly: (year: number, month: number) =>
     queryOptions({
       queryKey: articleKeys.monthly(year, month),
-      queryFn: () => articleApi.fetchArticles(year, month),
+      queryFn: ({ signal }) => articleApi.fetchArticles(year, month, signal),
       select: (res) => res.data,
     }),
 
   detail: (id: number, isMember = true) =>
     queryOptions({
       queryKey: [...articleKeys.detail(id), isMember],
-      queryFn: () => articleApi.fetchArticleDetail(id, isMember),
+      queryFn: ({ signal }) => articleApi.fetchArticleDetail(id, isMember, signal),
     }),
 };
 
@@ -43,13 +43,13 @@ export const bookmarkQueries = {
   interests: () =>
     queryOptions({
       queryKey: bookmarkKeys.interests(),
-      queryFn: async () => (await articleApi.fetchBookmarkedInterest()).data,
+      queryFn: async ({ signal }) => (await articleApi.fetchBookmarkedInterest(signal)).data,
     }),
 
   list: (interestId: number | undefined, sortBy: BookmarkSort) =>
     queryOptions({
       queryKey: bookmarkKeys.list(interestId, sortBy),
-      queryFn: async () =>
-        (await articleApi.fetchBookmarkArticles(interestId, sortBy)).data,
+      queryFn: async ({ signal }) =>
+        (await articleApi.fetchBookmarkArticles(interestId, sortBy, signal)).data,
     }),
 };

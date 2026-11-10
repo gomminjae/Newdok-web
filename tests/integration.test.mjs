@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
 import test from 'node:test';
 import ts from 'typescript';
-import { QueryClient } from '@tanstack/react-query';
+import { QueryClient, QueryObserver } from '@tanstack/react-query';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
@@ -166,9 +166,16 @@ test('production never sends legacy or development tokens and logout preserves t
   app.storage.set('accessToken', 'legacy-development-token');
   app.storage.set(DEV_TOKEN_KEY, 'development-token');
   app.storage.set('user', '{"nickname":"개발 사용자"}');
-  const { apiClient, setAccessToken, clearAccessToken } = app.load('src/shared/api/client.ts');
+  const { apiClient, getAccessToken, clearLegacySession, setAccessToken, clearAccessToken } = app.load('src/shared/api/client.ts');
+  const originalStorage = [...app.storage];
+  assert.equal(getAccessToken(), null);
+  assert.equal(getAccessToken(), null);
+  assert.deepEqual([...app.storage], originalStorage);
   await apiClient('/users/profile');
   assert.equal(app.requests[0].headers.Authorization, undefined);
+  assert.deepEqual([...app.storage], originalStorage);
+  clearLegacySession();
+  clearLegacySession();
   assert.equal(app.storage.has('accessToken'), false);
   assert.equal(app.storage.has('user'), false);
   setAccessToken('production-token');
@@ -177,6 +184,64 @@ test('production never sends legacy or development tokens and logout preserves t
   clearAccessToken();
   assert.equal(app.storage.has(app.authTokenKey), false);
   assert.equal(app.storage.get(DEV_TOKEN_KEY), 'development-token');
+});
+
+test('query cancellation reaches the transport when the last observer leaves', async () => {
+  const app = harness(({ signal }) => new Promise((_, reject) => {
+    signal.addEventListener('abort', () => reject(signal.reason), { once: true });
+  }));
+  const { newsletterQueries, subscriptionQueries } = app.load('src/entities/newsletter/api/newsletter.queries.ts');
+  const { articleQueries, bookmarkQueries } = app.load('src/entities/article/api/article.queries.ts');
+  const { userQueries } = app.load('src/entities/user/api/user.queries.ts');
+  const { searchQueries } = app.load('src/entities/search/api/search.queries.ts');
+  const queries = [
+    newsletterQueries.list({}, false), newsletterQueries.list({}, true),
+    newsletterQueries.brand(1, false), newsletterQueries.brand(1, true),
+    newsletterQueries.landingPopular(), newsletterQueries.landingNewest(), newsletterQueries.landingTomorrow('1'),
+    newsletterQueries.recommendIntersection(), newsletterQueries.recommendUnion(),
+    newsletterQueries.search('news'), newsletterQueries.popularSearchKeywords(),
+    subscriptionQueries.active(), subscriptionQueries.paused(),
+    articleQueries.day(2026, 11, 10), articleQueries.monthly(2026, 11),
+    articleQueries.detail(1, true), articleQueries.detail(1, false),
+    bookmarkQueries.interests(), bookmarkQueries.list(undefined, 'bookmark_date'),
+    userQueries.profile(), searchQueries.newsletters('news'), searchQueries.popular(),
+  ];
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
+  try {
+    for (const query of queries) {
+      const previousCount = app.requests.length;
+      const observer = new QueryObserver(client, query);
+      const stop = observer.subscribe(() => {});
+      assert.equal(app.requests.length, previousCount + 1, JSON.stringify(query.queryKey));
+      const request = app.requests.at(-1);
+      assert.equal(request.signal.aborted, false);
+      stop();
+      assert.equal(request.signal.aborted, true, JSON.stringify(query.queryKey));
+      assert.equal(client.getQueryState(query.queryKey).fetchStatus, 'idle');
+    }
+  } finally { client.clear(); }
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.deepEqual(app.events, []);
+});
+
+test('a caller signal preserves the API timeout and both can abort a request', async () => {
+  for (const cause of ['timeout', 'caller']) {
+    const timeout = new AbortController();
+    const caller = new AbortController();
+    const app = harness(({ signal }) => new Promise((_, reject) => {
+      signal.addEventListener('abort', () => reject(signal.reason), { once: true });
+    }));
+    app.context.AbortSignal = {
+      timeout(milliseconds) { assert.equal(milliseconds, 15_000); return timeout.signal; },
+      any: AbortSignal.any,
+    };
+    const request = app.load('src/shared/api/client.ts').apiClient('/slow', { signal: caller.signal });
+    const reason = new Error(cause);
+    (cause === 'timeout' ? timeout : caller).abort(reason);
+    await assert.rejects(request, (error) => error === reason);
+    assert.equal(app.requests[0].signal.aborted, true);
+    assert.equal(app.storage.get(DEV_TOKEN_KEY), 'test-token');
+  }
 });
 
 test('signup and OAuth state use environment-specific storage keys', () => {
@@ -455,6 +520,111 @@ test('corrupt or overlapping local highlights cannot crash the article reader', 
   const first = { id: '1', text: 'abc', start: 0, end: 3 };
   const overlap = { id: '2', text: 'bc', start: 1, end: 3 };
   assert.deepEqual(plain(parseHighlights(JSON.stringify([overlap, first, { ...first, start: -1 }, {}]))), [first]);
+});
+
+test('reader font adjustments and highlight edits do not redo each other’s DOM work', () => {
+  const slots = [];
+  let cursor = 0;
+  const pendingEffects = [];
+  let measurements = 0;
+  let traversals = 0;
+  const highlightCalls = [];
+  const styleWrites = [];
+  const intervals = new Set();
+  const sameDeps = (previous, next) => previous && next && previous.length === next.length && previous.every((value, index) => Object.is(value, next[index]));
+  const app = harness(undefined, {
+    react: {
+      useRef(initial) { const index = cursor++; return slots[index] ??= { current: initial }; },
+      useState(initial) {
+        const index = cursor++;
+        if (!(index in slots)) slots[index] = initial;
+        return [slots[index], (value) => { slots[index] = value; }];
+      },
+      useCallback(callback, deps) {
+        const index = cursor++;
+        if (!sameDeps(slots[index]?.deps, deps)) slots[index] = { callback, deps };
+        return slots[index].callback;
+      },
+      useEffect(effect, deps) {
+        const index = cursor++;
+        if (sameDeps(slots[index]?.deps, deps)) return;
+        const cleanup = slots[index]?.cleanup;
+        slots[index] = { deps };
+        pendingEffects.push(() => { cleanup?.(); slots[index].cleanup = effect(); });
+      },
+    },
+    '@/shared/lib/reader-highlights': { applyHighlights: (document, highlights) => highlightCalls.push({ document, highlights }) },
+  });
+  app.context.window.setInterval = (callback) => { intervals.add(callback); return callback; };
+  app.context.window.clearInterval = (callback) => intervals.delete(callback);
+  app.context.ResizeObserver = class { observe() {} disconnect() {} };
+  function makeDocument() {
+    const element = (fontSize) => {
+      const properties = new Map();
+      return {
+        fontSize, properties,
+        matches: () => false,
+        style: {
+          setProperty(name, value) { properties.set(name, value); styleWrites.push(name); },
+          removeProperty(name) { properties.delete(name); styleWrites.push(name); },
+        },
+      };
+    };
+    const body = element('16px');
+    const paragraph = element('20px');
+    body.hasAttribute = () => true;
+    body.getBoundingClientRect = () => ({ height: 900 });
+    body.querySelectorAll = () => { traversals++; return [paragraph]; };
+    return { body, paragraph, defaultView: { getComputedStyle(node) { measurements++; return { fontSize: node.fontSize, lineHeight: '24px' }; } } };
+  }
+  const NewsletterContent = app.load('src/shared/ui/NewsletterContent.tsx').NewsletterContent;
+  const props = { html: '<p>본문</p>', title: '뉴스레터', fontScale: 1.25, highlights: [] };
+  let document = makeDocument();
+  function render() {
+    cursor = 0;
+    const iframe = NewsletterContent(props);
+    iframe.props.ref.current = { contentDocument: document };
+    for (const effect of pendingEffects.splice(0)) effect();
+    return iframe;
+  }
+  try {
+    const iframe = render();
+    iframe.props.onLoad();
+    assert.equal(measurements, 2);
+    assert.equal(traversals, 1);
+    assert.equal(document.body.properties.get('--newdok-reader-font-scale'), '1.25');
+    assert.match(document.paragraph.properties.get('font-size'), /^calc\(20px \*/);
+    assert.equal(highlightCalls.length, 1);
+
+    styleWrites.length = 0;
+    props.fontScale = 1.5;
+    render();
+    assert.equal(document.body.properties.get('--newdok-reader-font-scale'), '1.5');
+    assert.deepEqual(styleWrites, ['--newdok-reader-font-scale']);
+    assert.equal(measurements, 2);
+    assert.equal(traversals, 1);
+    assert.equal(highlightCalls.length, 1);
+
+    styleWrites.length = 0;
+    props.highlights = [{ id: 'one', start: 0, end: 2, text: '본문' }];
+    render();
+    assert.equal(highlightCalls.length, 2);
+    assert.deepEqual(highlightCalls.at(-1).highlights, props.highlights);
+    assert.deepEqual(styleWrites, []);
+    assert.equal(traversals, 1);
+
+    props.html = '<p>다른 본문</p>';
+    document = makeDocument();
+    const nextFrame = render();
+    nextFrame.props.onLoad();
+    nextFrame.props.onLoad();
+    assert.equal(measurements, 4);
+    assert.equal(traversals, 2);
+    assert.equal(highlightCalls.length, 3);
+    assert.equal(highlightCalls.at(-1).document, document);
+    assert.equal(document.body.properties.get('--newdok-reader-font-scale'), '1.5');
+    assert.equal(intervals.size, 0);
+  } finally { for (const slot of slots) slot?.cleanup?.(); }
 });
 
 test('touch selection changes are coalesced and pending updates are cancelled when the reader closes', () => {

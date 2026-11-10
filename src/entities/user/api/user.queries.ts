@@ -10,6 +10,6 @@ export const userQueries = {
   profile: () =>
     queryOptions({
       queryKey: userKeys.profile(),
-      queryFn: () => userApi.getProfile(),
+      queryFn: ({ signal }) => userApi.getProfile(signal),
     }),
 };

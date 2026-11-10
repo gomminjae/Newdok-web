@@ -38,16 +38,23 @@ export function getErrorMessage(error: unknown, fallback = '요청을 완료하�
 
 export function getAccessToken(): string | null {
   if (typeof window === 'undefined') return null;
+  try { return localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY); }
+  catch { return null; }
+}
+
+export function clearLegacySession() {
+  if (typeof window === 'undefined') return;
   // The old unscoped session may belong to the development API. Never migrate it.
-  if (localStorage.getItem('accessToken')) {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('user');
-  }
-  return localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY);
+  try {
+    if (localStorage.getItem('accessToken')) {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('user');
+    }
+  } catch { /* Storage may be unavailable. */ }
 }
 
 export function setAccessToken(token: string) {
-  getAccessToken();
+  clearLegacySession();
   localStorage.setItem(ACCESS_TOKEN_STORAGE_KEY, token);
 }
 
@@ -69,7 +76,7 @@ export async function apiClient(
   endpoint: string,
   options: RequestOptions = {},
 ): Promise<unknown> {
-  const { params, body, headers, schema, authenticated = true, ...fetchOptions } = options;
+  const { params, body, headers, schema, signal, authenticated = true, ...fetchOptions } = options;
 
   const url = buildUrl(endpoint);
   if (params) {
@@ -85,7 +92,7 @@ export async function apiClient(
   const token = authenticated ? getAccessToken() : null;
 
   const response = await fetch(url.toString(), {
-    signal: AbortSignal.timeout(15_000),
+    signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(15_000)]) : AbortSignal.timeout(15_000),
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',

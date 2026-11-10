@@ -9,7 +9,7 @@ import { LoadingState, Button, Chip, Icon, Dropdown } from '@/shared/ui';
 
 export function PreferenceForm({ profile, onSaved, stepwise = false }: { profile: UserProfile; onSaved: (recommendations: RecommendedBrand[]) => void; stepwise?: boolean }) {
   const queryClient = useQueryClient();
-  const options = useQuery({ queryKey: [...newsletterKeys.all, 'options'], queryFn: newsletterApi.fetchOptionList });
+  const options = useQuery({ queryKey: [...newsletterKeys.all, 'options'], queryFn: ({ signal }) => newsletterApi.fetchOptionList(signal) });
   const [industry, setIndustry] = useState(profile.industryId?.toString() ?? '');
   const [interests, setInterests] = useState(() => (profile.interests ?? []).map((item) => item.interestId.toString()));
   const [saving, setSaving] = useState(false);

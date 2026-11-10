@@ -5,12 +5,13 @@ import {
 } from '../model/schema';
 
 export const searchApi = {
-  searchNewsletters: (brandName: string) =>
+  searchNewsletters: (brandName: string, signal?: AbortSignal) =>
     apiClient('/search/newsletter', {
+      signal,
       params: { brandName },
       schema: SearchedNewsletterListSchema,
     }),
 
-  fetchPopularKeywords: () =>
-    apiClient('/search/popular', { schema: PopularKeywordResponseSchema }),
+  fetchPopularKeywords: (signal?: AbortSignal) =>
+    apiClient('/search/popular', { signal, schema: PopularKeywordResponseSchema }),
 };

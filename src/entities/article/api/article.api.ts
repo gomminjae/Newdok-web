@@ -11,23 +11,26 @@ import {
 } from '../model/schema';
 
 export const articleApi = {
-  fetchArticles: (year: number, publicationMonth: number) =>
+  fetchArticles: (year: number, publicationMonth: number, signal?: AbortSignal) =>
     apiClient('/articles', {
+      signal,
       params: { year, publicationMonth },
       schema: MonthlyArticlesResponseSchema,
     }),
 
-  fetchTodayArticle: () =>
-    apiClient('/articles/today', { schema: ArticleListSchema }),
+  fetchTodayArticle: (signal?: AbortSignal) =>
+    apiClient('/articles/today', { signal, schema: ArticleListSchema }),
 
-  fetchDayArticle: (year: number, publicationMonth: number, publicationDate: number) =>
+  fetchDayArticle: (year: number, publicationMonth: number, publicationDate: number, signal?: AbortSignal) =>
     apiClient('/articles/day', {
+      signal,
       params: { year, publicationMonth, publicationDate },
       schema: ArticleListSchema,
     }),
 
-  fetchBookmarkArticles: (interestId?: number, sortBy?: BookmarkSort) =>
+  fetchBookmarkArticles: (interestId?: number, sortBy?: BookmarkSort, signal?: AbortSignal) =>
     apiClient('/articles/bookmark', {
+      signal,
       params: {
         ...(interestId !== undefined ? { interestId } : {}),
         ...(sortBy ? { sortBy } : {}),
@@ -41,22 +44,24 @@ export const articleApi = {
       body: data,
     }),
 
-  fetchBookmarkedInterest: () =>
+  fetchBookmarkedInterest: (signal?: AbortSignal) =>
     apiClient('/articles/bookmark/interest', {
+      signal,
       schema: BookmarkInterestListResponseSchema,
     }),
 
-  search: (keyword: string) =>
+  search: (keyword: string, signal?: AbortSignal) =>
     apiClient('/articles/search', {
+      signal,
       params: { keyword },
       schema: ArticleListSchema,
     }),
 
-  fetchArticleDetail: (id: number, authenticated = true) =>
-    apiClient(`/articles/${id}`, { authenticated, schema: ArticleDetailSchema }),
+  fetchArticleDetail: (id: number, authenticated = true, signal?: AbortSignal) =>
+    apiClient(`/articles/${id}`, { signal, authenticated, schema: ArticleDetailSchema }),
 
-  fetchReceivedArticleCount: () =>
-    apiClient('/articles/received/count', { schema: ArticlesCountResponseSchema }),
+  fetchReceivedArticleCount: (signal?: AbortSignal) =>
+    apiClient('/articles/received/count', { signal, schema: ArticlesCountResponseSchema }),
 
   refresh: () => apiClient<void>('/articles/refresh'),
 };

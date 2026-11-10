@@ -12,13 +12,13 @@ export const searchQueries = {
   newsletters: (brandName: string) =>
     queryOptions({
       queryKey: searchKeys.newsletters(brandName),
-      queryFn: () => searchApi.searchNewsletters(brandName),
+      queryFn: ({ signal }) => searchApi.searchNewsletters(brandName, signal),
       enabled: brandName.length > 0,
     }),
 
   popular: () =>
     queryOptions({
       queryKey: searchKeys.popular(),
-      queryFn: () => searchApi.fetchPopularKeywords(),
+      queryFn: ({ signal }) => searchApi.fetchPopularKeywords(signal),
     }),
 };
