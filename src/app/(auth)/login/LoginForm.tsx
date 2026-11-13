@@ -200,10 +200,11 @@ export function LoginForm({ config }: { config: SocialLoginConfig }) {
         <div className="min-h-12 flex-1" />
         <AppImage name="logo"
           alt="Newdok"
-          width={210}
+          width={209}
           height={48}
-          priority
-          className="h-12 w-[210px] max-w-full"
+          preload
+          sizes="209px"
+          className="aspect-[209/48] h-12 w-[209px] max-w-full shrink-0 object-contain"
         />
         <div className="min-h-16 flex-[2]" />
       </div>

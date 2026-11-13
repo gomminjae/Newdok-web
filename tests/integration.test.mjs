@@ -531,6 +531,7 @@ test('reader font adjustments and highlight edits do not redo each other’s DOM
   const highlightCalls = [];
   const styleWrites = [];
   const intervals = new Set();
+  const frames = new Set();
   const sameDeps = (previous, next) => previous && next && previous.length === next.length && previous.every((value, index) => Object.is(value, next[index]));
   const app = harness(undefined, {
     react: {
@@ -557,6 +558,8 @@ test('reader font adjustments and highlight edits do not redo each other’s DOM
   });
   app.context.window.setInterval = (callback) => { intervals.add(callback); return callback; };
   app.context.window.clearInterval = (callback) => intervals.delete(callback);
+  app.context.window.requestAnimationFrame = (callback) => { frames.add(callback); return callback; };
+  app.context.window.cancelAnimationFrame = (callback) => frames.delete(callback);
   app.context.ResizeObserver = class { observe() {} disconnect() {} };
   function makeDocument() {
     const element = (fontSize) => {
@@ -575,7 +578,7 @@ test('reader font adjustments and highlight edits do not redo each other’s DOM
     body.hasAttribute = () => true;
     body.getBoundingClientRect = () => ({ height: 900 });
     body.querySelectorAll = () => { traversals++; return [paragraph]; };
-    return { body, paragraph, defaultView: { getComputedStyle(node) { measurements++; return { fontSize: node.fontSize, lineHeight: '24px' }; } } };
+    return { body, paragraph, readyState: 'interactive', addEventListener() {}, removeEventListener() {}, defaultView: { getComputedStyle(node) { measurements++; return { fontSize: node.fontSize, lineHeight: '24px' }; } } };
   }
   const NewsletterContent = app.load('src/shared/ui/NewsletterContent.tsx').NewsletterContent;
   const props = { html: '<p>본문</p>', title: '뉴스레터', fontScale: 1.25, highlights: [] };
@@ -589,12 +592,20 @@ test('reader font adjustments and highlight edits do not redo each other’s DOM
   }
   try {
     const iframe = render();
-    iframe.props.onLoad();
+    assert.equal(iframe.props.style.visibility, 'hidden');
+    document.readyState = 'loading';
+    for (const callback of [...frames]) { frames.delete(callback); callback(); }
+    assert.equal(measurements, 0, 'do not measure a partially parsed body');
+    document.readyState = 'interactive'; // Images have not completed and iframe.load has not fired.
+    for (const callback of [...intervals]) callback();
     assert.equal(measurements, 2);
     assert.equal(traversals, 1);
     assert.equal(document.body.properties.get('--newdok-reader-font-scale'), '1.25');
     assert.match(document.paragraph.properties.get('font-size'), /^calc\(20px \*/);
     assert.equal(highlightCalls.length, 1);
+    assert.equal(render().props.style.visibility, 'visible');
+    iframe.props.onLoad();
+    assert.equal(measurements, 2, 'late images must not reapply the font scale');
 
     styleWrites.length = 0;
     props.fontScale = 1.5;
@@ -618,6 +629,7 @@ test('reader font adjustments and highlight edits do not redo each other’s DOM
     const nextFrame = render();
     nextFrame.props.onLoad();
     nextFrame.props.onLoad();
+    for (const callback of [...frames]) { frames.delete(callback); callback(); }
     assert.equal(measurements, 4);
     assert.equal(traversals, 2);
     assert.equal(highlightCalls.length, 3);
@@ -844,6 +856,131 @@ test('private pages do not show a guest state before auth hydration', () => {
     assert.equal(nodes(tree).some((node) => node.type === 'GuestNotice' || node.type === 'BookmarkEmpty'), false);
     assert.equal(nodes(tree).some((node) => node.type === 'LoadingState'), true);
   }
+});
+
+test('the public directory reserves its tabs and filters before hydration and keeps the same tab order', () => {
+  const brand = { brandId: 321, brandName: 'NEWNEEK', imageUrl: null, shortDescription: '소개', interests: [] };
+  function render({ hydrated = true, loggedIn = false, pathname = '/newsletters', suspend = false, initialBrands = pathname === '/newsletters' ? [brand] : undefined } = {}) {
+    const queries = [];
+    const app = harness(undefined, {
+      'next/link': (props) => { const attributes = { ...props }; delete attributes.prefetch; return createElement('a', attributes); },
+      'next/navigation': {
+        usePathname: () => pathname,
+        useSearchParams: () => { if (suspend) throw new Promise(() => {}); return new URLSearchParams(); },
+      },
+      '@tanstack/react-query': {
+        queryOptions: (options) => options,
+        useQuery(query) { queries.push(query); const data = query.initialData ?? query.placeholderData; return { data: data ?? [], isPending: !data, isError: false }; },
+      },
+      '@/shared/hooks': { useAuth: () => ({ isLoggedIn: loggedIn, isHydrated: hydrated }) },
+      '@/widgets/landing/NewsletterImage': { NewsletterImage: () => null },
+      './NewsletterRecommendations': { NewsletterRecommendations: () => createElement('p', null, '맞춤 추천') },
+    });
+    const html = renderToStaticMarkup(createElement(app.load('src/widgets/newsletter-explorer/NewsletterExplorer.tsx').NewsletterExplorer, { initialBrands }));
+    return { html, queries };
+  }
+  const initial = render({ suspend: true }).html;
+  const hydrated = render().html;
+  for (const html of [initial, hydrated, render({ loggedIn: true }).html]) {
+    assert.match(html, /role="tablist"/);
+    assert.match(html, /aria-label="뉴스레터 필터"/);
+    assert.match(html, /href="\/newsletters\/321"/);
+    assert.ok(html.indexOf('뉴스레터 필터') < html.indexOf('href="/newsletters/321"'));
+    assert.ok(html.indexOf('추천 뉴스레터') < html.indexOf('모든 뉴스레터'));
+    assert.match(html, /id="newsletter-tab-all"[^>]*aria-selected="true"/);
+  }
+  const pending = render({ hydrated: false, pathname: '/explore', initialBrands: undefined });
+  assert.equal(pending.queries.every((query) => !query.enabled), true);
+  assert.doesNotMatch(pending.html, /aria-selected="true"|회원가입/);
+});
+
+function dialogHistoryHarness() {
+  const app = harness();
+  const listeners = new Set();
+  const internals = { __NA: true, __PRIVATE_NEXTJS_INTERNALS_TREE: ['root'] };
+  const entries = [{ url: 'https://newdok.test/home', state: internals }, { url: 'https://newdok.test/explore?tab=all', state: internals }];
+  let index = 1;
+  app.context.window.location = new URL(entries[index].url);
+  app.context.window.addEventListener = (type, listener) => { if (type === 'popstate') listeners.add(listener); };
+  app.context.window.removeEventListener = (type, listener) => { if (type === 'popstate') listeners.delete(listener); };
+  function entry(data, url) {
+    assert.ok(!data?.__NA && !data?._N, 'Next.js must see external history calls and update useSearchParams');
+    return { state: { ...internals, ...data }, url: new URL(url, app.context.window.location).href };
+  }
+  function traverse(delta) {
+    queueMicrotask(() => {
+      index = Math.max(0, Math.min(entries.length - 1, index + delta));
+      app.context.window.location = new URL(entries[index].url);
+      for (const listener of [...listeners]) listener({ state: entries[index].state });
+    });
+  }
+  app.context.window.history = {
+    get state() { return entries[index].state; },
+    pushState(data, unused, url) { entries.splice(index + 1); entries.push(entry(data, url)); index++; app.context.window.location = new URL(entries[index].url); },
+    replaceState(data, unused, url) { entries[index] = entry(data, url); app.context.window.location = new URL(entries[index].url); },
+    back() { traverse(-1); },
+    forward() { traverse(1); },
+  };
+  return { ...app, ...app.load('src/shared/lib/dialog-history.ts'), entries, get index() { return index; }, tick: () => new Promise((resolve) => setImmediate(resolve)) };
+}
+
+test('Back closes one dialog without leaving the page, including Strict Mode setup/cleanup', async () => {
+  const app = dialogHistoryHarness();
+  let closed = 0;
+  const discarded = app.registerDialogHistory(() => { assert.fail('discarded effect'); }, () => false);
+  discarded();
+  const dispose = app.registerDialogHistory(() => { closed++; dispose(); }, () => false);
+  await app.tick();
+  assert.equal(app.entries.length, 3);
+  assert.equal(app.context.window.history.state.__NA, true);
+  app.context.window.history.back();
+  await app.tick();
+  assert.equal(closed, 1);
+  assert.equal(app.index, 1);
+  assert.equal(app.context.window.location.pathname, '/explore');
+});
+
+test('closing or applying a filter consumes the dialog entry and preserves the selected query', async () => {
+  const app = dialogHistoryHarness();
+  const dispose = app.registerDialogHistory(() => {}, () => false);
+  await app.tick();
+  app.replacePageUrl('/explore?tab=all&orderOpt=latest');
+  dispose();
+  await app.tick();
+  assert.equal(app.index, 1);
+  assert.equal(app.context.window.location.search, '?tab=all&orderOpt=latest');
+  app.context.window.history.back();
+  await app.tick();
+  assert.equal(app.context.window.location.pathname, '/home');
+});
+
+test('a busy dialog stays open and closing after a link navigation never reverses that navigation', async () => {
+  const app = dialogHistoryHarness();
+  const dispose = app.registerDialogHistory(() => { assert.fail('busy dialog closed'); }, () => true);
+  await app.tick();
+  app.context.window.history.back();
+  await app.tick();
+  assert.equal(app.index, 2);
+  app.context.window.history.pushState(null, '', '/newsletters/321');
+  dispose();
+  await app.tick();
+  assert.equal(app.context.window.location.pathname, '/newsletters/321');
+  assert.equal(app.index, 3);
+});
+
+test('opening another dialog waits for the previous close to finish traversing history', async () => {
+  const app = dialogHistoryHarness();
+  const first = app.registerDialogHistory(() => {}, () => false);
+  await app.tick();
+  first();
+  let closed = 0;
+  const second = app.registerDialogHistory(() => { closed++; second(); }, () => false);
+  await app.tick();
+  assert.equal(app.index, 2);
+  app.context.window.history.back();
+  await app.tick();
+  assert.equal(closed, 1);
+  assert.equal(app.index, 1);
 });
 
 test('public newsletter content stays visible while member subscription state loads', () => {

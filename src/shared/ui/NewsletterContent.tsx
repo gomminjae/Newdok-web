@@ -31,8 +31,8 @@ export function NewsletterContent({ html, title, fontScale, highlights, onSelect
   const frame = useRef<HTMLIFrameElement>(null);
   const observer = useRef<ResizeObserver | null>(null);
   const observedDocument = useRef<Document | null>(null);
-  const loadedDocument = useRef<Document | null>(null);
   const [height, setHeight] = useState(640);
+  const [readyHtml, setReadyHtml] = useState<string | null>(null);
   const preparedFontDocument = useRef<Document | null>(null);
   const selectionCleanup = useRef<(() => void) | null>(null);
 
@@ -78,28 +78,38 @@ export function NewsletterContent({ html, title, fontScale, highlights, onSelect
 
   const observeContent = useCallback(() => {
     const document = frame.current?.contentDocument;
-    if (!document?.body?.hasAttribute('data-newdok-reader')) return false;
+    if (!document?.body?.hasAttribute('data-newdok-reader') || document.readyState === 'loading') return false;
     if (observedDocument.current !== document) {
       observedDocument.current = document;
-      loadedDocument.current = null;
+      // DOM parsing is enough. Waiting for iframe.load also waits for every external image.
+      applyFontScale();
+      applyReaderHighlights();
       selectionCleanup.current?.();
       selectionCleanup.current = onSelection
         ? observeSelectionChanges(document, () => onSelection(getTextSelection(document))) : null;
       resizeContent();
+      setReadyHtml(html);
     }
     return true;
-  }, [resizeContent, onSelection]);
+  }, [applyFontScale, applyReaderHighlights, resizeContent, onSelection, html]);
 
   useEffect(() => {
-    if (loadedDocument.current === frame.current?.contentDocument) applyFontScale();
+    if (observedDocument.current && observedDocument.current === frame.current?.contentDocument) applyFontScale();
   }, [applyFontScale]);
   useEffect(() => {
-    if (loadedDocument.current === frame.current?.contentDocument) applyReaderHighlights();
+    if (observedDocument.current && observedDocument.current === frame.current?.contentDocument) applyReaderHighlights();
   }, [applyReaderHighlights]);
   useEffect(() => {
-    const poll = window.setInterval(() => { if (observeContent()) window.clearInterval(poll); }, 100);
-    if (observeContent()) window.clearInterval(poll);
-    return () => window.clearInterval(poll);
+    const check = () => { if (observeContent()) window.clearInterval(poll); };
+    const poll = window.setInterval(check, 100);
+    const document = frame.current?.contentDocument;
+    document?.addEventListener('DOMContentLoaded', check);
+    const animation = window.requestAnimationFrame(check);
+    return () => {
+      window.clearInterval(poll);
+      window.cancelAnimationFrame(animation);
+      document?.removeEventListener('DOMContentLoaded', check);
+    };
   }, [html, observeContent]);
   useEffect(() => {
     selectionCleanup.current?.();
@@ -112,18 +122,7 @@ export function NewsletterContent({ html, title, fontScale, highlights, onSelect
     observer.current?.disconnect();
     selectionCleanup.current?.();
     observedDocument.current = null;
-    loadedDocument.current = null;
   }, []);
-
-  const handleLoad = () => {
-    if (!observeContent()) return;
-    const document = observedDocument.current;
-    if (loadedDocument.current === document) return;
-    loadedDocument.current = document;
-    applyFontScale();
-    applyReaderHighlights();
-    resizeContent();
-  };
 
   return (
     <iframe
@@ -132,8 +131,9 @@ export function NewsletterContent({ html, title, fontScale, highlights, onSelect
       sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"
       referrerPolicy="no-referrer"
       srcDoc={`<!doctype html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><base target="_blank"></head><body data-newdok-reader>${html}<style>${CONTENT_STYLES}</style></body></html>`}
-      onLoad={handleLoad}
-      style={{ height }}
+      onLoad={observeContent}
+      aria-busy={readyHtml !== html}
+      style={{ height, visibility: readyHtml === html ? 'visible' : 'hidden' }}
       className="block w-full border-0 bg-white"
     />
   );

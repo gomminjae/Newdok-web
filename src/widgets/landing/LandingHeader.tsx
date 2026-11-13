@@ -12,9 +12,12 @@ export function LandingHeader() {
         <AppImage
           name="logo"
           alt="Newdok"
-          width={140}
-          height={32}
-          className="h-7 w-auto sm:h-8"
+          width={209}
+          height={48}
+          loading="eager"
+          fetchPriority="high"
+          sizes="(min-width: 640px) 140px, 122px"
+          className="aspect-[209/48] h-7 w-auto shrink-0 object-contain sm:h-8"
         />
       </Link>
       <nav aria-label="랜딩 페이지 바로가기" className="flex items-center gap-3">

@@ -115,13 +115,13 @@ const SearchForm = memo(function SearchForm({ keyword, onSearch }: { keyword: st
   }
 
   return <form role="search" onSubmit={submit} className="sticky top-[var(--header-height)] z-30 flex min-h-14 items-center gap-2 border-b border-line-neutral bg-bg px-4 py-2">
-    <Button type="submit" variant="ghost-neutral" size="compact" aria-label="검색"><Icon name="Line Search" /></Button>
+    <Button type="submit" variant="ghost-neutral" size="icon" aria-label="검색"><Icon name="Line Search" /></Button>
     <label htmlFor="newsletter-search-input" className="sr-only">뉴스레터 검색어</label>
     <Input variant="search" ref={inputRef} id="newsletter-search-input" type="text" inputMode="search" enterKeyHint="search" autoFocus={!keyword} autoComplete="off" autoCorrect="off" spellCheck={false} maxLength={100} value={value}
       onChange={(event) => { setValue(event.target.value); if (!event.target.value) onSearch(''); }} placeholder="검색어를 입력하세요."
       onKeyDown={(event) => { if (event.key === 'Enter' && (event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229)) event.preventDefault(); }}
       className="min-w-0 flex-1" />
-    <Button variant="ghost-neutral" size="compact" aria-label={value ? '검색어 지우기' : '검색 닫기'} onClick={() => { if (value) { setValue(''); onSearch(''); inputRef.current?.focus(); } else if (window.history.length > 1) router.back(); else router.replace('/explore'); }}><Icon name="Line Close" /></Button>
+    <Button variant="ghost-neutral" size="icon" aria-label={value ? '검색어 지우기' : '검색 닫기'} onClick={() => { if (value) { setValue(''); onSearch(''); inputRef.current?.focus(); } else if (window.history.length > 1) router.back(); else router.replace('/explore'); }}><Icon name="Line Close" /></Button>
   </form>;
 });
 

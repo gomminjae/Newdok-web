@@ -42,7 +42,7 @@ export default function BookmarksPage() {
   return (
     <div className="-mx-4 flex min-h-[calc(100dvh-var(--header-height)-var(--tabbar-height))] flex-col bg-bg-system md:-mx-6 md:min-h-[calc(100dvh-var(--header-height))] xl:-mx-10">
       {/* 카테고리 필터 */}
-      <div className="flex min-h-[66px] items-center gap-1 px-4 py-4">{isHydrated && categories.length > 3 && <Button variant="outline" size="icon" radius="xl" aria-label="이전 관심사" onClick={() => categoryTrack.current?.scrollBy({ left: -160, behavior: 'smooth' })}><Icon name="Back" size={16} /></Button>}<div ref={categoryTrack} className="landing-scrollbar-none flex flex-1 gap-1 overflow-x-auto">
+      <div className="flex min-h-[76px] items-center gap-1 px-4 py-4 md:min-h-[66px]">{isHydrated && categories.length > 3 && <Button variant="outline" size="icon" radius="xl" aria-label="이전 관심사" onClick={() => categoryTrack.current?.scrollBy({ left: -160, behavior: 'smooth' })}><Icon name="Back" size={16} /></Button>}<div ref={categoryTrack} className="landing-scrollbar-none flex flex-1 gap-1 overflow-x-auto">
         {(isHydrated ? categories : []).map((cat) => (
           <Chip
             key={cat.id ?? 'all'}

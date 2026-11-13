@@ -4,6 +4,7 @@ import { LoadingState, AppImage, Button, ButtonLink, Chip, Icon, SubscriptionBad
 
 import Link from 'next/link';
 import { useEffect, useId, useRef, useState } from 'react';
+import { useDialogHistory } from '@/shared/hooks/useDialogHistory';
 import { useQuery } from '@tanstack/react-query';
 import { newsletterQueries, usePauseSubscription, useResumeSubscription, type BrandDetail } from '@/entities/newsletter';
 import { userQueries } from '@/entities/user';
@@ -156,6 +157,7 @@ function PauseSubscriptionDialog({ brandName, onClose, onConfirm }: { brandName:
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const descriptionId = useId();
+  useDialogHistory(onClose);
 
   useEffect(() => {
     const dialog = dialogRef.current;

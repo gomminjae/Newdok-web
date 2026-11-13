@@ -6,16 +6,43 @@ import { useQuery } from '@tanstack/react-query';
 import { clsx } from 'clsx';
 import { newsletterApi, newsletterQueries, type NewsletterBrand } from '@/entities/newsletter';
 import { useAuth } from '@/shared/hooks';
+import { replacePageUrl } from '@/shared/lib/dialog-history';
 import { CardLink, FilterToolbar, Button, Chip, GuestNotice, Icon, SubscriptionBadge, Tabs } from '@/shared/ui';
 import { NewsletterImage } from '@/widgets/landing/NewsletterImage';
 import { ExplorerDialog, NewsletterFilters } from './NewsletterFilters';
 import { NewsletterRecommendations } from './NewsletterRecommendations';
-import { NewsletterListSkeleton } from './NewsletterSkeleton';
+import { NewsletterListSkeleton, RecommendationsSkeleton } from './NewsletterSkeleton';
+
+type ExplorerTab = 'recommend' | 'all';
+const EXPLORER_TABS = [
+  { value: 'recommend', label: '추천 뉴스레터' },
+  { value: 'all', label: '모든 뉴스레터' },
+] as const;
+const noop = () => {};
+
+function ExplorerFrame({ tab, pending = false, onTabChange = noop, children }: {
+  tab?: ExplorerTab;
+  pending?: boolean;
+  onTabChange?: (tab: ExplorerTab) => void;
+  children: ReactNode;
+}) {
+  return <section aria-label="뉴스레터 둘러보기" aria-busy={pending} className="-mx-4 flex min-h-[calc(100dvh-var(--header-height)-var(--tabbar-height))] flex-col bg-bg-system md:-mx-6 md:min-h-[calc(100dvh-var(--header-height))] xl:-mx-10">
+    <Tabs id="newsletter" label="뉴스레터 목록" value={tab} options={EXPLORER_TABS} disabled={pending} onChange={onTabChange} />
+    {children}
+  </section>;
+}
+
+function ExplorerLoading({ initialBrands }: { initialBrands?: NewsletterBrand[] }) {
+  return <ExplorerFrame tab={initialBrands ? 'all' : undefined} pending>
+    {initialBrands ? <div role="tabpanel" id="newsletter-panel-all" aria-labelledby="newsletter-tab-all" className="flex-1 pb-20">
+      <ExplorerToolbar orderOpt="인기순" industries={0} days={0} disabled />
+      <div className="px-4 md:px-6 min-[1024px]:px-8"><BrandList brands={initialBrands} isMember={false} /></div>
+    </div> : <RecommendationsSkeleton />}
+  </ExplorerFrame>;
+}
 
 export function NewsletterExplorer({ initialBrands }: { initialBrands?: NewsletterBrand[] }) {
-  return <Suspense fallback={initialBrands ? <div className="-mx-4 bg-bg-system px-5 py-5 md:-mx-6 md:px-6 xl:-mx-10">
-    <BrandList brands={initialBrands} isMember={false} />
-  </div> : <div className="-mx-4 bg-bg-system px-4 py-5 md:-mx-6 md:px-6 xl:-mx-10"><NewsletterListSkeleton /></div>}><ExplorerRoute initialBrands={initialBrands} /></Suspense>;
+  return <Suspense fallback={<ExplorerLoading initialBrands={initialBrands} />}><ExplorerRoute initialBrands={initialBrands} /></Suspense>;
 }
 
 function ExplorerRoute({ initialBrands }: { initialBrands?: NewsletterBrand[] }) {
@@ -34,16 +61,13 @@ function readIds(params: URLSearchParams, key: string) {
 }
 
 function ExplorerContent({ initialBrands }: { initialBrands?: NewsletterBrand[] }) {
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, isHydrated } = useAuth();
   const pathname = usePathname() ?? '/explore';
   const searchParams = useSearchParams() ?? new URLSearchParams();
-  const tabs = isLoggedIn
-    ? (['recommend', 'all'] as const)
-    : (['all', 'recommend'] as const);
   const requestedTab = searchParams.get('tab');
   const hasSearch = ['industry', 'day', 'orderOpt'].some((key) => searchParams.has(key));
   const tab = requestedTab === 'recommend' || requestedTab === 'all'
-    ? requestedTab : hasSearch ? 'all' : tabs[0];
+    ? requestedTab : pathname === '/newsletters' || hasSearch || !isLoggedIn ? 'all' : 'recommend';
   const orderOpt = searchParams.get('orderOpt') === '최신순' ? '최신순' : '인기순';
   const industries = readIds(searchParams, 'industry');
   const days = readIds(searchParams, 'day');
@@ -51,8 +75,9 @@ function ExplorerContent({ initialBrands }: { initialBrands?: NewsletterBrand[] 
   const options = useQuery({ queryKey: ['newsletter', 'options'], queryFn: ({ signal }) => newsletterApi.fetchOptionList(signal), staleTime: 3_600_000, enabled: dialog === 'filters' });
   const brands = useQuery({
     ...newsletterQueries.list({ orderOpt, industry: industries, day: days }, isLoggedIn),
-    enabled: tab === 'all',
+    enabled: isHydrated && tab === 'all',
     initialData: !isLoggedIn && orderOpt === '인기순' && industries.length === 0 && days.length === 0 ? initialBrands : undefined,
+    placeholderData: isLoggedIn && orderOpt === '인기순' && industries.length === 0 && days.length === 0 ? initialBrands : undefined,
   });
 
   function updateParams(values: Record<string, string | string[]>) {
@@ -64,34 +89,23 @@ function ExplorerContent({ initialBrands }: { initialBrands?: NewsletterBrand[] 
         if (item) params.append(key, item);
       }
     }
-    window.history.replaceState(null, '', `${pathname}?${params}${window.location.hash}`);
+    replacePageUrl(`${pathname}?${params}${window.location.hash}`);
   }
 
   function resetFilters() {
     updateParams({ industry: [], day: [], orderOpt: '' });
   }
 
-  return (
-    <section aria-label="뉴스레터 둘러보기" className="-mx-4 flex min-h-[calc(100dvh-var(--header-height)-var(--tabbar-height))] flex-col bg-bg-system md:-mx-6 md:min-h-[calc(100dvh-var(--header-height))] xl:-mx-10">
-      <Tabs id="newsletter" label="뉴스레터 목록" value={tab} options={tabs.map((value) => ({ value, label: value === 'recommend' ? '추천 뉴스레터' : '모든 뉴스레터' }))} onChange={(value) => updateParams({ tab: value })} />
+  if (!isHydrated) return <ExplorerLoading initialBrands={initialBrands} />;
 
+  return (
+    <ExplorerFrame tab={tab} onTabChange={(value) => updateParams({ tab: value })}>
         <div hidden={tab !== 'recommend'} role="tabpanel" id="newsletter-panel-recommend" aria-labelledby="newsletter-tab-recommend" className={tab === 'recommend' ? 'page-enter' : undefined}>
           {isLoggedIn ? <NewsletterRecommendations active={tab === 'recommend'} /> : <GuestNotice />}
         </div>
         <div hidden={tab !== 'all'} role="tabpanel" id="newsletter-panel-all" aria-labelledby="newsletter-tab-all" className={clsx('flex-1 pb-20', tab === 'all' && 'page-enter')}>
-          <FilterToolbar label="뉴스레터 필터" className="px-4 py-4 md:px-6 min-[1024px]:px-8"
-            actions={<Button variant="ghost" size="xs" onClick={resetFilters} aria-label="필터 초기화"><Icon name="Line Reload" size={16} />초기화</Button>}>
-            <FilterButton onClick={() => setDialog('sort')} active={false} label={`${orderOpt === '최신순' ? '최신등록순' : '인기순'} 정렬`}>
-              {orderOpt === '최신순' ? '최신등록순' : '인기순'} <Icon name="Line Arrow Transfer" size={16} />
-            </FilterButton>
-            <span aria-hidden="true" className="h-5 w-px shrink-0 bg-line-neutral" />
-            <FilterButton onClick={() => setDialog('filters')} active={industries.length > 0} muted={!industries.length} label={`산업 필터${industries.length ? ` ${industries.length}개 선택` : ''}`}>
-              산업{industries.length > 0 && ` ${industries.length}`} <Chevron />
-            </FilterButton>
-            <FilterButton onClick={() => setDialog('filters')} active={days.length > 0} muted={!days.length} label={`발행 요일 필터${days.length ? ` ${days.length}개 선택` : ''}`}>
-              발행 요일{days.length > 0 && ` ${days.length}`} <Chevron />
-            </FilterButton>
-          </FilterToolbar>
+          <ExplorerToolbar orderOpt={orderOpt} industries={industries.length} days={days.length}
+            onSort={() => setDialog('sort')} onFilters={() => setDialog('filters')} onReset={resetFilters} />
 
           <div className="px-4 md:px-6 min-[1024px]:px-8">
           {brands.isPending ? <NewsletterListSkeleton /> : brands.isError ? (
@@ -121,16 +135,37 @@ function ExplorerContent({ initialBrands }: { initialBrands?: NewsletterBrand[] 
       {dialog === 'filters' && <NewsletterFilters options={options.data} isError={options.isError} retry={() => void options.refetch()}
         industries={industries} days={days} onClose={() => setDialog(null)}
         onApply={(industry, day) => { updateParams({ industry, day }); setDialog(null); }} />}
-    </section>
+    </ExplorerFrame>
   );
 }
 
-function Chevron() {
-  return <Icon name="Line Down" size={20} />;
+function ExplorerToolbar({ orderOpt, industries, days, disabled = false, onSort = noop, onFilters = noop, onReset = noop }: {
+  orderOpt: string;
+  industries: number;
+  days: number;
+  disabled?: boolean;
+  onSort?: () => void;
+  onFilters?: () => void;
+  onReset?: () => void;
+}) {
+  const orderLabel = orderOpt === '최신순' ? '최신등록순' : '인기순';
+  return <FilterToolbar label="뉴스레터 필터" className="px-4 py-4 md:px-6 min-[1024px]:px-8"
+    actions={<Button variant="ghost" size="xs" disabled={disabled} onClick={onReset} aria-label="필터 초기화"><Icon name="Line Reload" size={16} />초기화</Button>}>
+    <FilterButton onClick={onSort} disabled={disabled} active={false} label={`${orderLabel} 정렬`}>
+      {orderLabel} <Icon name="Line Arrow Transfer" size={16} />
+    </FilterButton>
+    <span aria-hidden="true" className="h-5 w-px shrink-0 bg-line-neutral" />
+    <FilterButton onClick={onFilters} disabled={disabled} active={industries > 0} muted={!industries} label={`산업 필터${industries ? ` ${industries}개 선택` : ''}`}>
+      산업{industries > 0 && ` ${industries}`} <Icon name="Line Down" size={20} />
+    </FilterButton>
+    <FilterButton onClick={onFilters} disabled={disabled} active={days > 0} muted={!days} label={`발행 요일 필터${days ? ` ${days}개 선택` : ''}`}>
+      발행 요일{days > 0 && ` ${days}`} <Icon name="Line Down" size={20} />
+    </FilterButton>
+  </FilterToolbar>;
 }
 
-function FilterButton({ children, onClick, active, label, muted = false }: { children: ReactNode; onClick: () => void; active: boolean; label: string; muted?: boolean }) {
-  return <Chip as="button" variant="filter" active={active} tone={muted ? 'muted' : 'neutral'} aria-label={label} aria-haspopup="dialog" onClick={onClick}>
+function FilterButton({ children, onClick, active, label, muted = false, disabled = false }: { children: ReactNode; onClick: () => void; active: boolean; label: string; muted?: boolean; disabled?: boolean }) {
+  return <Chip as="button" variant="filter" active={active} tone={muted ? 'muted' : 'neutral'} disabled={disabled} aria-label={label} aria-haspopup="dialog" onClick={onClick}>
     {children}
   </Chip>;
 }

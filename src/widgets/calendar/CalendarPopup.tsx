@@ -3,6 +3,7 @@
 import { useMemo, useCallback, useEffect, useRef } from 'react';
 import { clsx } from 'clsx';
 import { Button, Icon } from '@/shared/ui';
+import { useDialogHistory } from '@/shared/hooks/useDialogHistory';
 
 interface CalendarPopupProps {
   selectedDate: Date;
@@ -71,6 +72,7 @@ export function CalendarPopup({
 }: CalendarPopupProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const today = startOfDay(new Date());
+  useDialogHistory(onClose);
 
   useEffect(() => {
     const dialog = dialogRef.current;
