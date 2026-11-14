@@ -90,11 +90,23 @@ Preview는 `ALLOW_INDEXING` 값과 관계없이 검색 수집을 차단합니다
 
 ## 검증
 
+Node.js 22 환경에서 다음 검증을 실행합니다.
+
 ```bash
-npm test
+npm ci
 npm run lint
+npm run typecheck
+npm test
 npm run build
 npm run design:check -- https://테스트-주소
 ```
+
+GitHub Actions의 [CI](.github/workflows/ci.yml)는 `develop`·`main` push와 두 브랜치를 대상으로 하는 PR에서
+의존성 설치 → lint → 타입 검사 → 테스트 → 빌드를 실행합니다. 같은 브랜치·PR에 새 커밋이 올라오면 이전 실행을 취소합니다.
+`typecheck`는 Next.js 라우트 타입을 먼저 생성하므로, 개발 서버나 이전 빌드가 없는 새 체크아웃에서도 실행할 수 있습니다.
+
+CI는 push 브랜치 또는 PR 대상 브랜치가 `main`이면 운영 API 설정을, 나머지는 개발 API 설정을 검증합니다.
+로그인 비밀키나 Vercel 토큰은 필요하지 않습니다. `design:check`는 실행 중인 웹이 필요한 별도 검증입니다.
+Vercel 배포는 기존 Git 연동에서 실행되며, 이 워크플로는 배포를 수행하거나 CI 완료까지 배포를 대기시키지 않습니다.
 
 Vercel 참고: [배포 환경](https://vercel.com/docs/deployments/environments), [고정 브랜치 주소](https://vercel.com/docs/deployments/generated-urls), [환경변수 범위](https://vercel.com/docs/environment-variables).
